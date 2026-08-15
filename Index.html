@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Indoor Cricket Scoreboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#111;color:#fff;}
+  .app{max-width:820px;margin:0 auto;padding:14px;}
+  h1{text-align:center;margin-bottom:4px;font-size:26px;color:#00e5ff;text-shadow:0 0 6px #00e5ff;}
+  .dev-by{text-align:center;font-size:11px;opacity:.7;margin-bottom:16px;}
+
+  .top-bar{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:18px;}
+  #startMatch{padding:10px 20px;font-size:18px;background:#00e5ff;color:#000;border:none;border-radius:8px;cursor:pointer;font-weight:600;}
+  #startMatch:disabled{background:#555;color:#999;cursor:not-allowed;}
+
+  .config-row{display:flex;justify-content:center;gap:20px;width:100%;}
+  .config-item{display:flex;align-items:center;gap:6px;}
+  .config-label{font-size:16px;}
+  .config-input{width:120px;padding:6px 8px;border-radius:6px;border:none;background:#333;color:#fff;font-size:16px;}
+  .arrow{color:red;font-size:20px;font-weight:bold;display:none;}
+
+  .team{border-radius:10px;padding:12px;margin-bottom:20px;}
+  .team[data-team="A"]{background:#2a2a2a;}
+  .team[data-team="B"]{background:#1f1f1f;}
+
+  .team-header-row{display:flex;justify-content:center;gap:12px;align-items:center;margin-bottom:10px;}
+  .team-title{font-size:22px;font-weight:700;text-align:center;width:120px;}
+  .team-name-input{padding:6px 10px;border-radius:6px;border:none;font-size:16px;background:#444;color:#fff;width:45%;}
+
+  .score-row{display:flex;justify-content:center;align-items:baseline;gap:36px;margin:10px 0 16px;}
+  .runs-display{font-size:34px;font-weight:800;text-align:center;transition:transform .2s ease;}
+  .runs-flash{transform:scale(1.12);text-shadow:0 0 10px #0f0;}
+  .wicket-flash{transform:scale(1.12);text-shadow:0 0 10px #f00;}
+  .net-inline{font-size:20px;color:#00e676;font-weight:600;}
+
+  .stats{display:flex;justify-content:center;margin-bottom:12px;}
+  .stat-box{text-align:center;background:#333;border-radius:8px;padding:10px 14px;min-width:120px;}
+  .stat-label{font-size:14px;opacity:.8;}
+  .stat-value{font-size:22px;font-weight:600;}
+
+  .over-section{margin-bottom:12px;}
+  .over-title{text-align:center;font-size:14px;margin-bottom:4px;font-weight:600;}
+  .over-dots{display:flex;justify-content:center;gap:6px;}
+  .dot{width:26px;height:26px;border-radius:50%;background:#444;display:flex;justify-content:center;align-items:center;font-weight:600;font-size:14px;color:#fff;border:1px solid #888;}
+  .run-dot{background:#00c853;color:#000;}
+  .wicket-dot{background:#ff5252;color:#000;}
+
+  .run-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:14px;}
+  .run-grid button{padding:10px;font-size:16px;border-radius:6px;background:#444;color:#fff;border:none;cursor:pointer;}
+  .run-grid button:active{background:#666;transform:scale(.97);}
+
+  .actions{display:flex;justify-content:center;gap:16px;margin-top:10px;}
+  .actions button{width:46%;font-size:18px;padding:12px;border-radius:6px;background:#444;color:#fff;}
+
+  .innings-over{text-align:center;font-size:18px;font-weight:600;color:#ff5252;margin-top:8px;}
+
+  .winner{text-align:center;font-size:20px;font-weight:700;background:yellow;color:#000;padding:10px;border-radius:10px;margin-top:16px;display:none;box-shadow:0 0 12px yellow;}
+
+  #summary{margin-top:16px;padding:10px;border-radius:10px;background:#333;display:none;font-size:14px;}
+  #summary table{width:100%;border-collapse:collapse;}
+  #summary th,#summary td{padding:6px;text-align:center;border-bottom:1px solid #999;}
+
+  #resetAll{width:100%;padding:10px;background:#e53935;border:none;border-radius:8px;font-size:16px;margin-top:16px;color:#fff;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>Indoor Cricket Scoreboard</h1>
+  <div class="dev-by">Developed by Jignesh</div>
+
+  <audio id="soundRun">
+    <source src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" type="audio/ogg">
+  </audio>
+  <audio id="soundWicket">
+    <source src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" type="audio/ogg">
+  </audio>
+  <audio id="soundPairChange">
+    <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+  </audio>
+
+  <div class="top-bar">
+    <button id="startMatch">Start Match</button>
+    <div class="config-row">
+      <div class="config-item">
+        <span class="arrow" id="arrowOvers">➤</span>
+        <span class="config-label">Maximum Overs:</span>
+        <input id="maxOvers" class="config-input" type="number" disabled />
+      </div>
+      <div class="config-item">
+        <span class="arrow" id="arrowPlayers">➤</span>
+        <span class="config-label">Players per Team:</span>
+        <input id="playersPerTeam" class="config-input" type="number" disabled />
+      </div>
+    </div>
+  </div>
+
+  <div class="team" data-team="A" id="teamABox">
+    <div class="team-header-row">
+      <div class="team-title">Team A</div>
+      <input class="team-name-input" id="teamAName" placeholder="Enter Team A Name" disabled />
+    </div>
+    <div class="score-row">
+      <div class="runs-display" data-runs>A</div>
+      <div class="net-inline" data-net>Net Score: 0</div>
+    </div>
+    <div class="stats">
+      <div class="stat-box">
+        <div class="stat-label">Overs</div>
+        <div class="stat-value" data-overs>0.0</div>
+      </div>
+    </div>
+    <div class="over-section">
+      <div class="over-title">Current Over</div>
+      <div class="over-dots" data-current-over></div>
+    </div>
+    <div class="over-section">
+      <div class="over-title">Previous Over</div>
+      <div class="over-dots" data-prev-over></div>
+    </div>
+    <div class="run-grid" data-run-grid></div>
+    <div class="actions">
+      <button data-wicket disabled>+ Wicket</button>
+      <button data-undo disabled>Undo</button>
+    </div>
+    <div class="innings-over" data-innings-msg></div>
+  </div>
+
+  <div class="team" data-team="B" id="teamBBox">
+    <div class="team-header-row">
+      <div class="team-title">Team B</div>
+      <input class="team-name-input" id="teamBName" placeholder="Enter Team B Name" disabled />
+    </div>
+    <div class="score-row">
+      <div class="runs-display" data-runs>B</div>
+      <div class="net-inline" data-net>Net Score: 0</div>
+    </div>
+    <div class="stats">
+      <div class="stat-box">
+        <div class="stat-label">Overs</div>
+        <div class="stat-value" data-overs>0.0</div>
+      </div>
+    </div>
+    <div class="over-section">
+      <div class="over-title">Current Over</div>
+      <div class="over-dots" data-current-over></div>
+    </div>
+    <div class="over-section">
+      <div class="over-title">Previous Over</div>
+      <div class="over-dots" data-prev-over></div>
+    </div>
+    <div class="run-grid" data-run-grid></div>
+    <div class="actions">
+      <button data-wicket disabled>+ Wicket</button>
+      <button data-undo disabled>Undo</button>
+    </div>
+    <div class="innings-over" data-innings-msg></div>
+  </div>
+
+  <div id="winner" class="winner"></div>
+
+  <div id="summary">
+    <h2 style="text-align:center;font-size:16px;margin-bottom:6px;">Match Summary</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Team</th>
+          <th>Runs/Wkts</th>
+          <th>Net Score</th>
+          <th>Overs</th>
+        </tr>
+      </thead>
+      <tbody id="summaryBody"></tbody>
+    </table>
+    <h3 style="text-align:center;margin-top:12px;">Pair-by-Pair Summary</h3>
+    <div id="pairSummary" style="font-size:14px;margin-top:10px;line-height:1.6;"></div>
+  </div>
+
+  <button id="resetAll">Reset Scoreboard</button>
+</div>
+
+<script>
+let matchStarted=false;
+let oversLocked=true;
+let playersLocked=true;
+let globalOversPerPair=0;
+
+const soundRun=document.getElementById("soundRun");
+const soundWicket=document.getElementById("soundWicket");
+const soundPairChange=document.getElementById("soundPairChange");
+
+function createTeamState(){
+  return{
+    runs:0,
+    balls:0,
+    wickets:0,
+    history:[],
+    locked:false,
+    currentOver:[],
+    previousOver:[],
+    lastPairAlertOvers:0,
+    currentPairIndex:0,
+    pairs:[]
+  };
+}
+
+const teams={A:createTeamState(),B:createTeamState()};
+
+document.getElementById("startMatch").addEventListener("click",()=>{
+  matchStarted=true;
+  document.getElementById("maxOvers").disabled=false;
+  document.getElementById("playersPerTeam").disabled=false;
+  document.getElementById("arrowOvers").style.display="inline";
+  document.getElementById("arrowPlayers").style.display="inline";
+  document.getElementById("startMatch").disabled=true;
+});
+
+document.getElementById("maxOvers").addEventListener("input",()=>{
+  const val=document.getElementById("maxOvers").value;
+  oversLocked=(!val||isNaN(val)||val<=0||val%1!==0);
+  document.getElementById("arrowOvers").style.display=oversLocked?"inline":"none";
+  validateAllInputs();
+});
+
+document.getElementById("playersPerTeam").addEventListener("input",()=>{
+  const val=document.getElementById("playersPerTeam").value;
+  playersLocked=(!val||isNaN(val)||val<=0||val%2!==0);
+  document.getElementById("arrowPlayers").style.display=playersLocked?"inline":"none";
+  validateAllInputs();
+});
+
+function validateAllInputs(){
+  const maxOvers=parseInt(document.getElementById("maxOvers").value);
+  const players=parseInt(document.getElementById("playersPerTeam").value);
+
+  if(!oversLocked&&!playersLocked){
+    const pairs=players/2;
+    if(maxOvers%pairs!==0){
+      alert("Maximum Overs must be divisible by batting pairs.");
+      return;
+    }
+    globalOversPerPair=maxOvers/pairs;
+    teams.A.pairs=Array.from({length:pairs},()=>({runs:0,wickets:0,balls:0}));
+    teams.B.pairs=Array.from({length:pairs},()=>({runs:0,wickets:0,balls:0}));
+    teams.A.currentPairIndex=0;
+    teams.B.currentPairIndex=0;
+    enableTeamControls();
+  }
+}
+
+function enableTeamControls(){
+  document.querySelectorAll(".team-name-input").forEach(el=>el.disabled=false);
+  document.querySelectorAll("[data-wicket]").forEach(el=>el.disabled=false);
+  document.querySelectorAll("[data-undo]").forEach(el=>el.disabled=false);
+  document.querySelectorAll(".run-grid button").forEach(el=>el.disabled=false);
+}
+
+function renderOverDots(container,balls){
+  container.innerHTML="";
+  for(let i=0;i<6;i++){
+    const dot=document.createElement("div");
+    dot.classList.add("dot");
+    if(balls[i]!==undefined){
+      dot.textContent=balls[i];
+      dot.classList.add(balls[i]==="W"?"wicket-dot":"run-dot");
+    }
+    container.appendChild(dot);
+  }
+}
+
+function updateTeamUI(teamKey,container){
+  const state=teams[teamKey];
+  const runsEl=container.querySelector("[data-runs]");
+  const netEl=container.querySelector("[data-net]");
+  const oversEl=container.querySelector("[data-overs]");
+  const inningsMsg=container.querySelector("[data-innings-msg]");
+  const prevOverEl=container.querySelector("[data-prev-over]");
+  const currOverEl=container.querySelector("[data-current-over]");
+
+  const fullOvers=Math.floor(state.balls/6);
+  const remainingBalls=state.balls%6;
+
+  oversEl.textContent=fullOvers+"."+remainingBalls;
+
+  const net=state.runs-state.wickets*5;
+  runsEl.textContent=`${state.runs}/${state.wickets}`;
+  netEl.textContent=`Net Score: ${net}`;
+
+  renderOverDots(currOverEl,state.currentOver);
+  renderOverDots(prevOverEl,state.previousOver);
+
+  const maxOvers=parseInt(document.getElementById("maxOvers").value);
+
+  if(matchStarted&&maxOvers&&fullOvers>=maxOvers){
+    state.locked=true;
+    inningsMsg.textContent="INNINGS OVER";
+    if(teamKey==="A"){
+      document.getElementById("teamBBox").scrollIntoView({behavior:"smooth"});
+    }
+    checkWinner();
+  }else{
+    inningsMsg.textContent="";
+  }
+
+  if(
+    matchStarted &&
+    !state.locked &&
+    globalOversPerPair>0 &&
+    fullOvers>0 &&
+    fullOvers%globalOversPerPair===0 &&
+    state.lastPairAlertOvers!==fullOvers
+  ){
+    state.lastPairAlertOvers=fullOvers;
+
+    soundPairChange.currentTime=0;
+    soundPairChange.play();
+
+    alert(
+      "Batting pair for "+
+      (teamKey==="A"?"Team A":"Team B")+
+      " has completed "+globalOversPerPair+
+      " overs.\nPlease change batting pair."
+    );
+
+    state.previousOver=[...state.currentOver];
+    state.currentOver=[];
+
+    if(state.currentPairIndex<state.pairs.length-1){
+      state.currentPairIndex++;
+    }
+
+    renderOverDots(currOverEl,state.currentOver);
+    renderOverDots(prevOverEl,state.previousOver);
+  }
+}
+
+function pushHistory(teamKey,delta){
+  teams[teamKey].history.push(delta);
+}
+
+function undo(teamKey,container){
+  const state=teams[teamKey];
+  if(state.locked)return;
+
+  const h=state.history.pop();
+  if(!h)return;
+
+  state.runs-=h.runs;
+  state.balls-=h.balls;
+  state.wickets-=h.wickets;
+
+  if(h.ballIndex!==undefined){
+    state.currentOver[h.ballIndex]=undefined;
+  }
+
+  if(state.pairs.length>0&&h.pairIndex!==undefined){
+    const pair=state.pairs[h.pairIndex];
+    pair.runs-=h.runs;
+    pair.wickets-=h.wickets;
+    pair.balls-=h.balls;
+  }
+
+  updateTeamUI(teamKey,container);
+}
+
+function buildSummary(){
+  const tbody=document.getElementById("summaryBody");
+  const pairSummaryDiv=document.getElementById("pairSummary");
+
+  tbody.innerHTML="";
+  pairSummaryDiv.innerHTML="";
+
+  ["A","B"].forEach(key=>{
+    const teamBox=document.querySelector(`.team[data-team="${key}"]`);
+    const nameInput=teamBox.querySelector(".team-name-input");
+    const name=nameInput.value||(key==="A"?"Team A":"Team B");
+
+    const s=teams[key];
+    const fullOvers=Math.floor(s.balls/6);
+    const remainingBalls=s.balls%6;
+    const oversText=fullOvers+"."+remainingBalls;
+    const net=s.runs-s.wickets*5;
+
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td>${name}</td>
+      <td>${s.runs}/${s.wickets}</td>
+      <td>${net}</td>
+      <td>${oversText}</td>
+    `;
+    tbody.appendChild(tr);
+
+    const header=document.createElement("div");
+    header.style.marginTop="8px";
+    header.style.fontWeight="600";
+    header.textContent=name+":";
+    pairSummaryDiv.appendChild(header);
+
+    s.pairs.forEach((p,idx)=>{
+      const netPair=p.runs-p.wickets*5;
+      const line=document.createElement("div");
+      line.textContent=`Pair ${idx+1} — Runs ${p.runs}/W${p.wickets} — Net Score: ${netPair}`;
+      pairSummaryDiv.appendChild(line);
+    });
+
+    const spacer=document.createElement("div");
+    spacer.style.marginBottom="6px";
+    pairSummaryDiv.appendChild(spacer);
+  });
+
+  document.getElementById("summary").style.display="block";
+}
+
+function checkWinner(){
+  if(!teams.A.locked||!teams.B.locked)return;
+
+  const netA=teams.A.runs-teams.A.wickets*5;
+  const netB=teams.B.runs-teams.B.wickets*5;
+
+  const winnerEl=document.getElementById("winner");
+  winnerEl.style.display="block";
+
+  if(netA>netB)winnerEl.textContent="MATCH OVER — Winner: Team A 🎉";
+  else if(netB>netA)winnerEl.textContent="MATCH OVER — Winner: Team B 🎉";
+  else winnerEl.textContent="MATCH OVER — Match Tied 🤝";
+
+  buildSummary();
+}
+
+function animateScore(el,type){
+  el.classList.add(type);
+  setTimeout(()=>el.classList.remove(type),250);
+}
+
+function initTeam(container){
+  const teamKey=container.getAttribute("data-team");
+  const runGrid=container.querySelector("[data-run-grid]");
+  const wicketBtn=container.querySelector("[data-wicket]");
+  const undoBtn=container.querySelector("[data-undo]");
+  const runsEl=container.querySelector("[data-runs]");
+
+  for(let v=0;v<=10;v++){
+    const btn=document.createElement("button");
+    btn.textContent=v;
+    btn.disabled=true;
+
+    btn.addEventListener("click",()=>{
+      const state=teams[teamKey];
+
+      if(!matchStarted){
+        alert("Please click Start Match first.");
+        return;
+      }
+      if(oversLocked||playersLocked){
+        alert("Please enter valid Maximum Overs and Players first.");
+        return;
+      }
+      if(state.locked){
+        return;
+      }
+
+      const ballIndex=state.balls%6;
+
+      state.runs+=v;
+      state.balls+=1;
+      state.currentOver[ballIndex]=v;
+
+      if(state.pairs.length>0){
+        const pair=state.pairs[state.currentPairIndex];
+        pair.runs+=v;
+        pair.balls+=1;
+      }
+
+      if(ballIndex===5){
+        state.previousOver=[...state.currentOver];
+        state.currentOver=[];
+      }
+
+      pushHistory(teamKey,{
+        runs:v,
+        balls:1,
+        wickets:0,
+        ballIndex,
+        pairIndex:state.currentPairIndex
+      });
+
+      soundRun.currentTime=0;
+      soundRun.play();
+      animateScore(runsEl,"runs-flash");
+      updateTeamUI(teamKey,container);
+    });
+
+    runGrid.appendChild(btn);
+  }
+
+  wicketBtn.addEventListener("click",()=>{
+    const state=teams[teamKey];
+
+    if(!matchStarted){
+      alert("Please click Start Match first.");
+      return;
+    }
+    if(oversLocked||playersLocked){
+      alert("Please enter valid Maximum Overs and Players first.");
+      return;
+    }
+    if(state.locked){
+      return;
+    }
+
+    const ballIndex=state.balls%6;
+
+    state.wickets+=1;
+    state.balls+=1;
+    state.currentOver[ballIndex]="W";
+
+    if(state.pairs.length>0){
+      const pair=state.pairs[state.currentPairIndex];
+      pair.wickets+=1;
+      pair.balls+=1;
+    }
+
+    if(ballIndex===5){
+      state.previousOver=[...state.currentOver];
+      state.currentOver=[];
+    }
+
+    pushHistory(teamKey,{
+      runs:0,
+      balls:1,
+      wickets:1,
+      ballIndex,
+      pairIndex:state.currentPairIndex
+    });
+
+    soundWicket.currentTime=0;
+    soundWicket.play();
+    animateScore(runsEl,"wicket-flash");
+    updateTeamUI(teamKey,container);
+  });
+
+  undoBtn.addEventListener("click",()=>undo(teamKey,container));
+  updateTeamUI(teamKey,container);
+}
+
+document.querySelectorAll(".team").forEach(initTeam);
+
+document.getElementById("resetAll").addEventListener("click",()=>{
+  if(!confirm("Reset scoreboard?"))return;
+
+  teams.A=createTeamState();
+  teams.B=createTeamState();
+
+  document.getElementById("winner").style.display="none";
+  document.getElementById("winner").textContent="";
+  document.getElementById("summary").style.display="none";
+  document.getElementById("pairSummary").innerHTML="";
+
+  matchStarted=false;
+  oversLocked=true;
+  playersLocked=true;
+  globalOversPerPair=0;
+
+  document.getElementById("maxOvers").value="";
+  document.getElementById("playersPerTeam").value="";
+  document.getElementById("maxOvers").disabled=true;
+  document.getElementById("playersPerTeam").disabled=true;
+
+  document.getElementById("arrowOvers").style.display="none";
+  document.getElementById("arrowPlayers").style.display="none";
+
+  document.getElementById("startMatch").disabled=false;
+
+  document.getElementById("teamAName").value="";
+  document.getElementById("teamBName").value="";
+  document.getElementById("teamAName").disabled=true;
+  document.getElementById("teamBName").disabled=true;
+
+  document.querySelectorAll(".run-grid button").forEach(el=>el.disabled=true);
+  document.querySelectorAll("[data-wicket]").forEach(el=>el.disabled=true);
+  document.querySelectorAll("[data-undo]").forEach(el=>el.disabled=true);
+
+  document.querySelectorAll(".team").forEach(container=>{
+    const key=container.getAttribute("data-team");
+    updateTeamUI(key,container);
+  });
+});
+</script>
+</body>
+</html>
