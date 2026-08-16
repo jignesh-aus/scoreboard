@@ -5,66 +5,291 @@
 <title>Indoor Cricket Scoreboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <style>
-  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#111;color:#fff;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:#111;
+    color:#fff;
+  }
   .app{max-width:820px;margin:0 auto;padding:14px;}
-  h1{text-align:center;margin-bottom:4px;font-size:26px;color:#00e5ff;text-shadow:0 0 6px #00e5ff;}
+
+  h1{
+    text-align:center;margin-bottom:4px;font-size:26px;
+    background:#fff;color:#000;padding:8px 0;
+  }
   .dev-by{text-align:center;font-size:11px;opacity:.7;margin-bottom:16px;}
 
+  #notifyBanner{
+    position:fixed;top:-60px;left:0;width:100%;
+    background:#ffeb3b;color:#000;text-align:center;
+    padding:12px;font-size:16px;font-weight:700;
+    box-shadow:0 0 10px rgba(0,0,0,0.4);
+    transition:top .4s ease;z-index:9999;
+  }
+  #notifyBanner.show{top:0;}
+  #notifyBanner.error{background:#ff5252;color:#fff;}
+
   .top-bar{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:18px;}
-  #startMatch{padding:10px 20px;font-size:18px;background:#00e5ff;color:#000;border:none;border-radius:8px;cursor:pointer;font-weight:600;}
+  #startMatch{
+    padding:8px 16px;font-size:16px;background:#00e5ff;color:#000;
+    border:none;border-radius:6px;cursor:pointer;font-weight:600;
+  }
   #startMatch:disabled{background:#555;color:#999;cursor:not-allowed;}
 
-  .config-row{display:flex;justify-content:center;gap:20px;width:100%;}
-  .config-item{display:flex;align-items:center;gap:6px;}
-  .config-label{font-size:16px;}
-  .config-input{width:120px;padding:6px 8px;border-radius:6px;border:none;background:#333;color:#fff;font-size:16px;}
-  .arrow{color:red;font-size:20px;font-weight:bold;display:none;}
+  .config-row{display:flex;justify-content:center;gap:12px;width:100%;}
+  .config-item{display:flex;align-items:center;gap:4px;}
+  .config-label{font-size:14px;}
+  .config-input{
+    padding:4px 6px;border-radius:4px;border:none;
+    background:#333;color:#fff;font-size:14px;
+  }
+  .arrow{color:red;font-size:16px;font-weight:bold;display:none;}
 
-  .team{border-radius:10px;padding:12px;margin-bottom:20px;}
-  .team[data-team="A"]{background:#2a2a2a;}
+  .team{
+    border-radius:10px;padding:10px;margin-bottom:16px;
+    background:#2a2a2a;
+    max-height:2000px;overflow:hidden;
+    transition:max-height .6s ease,opacity .6s ease;
+  }
   .team[data-team="B"]{background:#1f1f1f;}
 
-  .team-header-row{display:flex;justify-content:center;gap:12px;align-items:center;margin-bottom:10px;}
-  .team-title{font-size:22px;font-weight:700;text-align:center;width:120px;}
-  .team-name-input{padding:6px 10px;border-radius:6px;border:none;font-size:16px;background:#444;color:#fff;width:45%;}
+  .team.collapsed{
+    max-height:120px;
+    opacity:.85;
+  }
+  .team.collapsed .run-grid,
+  .team.collapsed .actions,
+  .team.collapsed .over-row,
+  .team.collapsed .run-grid-title,
+  .team.collapsed .over-section{
+    display:none!important;
+  }
+  .team.collapsed .stats-row,
+  .team.collapsed [data-innings-msg]{
+    display:flex!important;
+  }
 
-  .score-row{display:flex;justify-content:center;align-items:baseline;gap:36px;margin:10px 0 16px;}
-  .runs-display{font-size:34px;font-weight:800;text-align:center;transition:transform .2s ease;}
-  .runs-flash{transform:scale(1.12);text-shadow:0 0 10px #0f0;}
-  .wicket-flash{transform:scale(1.12);text-shadow:0 0 10px #f00;}
-  .net-inline{font-size:20px;color:#00e676;font-weight:600;}
+  .team-header-row{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin-bottom:8px;
+  }
+  .team-name-input{
+    padding:4px 8px;border-radius:4px;border:none;
+    font-size:14px;background:#444;color:#fff;width:40%;
+    text-align:center;
+  }
 
-  .stats{display:flex;justify-content:center;margin-bottom:12px;}
-  .stat-box{text-align:center;background:#333;border-radius:8px;padding:10px 14px;min-width:120px;}
-  .stat-label{font-size:14px;opacity:.8;}
-  .stat-value{font-size:22px;font-weight:600;}
+  .stats-row{
+    display:flex;
+    justify-content:center;
+    gap:6px;
+    margin-bottom:8px;
+  }
+  .stat-box{
+    text-align:center;
+    background:#333;
+    border-radius:6px;
+    padding:6px 8px;
+    min-width:90px;
+    transition:background-color .25s ease,transform .2s ease;
+  }
+  .stat-box.updated{background-color:#444;transform:translateY(-2px);}
+  .stat-label{font-size:12px;opacity:.8;}
+  .stat-value{
+    transition:transform .2s ease,text-shadow .2s ease,color .2s ease;
+  }
+  .stat-value.flash-green{
+    transform:scale(1.12);
+    text-shadow:0 0 10px #00e676;
+  }
+  .stat-value.flash-red{
+    transform:scale(1.12);
+    text-shadow:0 0 10px #ff5252;
+  }
+  [data-score-tile]{
+    font-size:30px;
+    font-weight:800;
+  }
+  [data-net-tile]{
+    font-size:26px;
+    font-weight:700;
+  }
+  [data-overs]{
+    font-size:30px;
+    font-weight:800;
+  }
 
-  .over-section{margin-bottom:12px;}
+  .negative{color:#ff5252;}
+  .positive{color:#00e676;}
+
+  .over-row{display:flex;justify-content:center;gap:10px;margin-bottom:10px;}
+  .over-section{flex:1;}
   .over-title{text-align:center;font-size:14px;margin-bottom:4px;font-weight:600;}
   .over-dots{display:flex;justify-content:center;gap:6px;}
-  .dot{width:26px;height:26px;border-radius:50%;background:#444;display:flex;justify-content:center;align-items:center;font-weight:600;font-size:14px;color:#fff;border:1px solid #888;}
-  .run-dot{background:#00c853;color:#000;}
-  .wicket-dot{background:#ff5252;color:#000;}
+  .dot{
+    width:22px;height:22px;border-radius:50%;background:#444;
+    display:flex;justify-content:center;align-items:center;
+    font-weight:600;font-size:12px;color:#fff;border:1px solid #888;
+  }
+  .run-dot{
+    background:#00c853;color:#000;
+    transform:scale(1.05);
+    box-shadow:0 0 6px #00c853;
+  }
+  .big-run-dot{
+    background:#ffeb3b;color:#000;
+    transform:scale(1.05);
+    box-shadow:0 0 6px #ffeb3b;
+  }
+  .wicket-dot{
+    background:#ff5252;color:#000;
+    transform:scale(1.05);
+    box-shadow:0 0 6px #ff5252;
+  }
 
-  .run-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:14px;}
-  .run-grid button{padding:10px;font-size:16px;border-radius:6px;background:#444;color:#fff;border:none;cursor:pointer;}
-  .run-grid button:active{background:#666;transform:scale(.97);}
+  .run-grid-title{text-align:center;font-size:14px;margin:4px 0;font-weight:600;}
+  .run-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;}
+  .run-grid button{
+    padding:8px;font-size:14px;border-radius:6px;background:#444;color:#fff;border:none;cursor:pointer;
+  }
+  .run-grid button:hover{
+    background:#555;
+    transform:scale(1.05);
+    box-shadow:0 0 8px rgba(0,229,255,0.6);
+    transition:transform .15s ease,background-color .15s ease,box-shadow .15s ease;
+  }
 
-  .actions{display:flex;justify-content:center;gap:16px;margin-top:10px;}
-  .actions button{width:46%;font-size:18px;padding:12px;border-radius:6px;background:#444;color:#fff;}
+  .actions{
+    display:flex;justify-content:center;gap:10px;margin-top:6px;flex-wrap:wrap;
+  }
+  .actions button{
+    flex:1 1 30%;font-size:14px;padding:8px;border-radius:6px;background:#444;color:#fff;border:none;cursor:pointer;
+  }
+  .actions button:hover{
+    background:#555;
+    transform:scale(1.05);
+    box-shadow:0 0 8px rgba(0,229,255,0.6);
+    transition:transform .15s ease,background-color .15s ease,box-shadow .15s ease;
+  }
 
-  .innings-over{text-align:center;font-size:18px;font-weight:600;color:#ff5252;margin-top:8px;}
+  .innings-over{text-align:center;font-size:16px;font-weight:600;color:#ff5252;margin-top:6px;opacity:0;}
+  .innings-over.show{opacity:1;}
 
-  .winner{text-align:center;font-size:20px;font-weight:700;background:yellow;color:#000;padding:10px;border-radius:10px;margin-top:16px;display:none;box-shadow:0 0 12px yellow;}
+  .winner{
+    text-align:center;font-size:20px;font-weight:700;
+    background:yellow;color:#000;padding:10px;border-radius:10px;
+    margin-top:16px;display:none;box-shadow:0 0 12px yellow;
+  }
 
-  #summary{margin-top:16px;padding:10px;border-radius:10px;background:#333;display:none;font-size:14px;}
+  #summary{
+    margin-top:16px;padding:10px;border-radius:10px;background:#333;
+    display:none;font-size:14px;
+  }
   #summary table{width:100%;border-collapse:collapse;}
   #summary th,#summary td{padding:6px;text-align:center;border-bottom:1px solid #999;}
 
-  #resetAll{width:100%;padding:10px;background:#e53935;border:none;border-radius:8px;font-size:16px;margin-top:16px;color:#fff;font-weight:600;}
+  #resetAll{
+    width:100%;padding:10px;background:#e53935;border:none;
+    border-radius:8px;font-size:16px;margin-top:16px;color:#fff;
+    font-weight:600;cursor:pointer;
+  }
+
+  .pair-change-out{
+    opacity:0;
+    transform:translateX(-20px);
+    transition:opacity .4s ease,transform .4s ease;
+  }
+  .pair-change-in{
+    opacity:0;
+    transform:translateX(20px);
+    transition:opacity .4s ease,transform .4s ease;
+  }
+  .pair-change-in.show{
+    opacity:1;
+    transform:translateX(0);
+  }
+  .pair-pulse{animation:pairPulse .6s ease;}
+  @keyframes pairPulse{
+    0%{box-shadow:0 0 0px #00e5ff;}
+    50%{box-shadow:0 0 12px #00e5ff;}
+    100%{box-shadow:0 0 0px #00e5ff;}
+  }
+
+  .over-tick{
+    font-size:20px;font-weight:900;color:#00e676;
+    margin-left:6px;opacity:0;transform:scale(0.4);
+    display:inline-block;transition:opacity .4s ease,transform .4s ease;
+  }
+  .over-tick.show{opacity:1;transform:scale(1);}
+  .over-tick.fade{opacity:0;transform:scale(0.4);}
+
+  .wicket-explosion{position:relative;}
+  .wicket-explosion::after{
+    content:"";position:absolute;top:50%;left:50%;width:140px;height:140px;
+    background:radial-gradient(circle,rgba(255,0,0,0.9) 0%,rgba(255,0,0,0) 70%);
+    border-radius:50%;transform:translate(-50%,-50%) scale(0.2);opacity:0;pointer-events:none;
+    animation:explode .45s ease-out forwards;
+  }
+  @keyframes explode{
+    0%{transform:translate(-50%,-50%) scale(0.2);opacity:.9;}
+    60%{transform:translate(-50%,-50%) scale(1.2);opacity:.6;}
+    100%{transform:translate(-50%,-50%) scale(1.6);opacity:0;}
+  }
+  .score-shake{animation:shakeScore .35s ease;}
+  @keyframes shakeScore{
+    0%{transform:translateX(0);}
+    25%{transform:translateX(-6px);}
+    50%{transform:translateX(6px);}
+    75%{transform:translateX(-4px);}
+    100%{transform:translateX(0);}
+  }
+
+  .team.active-glow{
+    box-shadow:0 0 18px rgba(0,229,255,0.55);
+    transition:box-shadow .35s ease;
+  }
+
+  .winner-glow{
+    animation:winnerGlowPulse 1.8s ease-in-out infinite;
+    box-shadow:0 0 22px rgba(255,255,0,0.9);
+  }
+  @keyframes winnerGlowPulse{
+    0%{
+      box-shadow:0 0 10px rgba(255,255,0,0.7);
+      transform:scale(1);
+    }
+    50%{
+      box-shadow:0 0 26px rgba(255,255,0,1);
+      transform:scale(1.03);
+    }
+    100%{
+      box-shadow:0 0 10px rgba(255,255,0,0.7);
+      transform:scale(1);
+    }
+  }
+
+  #confettiCanvas{
+    position:fixed;
+    top:0;left:0;
+    width:100%;height:100%;
+    pointer-events:none;
+    z-index:99999;
+  }
+
+  #fireworksCanvas{
+    position:fixed;
+    top:0;left:0;
+    width:100%;height:100%;
+    pointer-events:none;
+    z-index:99998;
+  }
 </style>
 </head>
 <body>
+<div id="notifyBanner"></div>
+
 <div class="app">
   <h1>Indoor Cricket Scoreboard</h1>
   <div class="dev-by">Developed by Jignesh</div>
@@ -85,41 +310,65 @@
       <div class="config-item">
         <span class="arrow" id="arrowOvers">➤</span>
         <span class="config-label">Maximum Overs:</span>
-        <input id="maxOvers" class="config-input" type="number" disabled />
+        <select id="maxOvers" class="config-input" disabled>
+          <option value="">--</option>
+          <option value="2">2</option>
+          <option value="4">4</option>
+          <option value="6">6</option>
+          <option value="8">8</option>
+          <option value="10">10</option>
+          <option value="12">12</option>
+          <option value="14">14</option>
+          <option value="16">16</option>
+        </select>
       </div>
       <div class="config-item">
         <span class="arrow" id="arrowPlayers">➤</span>
         <span class="config-label">Players per Team:</span>
-        <input id="playersPerTeam" class="config-input" type="number" disabled />
+        <select id="playersPerTeam" class="config-input" disabled>
+          <option value="">--</option>
+          <option value="2">2</option>
+          <option value="4">4</option>
+          <option value="6">6</option>
+          <option value="8">8</option>
+        </select>
       </div>
     </div>
   </div>
 
   <div class="team" data-team="A" id="teamABox">
     <div class="team-header-row">
-      <div class="team-title">Team A</div>
       <input class="team-name-input" id="teamAName" placeholder="Enter Team A Name" disabled />
     </div>
-    <div class="score-row">
-      <div class="runs-display" data-runs>A</div>
-      <div class="net-inline" data-net>Net Score: 0</div>
-    </div>
-    <div class="stats">
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-label">Score</div>
+        <div class="stat-value" data-score-tile>0/0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Net Score</div>
+        <div class="stat-value" data-net-tile>0</div>
+      </div>
       <div class="stat-box">
         <div class="stat-label">Overs</div>
         <div class="stat-value" data-overs>0.0</div>
+        <span class="over-tick" data-over-tick>✔</span>
       </div>
     </div>
-    <div class="over-section">
-      <div class="over-title">Current Over</div>
-      <div class="over-dots" data-current-over></div>
+    <div class="over-row">
+      <div class="over-section">
+        <div class="over-title">Current Over</div>
+        <div class="over-dots" data-current-over></div>
+      </div>
+      <div class="over-section">
+        <div class="over-title">Previous Over</div>
+        <div class="over-dots" data-prev-over></div>
+      </div>
     </div>
-    <div class="over-section">
-      <div class="over-title">Previous Over</div>
-      <div class="over-dots" data-prev-over></div>
-    </div>
+    <div class="run-grid-title">+ Run per ball</div>
     <div class="run-grid" data-run-grid></div>
     <div class="actions">
+      <button data-extra disabled>+ Extra Run</button>
       <button data-wicket disabled>+ Wicket</button>
       <button data-undo disabled>Undo</button>
     </div>
@@ -128,29 +377,37 @@
 
   <div class="team" data-team="B" id="teamBBox">
     <div class="team-header-row">
-      <div class="team-title">Team B</div>
       <input class="team-name-input" id="teamBName" placeholder="Enter Team B Name" disabled />
     </div>
-    <div class="score-row">
-      <div class="runs-display" data-runs>B</div>
-      <div class="net-inline" data-net>Net Score: 0</div>
-    </div>
-    <div class="stats">
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-label">Score</div>
+        <div class="stat-value" data-score-tile>0/0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Net Score</div>
+        <div class="stat-value" data-net-tile>0</div>
+      </div>
       <div class="stat-box">
         <div class="stat-label">Overs</div>
         <div class="stat-value" data-overs>0.0</div>
+        <span class="over-tick" data-over-tick>✔</span>
       </div>
     </div>
-    <div class="over-section">
-      <div class="over-title">Current Over</div>
-      <div class="over-dots" data-current-over></div>
+    <div class="over-row">
+      <div class="over-section">
+        <div class="over-title">Current Over</div>
+        <div class="over-dots" data-current-over></div>
+      </div>
+      <div class="over-section">
+        <div class="over-title">Previous Over</div>
+        <div class="over-dots" data-prev-over></div>
+      </div>
     </div>
-    <div class="over-section">
-      <div class="over-title">Previous Over</div>
-      <div class="over-dots" data-prev-over></div>
-    </div>
+    <div class="run-grid-title">+ Run per ball</div>
     <div class="run-grid" data-run-grid></div>
     <div class="actions">
+      <button data-extra disabled>+ Extra Run</button>
       <button data-wicket disabled>+ Wicket</button>
       <button data-undo disabled>Undo</button>
     </div>
@@ -179,6 +436,9 @@
   <button id="resetAll">Reset Scoreboard</button>
 </div>
 
+<canvas id="confettiCanvas"></canvas>
+<canvas id="fireworksCanvas"></canvas>
+
 <script>
 let matchStarted=false;
 let oversLocked=true;
@@ -188,6 +448,15 @@ let globalOversPerPair=0;
 const soundRun=document.getElementById("soundRun");
 const soundWicket=document.getElementById("soundWicket");
 const soundPairChange=document.getElementById("soundPairChange");
+
+function notify(msg,type="info"){
+  const banner=document.getElementById("notifyBanner");
+  banner.textContent=msg;
+  banner.classList.remove("error");
+  if(type==="error")banner.classList.add("error");
+  banner.classList.add("show");
+  setTimeout(()=>banner.classList.remove("show"),3000);
+}
 
 function createTeamState(){
   return{
@@ -215,14 +484,14 @@ document.getElementById("startMatch").addEventListener("click",()=>{
   document.getElementById("startMatch").disabled=true;
 });
 
-document.getElementById("maxOvers").addEventListener("input",()=>{
+document.getElementById("maxOvers").addEventListener("change",()=>{
   const val=document.getElementById("maxOvers").value;
-  oversLocked=(!val||isNaN(val)||val<=0||val%1!==0);
+  oversLocked=(!val||isNaN(val)||val<=0);
   document.getElementById("arrowOvers").style.display=oversLocked?"inline":"none";
   validateAllInputs();
 });
 
-document.getElementById("playersPerTeam").addEventListener("input",()=>{
+document.getElementById("playersPerTeam").addEventListener("change",()=>{
   const val=document.getElementById("playersPerTeam").value;
   playersLocked=(!val||isNaN(val)||val<=0||val%2!==0);
   document.getElementById("arrowPlayers").style.display=playersLocked?"inline":"none";
@@ -236,7 +505,7 @@ function validateAllInputs(){
   if(!oversLocked&&!playersLocked){
     const pairs=players/2;
     if(maxOvers%pairs!==0){
-      alert("Maximum Overs must be divisible by batting pairs.");
+      notify("Maximum Overs must be divisible by batting pairs","error");
       return;
     }
     globalOversPerPair=maxOvers/pairs;
@@ -248,10 +517,17 @@ function validateAllInputs(){
   }
 }
 
+function teamNamesEntered(){
+  const a=document.getElementById("teamAName").value.trim();
+  const b=document.getElementById("teamBName").value.trim();
+  return a!==""&&b!=="";
+}
+
 function enableTeamControls(){
   document.querySelectorAll(".team-name-input").forEach(el=>el.disabled=false);
   document.querySelectorAll("[data-wicket]").forEach(el=>el.disabled=false);
   document.querySelectorAll("[data-undo]").forEach(el=>el.disabled=false);
+  document.querySelectorAll("[data-extra]").forEach(el=>el.disabled=false);
   document.querySelectorAll(".run-grid button").forEach(el=>el.disabled=false);
 }
 
@@ -262,20 +538,75 @@ function renderOverDots(container,balls){
     dot.classList.add("dot");
     if(balls[i]!==undefined){
       dot.textContent=balls[i];
-      dot.classList.add(balls[i]==="W"?"wicket-dot":"run-dot");
+      if(balls[i]==="W"){
+        dot.classList.add("wicket-dot");
+      }else if(typeof balls[i]==="number"){
+        if(balls[i]>=5){
+          dot.classList.add("big-run-dot");
+        }else if(balls[i]>0){
+          dot.classList.add("run-dot");
+        }
+      }
     }
     container.appendChild(dot);
   }
 }
 
+function pulseStatBox(container){
+  const statBox=container.querySelector(".stat-box");
+  if(!statBox)return;
+  statBox.classList.add("updated");
+  setTimeout(()=>statBox.classList.remove("updated"),250);
+}
+
+function animatePairChange(container){
+  const curr=container.querySelector("[data-current-over]");
+  const prev=container.querySelector("[data-prev-over]");
+  const statBox=container.querySelector(".stat-box");
+  curr.classList.add("pair-change-out");
+  setTimeout(()=>{
+    curr.classList.remove("pair-change-out");
+    prev.classList.add("pair-change-in");
+    setTimeout(()=>{
+      prev.classList.add("show");
+      statBox.classList.add("pair-pulse");
+      setTimeout(()=>statBox.classList.remove("pair-pulse"),600);
+    },50);
+    setTimeout(()=>{
+      prev.classList.remove("pair-change-in");
+      prev.classList.remove("show");
+    },500);
+  },400);
+}
+
+function animateOverTick(container){
+  const tick=container.querySelector("[data-over-tick]");
+  if(!tick)return;
+  tick.classList.add("show");
+  setTimeout(()=>tick.classList.add("fade"),800);
+  setTimeout(()=>tick.classList.remove("show","fade"),1400);
+}
+
+function wicketExplosion(tileEl){
+  tileEl.classList.add("score-shake","wicket-explosion");
+  setTimeout(()=>tileEl.classList.remove("score-shake","wicket-explosion"),500);
+}
+
 function updateTeamUI(teamKey,container){
   const state=teams[teamKey];
-  const runsEl=container.querySelector("[data-runs]");
-  const netEl=container.querySelector("[data-net]");
+
+  if(!state.locked){
+    container.classList.add("active-glow");
+  }else{
+    container.classList.remove("active-glow");
+  }
+
   const oversEl=container.querySelector("[data-overs]");
   const inningsMsg=container.querySelector("[data-innings-msg]");
   const prevOverEl=container.querySelector("[data-prev-over]");
   const currOverEl=container.querySelector("[data-current-over]");
+  const scoreTile=container.querySelector("[data-score-tile]");
+  const netTile=container.querySelector("[data-net-tile]");
 
   const fullOvers=Math.floor(state.balls/6);
   const remainingBalls=state.balls%6;
@@ -283,23 +614,36 @@ function updateTeamUI(teamKey,container){
   oversEl.textContent=fullOvers+"."+remainingBalls;
 
   const net=state.runs-state.wickets*5;
-  runsEl.textContent=`${state.runs}/${state.wickets}`;
-  netEl.textContent=`Net Score: ${net}`;
+  if(scoreTile)scoreTile.textContent=`${state.runs}/${state.wickets}`;
+  if(netTile){
+    netTile.textContent=net;
+    netTile.classList.remove("negative","positive");
+    if(net<0){
+      netTile.classList.add("negative");
+    }else if(net>0){
+      netTile.classList.add("positive");
+    }
+  }
 
   renderOverDots(currOverEl,state.currentOver);
   renderOverDots(prevOverEl,state.previousOver);
+
+  pulseStatBox(container);
 
   const maxOvers=parseInt(document.getElementById("maxOvers").value);
 
   if(matchStarted&&maxOvers&&fullOvers>=maxOvers){
     state.locked=true;
     inningsMsg.textContent="INNINGS OVER";
+    inningsMsg.classList.add("show");
+    setTimeout(()=>container.classList.add("collapsed"),3000);
     if(teamKey==="A"){
       document.getElementById("teamBBox").scrollIntoView({behavior:"smooth"});
     }
     checkWinner();
   }else{
     inningsMsg.textContent="";
+    inningsMsg.classList.remove("show");
   }
 
   if(
@@ -315,13 +659,6 @@ function updateTeamUI(teamKey,container){
     soundPairChange.currentTime=0;
     soundPairChange.play();
 
-    alert(
-      "Batting pair for "+
-      (teamKey==="A"?"Team A":"Team B")+
-      " has completed "+globalOversPerPair+
-      " overs.\nPlease change batting pair."
-    );
-
     state.previousOver=[...state.currentOver];
     state.currentOver=[];
 
@@ -331,6 +668,12 @@ function updateTeamUI(teamKey,container){
 
     renderOverDots(currOverEl,state.currentOver);
     renderOverDots(prevOverEl,state.previousOver);
+
+    animatePairChange(container);
+
+    notify(
+      `Batting pair for ${(teamKey==="A"?"Team A":"Team B")} completed ${globalOversPerPair} overs — change pair now`
+    );
   }
 }
 
@@ -350,7 +693,7 @@ function undo(teamKey,container){
   state.wickets-=h.wickets;
 
   if(h.ballIndex!==undefined){
-    state.currentOver[h.ballIndex]=undefined;
+    state.currentOver[h.ballIndex]=h.prevBallValue;
   }
 
   if(state.pairs.length>0&&h.pairIndex!==undefined){
@@ -399,7 +742,7 @@ function buildSummary(){
     s.pairs.forEach((p,idx)=>{
       const netPair=p.runs-p.wickets*5;
       const line=document.createElement("div");
-      line.textContent=`Pair ${idx+1} — Runs ${p.runs}/W${p.wickets} — Net Score: ${netPair}`;
+      line.textContent=`Pair ${idx+1} — Runs ${p.runs} / W ${p.wickets} — Net Score: ${netPair}`;
       pairSummaryDiv.appendChild(line);
     });
 
@@ -408,7 +751,8 @@ function buildSummary(){
     pairSummaryDiv.appendChild(spacer);
   });
 
-  document.getElementById("summary").style.display="block";
+  const summary=document.getElementById("summary");
+  summary.style.display="block";
 }
 
 function checkWinner(){
@@ -420,11 +764,26 @@ function checkWinner(){
   const winnerEl=document.getElementById("winner");
   winnerEl.style.display="block";
 
-  if(netA>netB)winnerEl.textContent="MATCH OVER — Winner: Team A 🎉";
-  else if(netB>netA)winnerEl.textContent="MATCH OVER — Winner: Team B 🎉";
+  const nameA=document.getElementById("teamAName").value||"Team A";
+  const nameB=document.getElementById("teamBName").value||"Team B";
+
+  if(netA>netB)winnerEl.textContent=`MATCH OVER — Winner: ${nameA} 🎉`;
+  else if(netB>netA)winnerEl.textContent=`MATCH OVER — Winner: ${nameB} 🎉`;
   else winnerEl.textContent="MATCH OVER — Match Tied 🤝";
 
+  winnerEl.classList.add("winner-glow");
+
+  document.querySelectorAll(".team").forEach(t=>{
+    t.classList.add("collapsed");
+    t.classList.remove("active-glow");
+  });
+
   buildSummary();
+
+  setTimeout(()=>{
+    launchConfetti();
+    launchFireworks();
+  },300);
 }
 
 function animateScore(el,type){
@@ -437,9 +796,10 @@ function initTeam(container){
   const runGrid=container.querySelector("[data-run-grid]");
   const wicketBtn=container.querySelector("[data-wicket]");
   const undoBtn=container.querySelector("[data-undo]");
-  const runsEl=container.querySelector("[data-runs]");
+  const extraBtn=container.querySelector("[data-extra]");
+  const scoreTile=container.querySelector("[data-score-tile]");
 
-  for(let v=0;v<=10;v++){
+  for(let v=0;v<=7;v++){
     const btn=document.createElement("button");
     btn.textContent=v;
     btn.disabled=true;
@@ -448,18 +808,21 @@ function initTeam(container){
       const state=teams[teamKey];
 
       if(!matchStarted){
-        alert("Please click Start Match first.");
+        notify("Please click Start Match first","error");
         return;
       }
       if(oversLocked||playersLocked){
-        alert("Please enter valid Maximum Overs and Players first.");
+        notify("Enter valid Maximum Overs and Players","error");
         return;
       }
-      if(state.locked){
+      if(!teamNamesEntered()){
+        notify("Enter both team names before scoring","error");
         return;
       }
+      if(state.locked)return;
 
       const ballIndex=state.balls%6;
+      const prevBallValue=state.currentOver[ballIndex];
 
       state.runs+=v;
       state.balls+=1;
@@ -474,6 +837,12 @@ function initTeam(container){
       if(ballIndex===5){
         state.previousOver=[...state.currentOver];
         state.currentOver=[];
+        animateOverTick(container);
+        const oversTile=container.querySelector("[data-overs]");
+        if(oversTile){
+          oversTile.classList.add("flash-green");
+          setTimeout(()=>oversTile.classList.remove("flash-green"),250);
+        }
       }
 
       pushHistory(teamKey,{
@@ -481,34 +850,87 @@ function initTeam(container){
         balls:1,
         wickets:0,
         ballIndex,
+        prevBallValue,
         pairIndex:state.currentPairIndex
       });
 
       soundRun.currentTime=0;
       soundRun.play();
-      animateScore(runsEl,"runs-flash");
+      animateScore(scoreTile,"flash-green");
       updateTeamUI(teamKey,container);
     });
 
     runGrid.appendChild(btn);
   }
 
+  extraBtn.addEventListener("click",()=>{
+    const state=teams[teamKey];
+
+    if(!matchStarted){
+      notify("Please click Start Match first","error");
+      return;
+    }
+    if(oversLocked||playersLocked){
+      notify("Enter valid Maximum Overs and Players","error");
+      return;
+    }
+    if(!teamNamesEntered()){
+      notify("Enter both team names before scoring","error");
+      return;
+    }
+    if(state.locked)return;
+    if(state.balls===0){
+      notify("Cannot add extra run — no ball bowled yet","error");
+      return;
+    }
+
+    const ballIndex=(state.balls-1)%6;
+    const prevBallValue=state.currentOver[ballIndex];
+
+    state.runs+=1;
+    if(typeof state.currentOver[ballIndex]==="number"){
+      state.currentOver[ballIndex]+=1;
+    }
+
+    if(state.pairs.length>0){
+      const pair=state.pairs[state.currentPairIndex];
+      pair.runs+=1;
+    }
+
+    pushHistory(teamKey,{
+      runs:1,
+      balls:0,
+      wickets:0,
+      ballIndex,
+      prevBallValue,
+      pairIndex:state.currentPairIndex
+    });
+
+    soundRun.currentTime=0;
+    soundRun.play();
+    animateScore(scoreTile,"flash-green");
+    updateTeamUI(teamKey,container);
+  });
+
   wicketBtn.addEventListener("click",()=>{
     const state=teams[teamKey];
 
     if(!matchStarted){
-      alert("Please click Start Match first.");
+      notify("Please click Start Match first","error");
       return;
     }
     if(oversLocked||playersLocked){
-      alert("Please enter valid Maximum Overs and Players first.");
+      notify("Enter valid Maximum Overs and Players","error");
       return;
     }
-    if(state.locked){
+    if(!teamNamesEntered()){
+      notify("Enter both team names before scoring","error");
       return;
     }
+    if(state.locked)return;
 
     const ballIndex=state.balls%6;
+    const prevBallValue=state.currentOver[ballIndex];
 
     state.wickets+=1;
     state.balls+=1;
@@ -523,6 +945,12 @@ function initTeam(container){
     if(ballIndex===5){
       state.previousOver=[...state.currentOver];
       state.currentOver=[];
+      animateOverTick(container);
+      const oversTile=container.querySelector("[data-overs]");
+      if(oversTile){
+        oversTile.classList.add("flash-green");
+        setTimeout(()=>oversTile.classList.remove("flash-green"),250);
+      }
     }
 
     pushHistory(teamKey,{
@@ -530,12 +958,14 @@ function initTeam(container){
       balls:1,
       wickets:1,
       ballIndex,
+      prevBallValue,
       pairIndex:state.currentPairIndex
     });
 
     soundWicket.currentTime=0;
     soundWicket.play();
-    animateScore(runsEl,"wicket-flash");
+    animateScore(scoreTile,"flash-red");
+    wicketExplosion(scoreTile);
     updateTeamUI(teamKey,container);
   });
 
@@ -551,10 +981,15 @@ document.getElementById("resetAll").addEventListener("click",()=>{
   teams.A=createTeamState();
   teams.B=createTeamState();
 
-  document.getElementById("winner").style.display="none";
-  document.getElementById("winner").textContent="";
-  document.getElementById("summary").style.display="none";
+  const winner=document.getElementById("winner");
+  winner.style.display="none";
+  winner.textContent="";
+  winner.classList.remove("winner-glow");
+
+  const summary=document.getElementById("summary");
+  summary.style.display="none";
   document.getElementById("pairSummary").innerHTML="";
+  document.getElementById("summaryBody").innerHTML="";
 
   matchStarted=false;
   oversLocked=true;
@@ -579,12 +1014,138 @@ document.getElementById("resetAll").addEventListener("click",()=>{
   document.querySelectorAll(".run-grid button").forEach(el=>el.disabled=true);
   document.querySelectorAll("[data-wicket]").forEach(el=>el.disabled=true);
   document.querySelectorAll("[data-undo]").forEach(el=>el.disabled=true);
+  document.querySelectorAll("[data-extra]").forEach(el=>el.disabled=true);
 
   document.querySelectorAll(".team").forEach(container=>{
+    container.classList.remove("collapsed","active-glow");
     const key=container.getAttribute("data-team");
     updateTeamUI(key,container);
   });
+
+  const confettiCanvas=document.getElementById("confettiCanvas");
+  const confettiCtx=confettiCanvas.getContext("2d");
+  confettiCtx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+
+  const fwCanvas=document.getElementById("fireworksCanvas");
+  const fwCtx=fwCanvas.getContext("2d");
+  fwCtx.clearRect(0,0,fwCanvas.width,fwCanvas.height);
 });
+
+function launchConfetti(){
+  const canvas=document.getElementById("confettiCanvas");
+  const ctx=canvas.getContext("2d");
+
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+
+  const confettiPieces=[];
+  const colors=["#ffeb3b","#00e5ff","#ff5252","#00c853"];
+
+  for(let i=0;i<180;i++){
+    confettiPieces.push({
+      x:Math.random()*canvas.width,
+      y:Math.random()*-canvas.height,
+      w:6,
+      h:12,
+      color:colors[Math.floor(Math.random()*colors.length)],
+      speed:Math.random()*3+2,
+      rotate:Math.random()*360,
+      rotateSpeed:Math.random()*6-3
+    });
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    confettiPieces.forEach(p=>{
+      ctx.save();
+      ctx.translate(p.x,p.y);
+      ctx.rotate((p.rotate*Math.PI)/180);
+      ctx.fillStyle=p.color;
+      ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      ctx.restore();
+
+      p.y+=p.speed;
+      p.rotate+=p.rotateSpeed;
+
+      if(p.y>canvas.height+20){
+        p.y=-20;
+        p.x=Math.random()*canvas.width;
+      }
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+
+  setTimeout(()=>{
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+  },5000);
+}
+
+function launchFireworks(){
+  const canvas=document.getElementById("fireworksCanvas");
+  const ctx=canvas.getContext("2d");
+
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+
+  const fireworks=[];
+
+  function spawnFirework(){
+    const x=Math.random()*canvas.width;
+    const y=Math.random()*canvas.height*0.5;
+    const colors=["#ffeb3b","#ff5252","#00e5ff","#00c853"];
+
+    for(let i=0;i<40;i++){
+      fireworks.push({
+        x,
+        y,
+        angle:Math.random()*Math.PI*2,
+        speed:Math.random()*4+2,
+        radius:Math.random()*3+2,
+        color:colors[Math.floor(Math.random()*colors.length)],
+        alpha:1
+      });
+    }
+  }
+
+  function hexToRgb(hex){
+    const bigint=parseInt(hex.replace("#",""),16);
+    const r=(bigint>>16)&255;
+    const g=(bigint>>8)&255;
+    const b=bigint&255;
+    return `${r}, ${g}, ${b}`;
+  }
+
+  function drawFireworks(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    fireworks.forEach((p,index)=>{
+      const vx=Math.cos(p.angle)*p.speed;
+      const vy=Math.sin(p.angle)*p.speed;
+
+      p.x+=vx;
+      p.y+=vy;
+      p.alpha-=0.02;
+
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.radius,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${hexToRgb(p.color)}, ${p.alpha})`;
+      ctx.fill();
+
+      if(p.alpha<=0)fireworks.splice(index,1);
+    });
+
+    requestAnimationFrame(drawFireworks);
+  }
+
+  const interval=setInterval(spawnFirework,300);
+  drawFireworks();
+
+  setTimeout(()=>clearInterval(interval),4000);
+}
 </script>
 </body>
 </html>
