@@ -152,14 +152,8 @@
     }
     .team.collapsed .run-grid,
     .team.collapsed .actions,
-    .team.collapsed .over-row,
-    .team.collapsed .run-grid-title,
-    .team.collapsed .over-section{
+    .team.collapsed .run-grid-title{
       display:none!important;
-    }
-    .team.collapsed .stats-row,
-    .team.collapsed [data-innings-msg]{
-      display:flex!important;
     }
 
     .team-header-row{
@@ -169,6 +163,7 @@
       margin-bottom:6px;
       gap:4px;
     }
+
     .team-name-input{
       padding:4px 8px;
       border-radius:4px;
@@ -526,7 +521,6 @@
         <div class="stat-box">
           <div class="stat-label">Overs</div>
           <div class="stat-value" data-overs>0.0</div>
-          <span class="over-tick" data-over-tick>✔</span>
         </div>
       </div>
 
@@ -554,7 +548,7 @@
     </div>
 
     <!-- TEAM B -->
-    <div class="team" data-team="B" id="teamBBox">
+    <div class="team collapsed" data-team="B" id="teamBBox">
 
       <div class="team-header-row">
         <span class="team-arrow" id="teamBArrow">➤</span>
@@ -573,7 +567,6 @@
         <div class="stat-box">
           <div class="stat-label">Overs</div>
           <div class="stat-value" data-overs>0.0</div>
-          <span class="over-tick" data-over-tick>✔</span>
         </div>
       </div>
 
@@ -620,7 +613,6 @@
       </table>
 
       <h3 style="text-align:center;margin-top:6px;font-size:14px;">Pair-by-Pair Summary</h3>
-
       <div id="pairSummary"></div>
 
       <div id="exportDate" style="margin-top:6px;font-size:11px;"></div>
@@ -639,7 +631,7 @@
   <canvas id="fireworksCanvas"></canvas>
   <script>
     /* -----------------------------------------------------------
-       PART 3 — SCORING ENGINE + CORE UI LOGIC (RESTORED)
+       PART 3 — SCORING ENGINE + CORE UI LOGIC (RESTORED + 9 FIXES)
        ----------------------------------------------------------- */
 
     let matchStarted = false;
@@ -792,7 +784,8 @@
       setTimeout(() => {
         curr.classList.remove("pair-change-out");
         prev.classList.add("pair-change-in");
-	prev.parentElement.style.display = "block";
+        prev.parentElement.style.display = "block";
+
         setTimeout(() => {
           prev.classList.add("show");
           if (statBox) {
@@ -806,22 +799,6 @@
           prev.classList.remove("show");
         }, 500);
       }, 400);
-    }
-
-    /* OVER TICK */
-    function animateOverTick(container) {
-      const tick = container.querySelector("[data-over-tick]");
-      if (!tick) return;
-
-      tick.classList.add("show");
-      setTimeout(() => tick.classList.add("fade"), 800);
-      setTimeout(() => tick.classList.remove("show", "fade"), 1400);
-    }
-
-    /* WICKET EXPLOSION */
-    function wicketExplosion(tileEl) {
-      tileEl.classList.add("score-shake", "wicket-explosion");
-      setTimeout(() => tileEl.classList.remove("score-shake", "wicket-explosion"), 500);
     }
 
     /* OVER LAYOUT (FIRST OVER CENTERED) */
@@ -840,6 +817,12 @@
         currSection.style.display = "block";
         currDots.classList.remove("center-only");
       }
+    }
+
+    /* WICKET EXPLOSION */
+    function wicketExplosion(tileEl) {
+      tileEl.classList.add("score-shake", "wicket-explosion");
+      setTimeout(() => tileEl.classList.remove("score-shake", "wicket-explosion"), 500);
     }
 
     /* UPDATE TEAM UI */
@@ -930,17 +913,14 @@
         );
       }
 
-      /* COLLAPSE OTHER TEAM DURING INNINGS */
+      /* COLLAPSE LOGIC */
       if (matchStarted) {
-        // Team B stays collapsed until Team A finishes innings
-      if (!teams.A.locked) {
-      	document.getElementById("teamBBox").classList.add("collapsed");
-      } else {
-	// Team A finished → expand Team B fully
-	document.getElementById("teamBBox").classList.remove("collapsed");
-	document.getElementById("teamBBox").scrollIntoView({ behavior: "smooth" });
-      }
-
+        if (!teams.A.locked) {
+          document.getElementById("teamBBox").classList.add("collapsed");
+        } else {
+          document.getElementById("teamBBox").classList.remove("collapsed");
+          document.getElementById("teamBBox").scrollIntoView({ behavior: "smooth" });
+        }
       }
     }
 
@@ -994,14 +974,13 @@
         const oversText = fullOvers + "." + remainingBalls;
         const net = s.runs - s.wickets * 5;
 
-       const tr = document.createElement("tr");
-       tr.innerHTML = `
-	  <td style="text-align:center;">${name}</td>
-	  <td>${s.runs}/${s.wickets}</td>
-	  <td>${net}</td>
-	  <td>${oversText}</td>
-       `;
-
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td style="text-align:center;">${name}</td>
+          <td>${s.runs}/${s.wickets}</td>
+          <td>${net}</td>
+          <td>${oversText}</td>
+        `;
         tbody.appendChild(tr);
 
         const header = document.createElement("div");
@@ -1010,12 +989,32 @@
         header.textContent = name + ":";
         pairSummaryDiv.appendChild(header);
 
+        const table = document.createElement("table");
+        table.style.width = "100%";
+        table.style.borderCollapse = "collapse";
+
+        const headerRow = document.createElement("tr");
+        headerRow.innerHTML = `
+          <th>Pair</th>
+          <th>Runs/Wkts</th>
+          <th>Net</th>
+          <th>Balls</th>
+        `;
+        table.appendChild(headerRow);
+
         s.pairs.forEach((p, idx) => {
           const netPair = p.runs - p.wickets * 5;
-          const line = document.createElement("div");
-          line.textContent = `Pair ${idx + 1} — Runs ${p.runs} / W ${p.wickets} — Net Score: ${netPair}`;
-          pairSummaryDiv.appendChild(line);
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${idx + 1}</td>
+            <td>${p.runs}/${p.wickets}</td>
+            <td>${netPair}</td>
+            <td>${p.balls}</td>
+          `;
+          table.appendChild(row);
         });
+
+        pairSummaryDiv.appendChild(table);
 
         const spacer = document.createElement("div");
         spacer.style.marginBottom = "4px";
@@ -1026,15 +1025,14 @@
       summary.style.display = "block";
 
       const now = new Date();
-      const dateStr = now.toLocaleString([], { 
-  	year: 'numeric', 
-  	month: '2-digit', 
-	day: '2-digit', 
-	hour: '2-digit', 
-  	minute: '2-digit'
+      const dateStr = now.toLocaleString([], {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
       });
       document.getElementById("exportDate").textContent = "Export date/time: " + dateStr;
-
       document.getElementById("exportBtn").style.display = "block";
     }
 
@@ -1104,6 +1102,11 @@
           if (!teamNamesEntered()) return notify("Enter both team names before scoring", "error");
           if (state.locked) return;
 
+          if (teams.A.balls > 0 || teams.B.balls > 0) {
+            document.getElementById("maxOvers").disabled = true;
+            document.getElementById("playersPerTeam").disabled = true;
+          }
+
           const ballIndex = state.balls % 6;
           const prevBallValue = state.currentOver[ballIndex];
 
@@ -1120,8 +1123,6 @@
           if (ballIndex === 5) {
             state.previousOver = [...state.currentOver];
             state.currentOver = [];
-            animateOverTick(container);
-
             const oversTile = container.querySelector("[data-overs]");
             oversTile.classList.add("flash-green");
             setTimeout(() => oversTile.classList.remove("flash-green"), 250);
@@ -1155,6 +1156,11 @@
         if (!teamNamesEntered()) return notify("Enter both team names before scoring", "error");
         if (state.locked) return;
 
+        if (teams.A.balls > 0 || teams.B.balls > 0) {
+          document.getElementById("maxOvers").disabled = true;
+          document.getElementById("playersPerTeam").disabled = true;
+        }
+
         const ballIndex = state.balls % 6;
         const prevBallValue = state.currentOver[ballIndex];
 
@@ -1171,8 +1177,6 @@
         if (ballIndex === 5) {
           state.previousOver = [...state.currentOver];
           state.currentOver = [];
-          animateOverTick(container);
-
           const oversTile = container.querySelector("[data-overs]");
           oversTile.classList.add("flash-red");
           setTimeout(() => oversTile.classList.remove("flash-red"), 250);
@@ -1203,6 +1207,23 @@
         if (!teamNamesEntered()) return notify("Enter both team names before scoring", "error");
         if (state.locked) return;
 
+        const ballIndex = state.balls % 6;
+
+        if (state.currentOver[ballIndex] === "W") {
+          return notify("Cannot add extra run to a wicket ball", "error");
+        }
+
+        if (teams.A.balls > 0 || teams.B.balls > 0) {
+          document.getElementById("maxOvers").disabled = true;
+          document.getElementById("playersPerTeam").disabled = true;
+        }
+
+        if (state.currentOver[ballIndex] === undefined) {
+          state.currentOver[ballIndex] = 1;
+        } else if (typeof state.currentOver[ballIndex] === "number") {
+          state.currentOver[ballIndex] += 1;
+        }
+
         state.runs += 1;
 
         if (state.pairs.length > 0) {
@@ -1214,6 +1235,8 @@
           runs: 1,
           balls: 0,
           wickets: 0,
+          ballIndex,
+          prevBallValue: state.currentOver[ballIndex],
           pairIndex: state.currentPairIndex
         });
 
@@ -1234,13 +1257,23 @@
 
     /* INIT ALL TEAMS */
     document.querySelectorAll(".team").forEach(initTeam);
-   // Collapse Team B at start (show only name, score, net score, overs)
-   const teamBBox = document.getElementById("teamBBox");
-   teamBBox.classList.add("collapsed");
+
+    /* HIDE ARROWS WHEN TEAM NAME IS ENTERED */
+    document.getElementById("teamAName").addEventListener("input", () => {
+      const val = document.getElementById("teamAName").value.trim();
+      document.getElementById("teamAArrow").style.display = val === "" ? "inline" : "none";
+    });
+
+    document.getElementById("teamBName").addEventListener("input", () => {
+      const val = document.getElementById("teamBName").value.trim();
+      document.getElementById("teamBArrow").style.display = val === "" ? "inline" : "none";
+    });
 
     /* RESET ALL */
     document.getElementById("resetAll").addEventListener("click", () => {
-      window.location.reload();
+      if (confirm("Are you sure you want to reset the scoreboard?")) {
+        window.location.reload();
+      }
     });
   </script>
   <script>
