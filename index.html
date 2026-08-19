@@ -18,7 +18,6 @@
       touch-action:manipulation;
     }
 
-    /* MOBILE PORTRAIT LOCK (desktop/laptop allowed landscape) */
     body.mobile-device { }
 
     @media (orientation:landscape){
@@ -147,14 +146,28 @@
     .team[data-team="B"]{background:#1f1f1f;}
 
     .team.collapsed{
-      max-height:110px;
-      opacity:.9;
-    }
-    .team.collapsed .run-grid,
-    .team.collapsed .actions,
-    .team.collapsed .run-grid-title{
-      display:none!important;
-    }
+  	max-height:170px;
+	opacity:.9;
+	}
+
+	.team.collapsed .run-grid,
+	.team.collapsed .ball-type-actions,
+	.team.collapsed .modifier-actions,
+	.team.collapsed .run-grid-title,
+	.team.collapsed .over-title,
+	.team.collapsed .over-section{
+	  display:none!important;
+	}
+
+	/* Hide everything inside over-wrapper EXCEPT the innings over banner */
+	.team.collapsed .over-wrapper > *:not(.innings-over-banner) {
+	  display:none!important;
+	}
+
+	/* Keep the innings over banner visible */
+	.team.collapsed .innings-over-banner {
+	  display:block!important;
+	}
 
     .team-header-row{
       display:flex;
@@ -283,7 +296,17 @@
       transform:scale(1.05);
       box-shadow:0 0 6px #ff5252;
     }
-
+    .wide-dot{
+      background:#00bcd4;
+      color:#000;
+      box-shadow:0 0 6px #00bcd4;
+    }
+    .nb-dot{
+      background:#ff9800;
+      color:#000;
+      box-shadow:0 0 6px #ff9800;
+    }
+    
     .run-grid-title{
       text-align:center;
       font-size:13px;
@@ -313,15 +336,18 @@
       transition:transform .15s ease,background-color .15s ease,box-shadow .15s ease;
     }
 
-    .actions{
+    .ball-type-actions,
+    .modifier-actions{
       display:flex;
       justify-content:center;
       gap:8px;
-      margin-top:4px;
+      margin-top:6px;
       flex-wrap:wrap;
     }
-    .actions button{
-      flex:1 1 45%;
+
+    .ball-type-actions button,
+    .modifier-actions button{
+      flex:1 1 30%;
       font-size:14px;
       padding:10px 8px;
       border-radius:6px;
@@ -331,7 +357,9 @@
       cursor:pointer;
       min-height:42px;
     }
-    .actions button:hover{
+
+    .ball-type-actions button:hover,
+    .modifier-actions button:hover{
       background:#555;
       transform:scale(1.03);
       box-shadow:0 0 8px rgba(0,229,255,0.6);
@@ -439,21 +467,17 @@
 </head>
 <body>
 
-  <!-- MOBILE PORTRAIT WARNING -->
   <div class="orientation-warning">
     Please rotate your device to portrait mode to use the scoreboard.
   </div>
 
-  <!-- NOTIFICATION BANNER -->
   <div id="notifyBanner"></div>
 
-  <!-- MAIN APP -->
   <div class="app">
 
     <h1>Indoor Cricket Scoreboard</h1>
     <div class="dev-by">Developed by Jignesh</div>
 
-    <!-- AUDIO -->
     <audio id="soundRun">
       <source src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" type="audio/ogg">
     </audio>
@@ -464,7 +488,6 @@
       <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
     </audio>
 
-    <!-- START MATCH + CONFIG -->
     <div class="top-bar">
       <button id="startMatch">Start Match</button>
 
@@ -538,9 +561,14 @@
       <div class="run-grid-title">+ Run per ball</div>
       <div class="run-grid" data-run-grid></div>
 
-      <div class="actions">
+      <div class="ball-type-actions">
+        <button data-wide disabled>WB</button>
+        <button data-noball disabled>NB</button>
+        <button data-wicket disabled>Wicket</button>
+      </div>
+
+      <div class="modifier-actions">
         <button data-extra disabled>+ Extra Run</button>
-        <button data-wicket disabled>+ Wicket</button>
         <button data-undo disabled>Undo</button>
       </div>
 
@@ -584,19 +612,22 @@
       <div class="run-grid-title">+ Run per ball</div>
       <div class="run-grid" data-run-grid></div>
 
-      <div class="actions">
+      <div class="ball-type-actions">
+        <button data-wide disabled>WB</button>
+        <button data-noball disabled>NB</button>
+        <button data-wicket disabled>Wicket</button>
+      </div>
+
+      <div class="modifier-actions">
         <button data-extra disabled>+ Extra Run</button>
-        <button data-wicket disabled>+ Wicket</button>
         <button data-undo disabled>Undo</button>
       </div>
 
       <div class="innings-over" data-innings-msg></div>
     </div>
 
-    <!-- WINNER -->
     <div id="winner" class="winner"></div>
 
-    <!-- SUMMARY -->
     <div id="summary">
       <h2 style="text-align:center;font-size:15px;margin-bottom:6px;">Match Summary</h2>
 
@@ -618,27 +649,22 @@
       <div id="exportDate" style="margin-top:6px;font-size:11px;"></div>
     </div>
 
-    <!-- EXPORT BUTTON -->
     <button id="exportBtn" style="display:none;">Export Match Summary</button>
-
-    <!-- RESET BUTTON -->
     <button id="resetAll">Reset Scoreboard</button>
 
   </div>
 
-  <!-- CONFETTI + FIREWORKS CANVAS -->
   <canvas id="confettiCanvas"></canvas>
   <canvas id="fireworksCanvas"></canvas>
+
   <script>
-    /* -----------------------------------------------------------
-       PART 3 — SCORING ENGINE + CORE UI LOGIC (RESTORED + 9 FIXES)
-       ----------------------------------------------------------- */
+    /* PART 3 — CORE ENGINE + PHASE 2 RULES */
 
     let matchStarted = false;
     let oversLocked = true;
     let playersLocked = true;
     let globalOversPerPair = 0;
-
+    
     const soundRun = document.getElementById("soundRun");
     const soundWicket = document.getElementById("soundWicket");
     const soundPairChange = document.getElementById("soundPairChange");
@@ -646,7 +672,6 @@
     let confettiActive = false;
     let fireworksActive = false;
 
-    /* NOTIFICATION BANNER */
     function notify(msg, type = "info") {
       const banner = document.getElementById("notifyBanner");
       banner.textContent = msg;
@@ -656,7 +681,6 @@
       setTimeout(() => banner.classList.remove("show"), 3000);
     }
 
-    /* TEAM STATE */
     function createTeamState() {
       return {
         runs: 0,
@@ -668,7 +692,7 @@
         previousOver: [],
         lastPairAlertOvers: 0,
         currentPairIndex: 0,
-        pairs: []
+        pairs: [],
       };
     }
 
@@ -677,7 +701,6 @@
       B: createTeamState()
     };
 
-    /* START MATCH */
     document.getElementById("startMatch").addEventListener("click", () => {
       matchStarted = true;
       document.getElementById("maxOvers").disabled = false;
@@ -689,7 +712,6 @@
       document.getElementById("startMatch").disabled = true;
     });
 
-    /* CONFIG INPUTS */
     document.getElementById("maxOvers").addEventListener("change", () => {
       const val = document.getElementById("maxOvers").value;
       oversLocked = (!val || isNaN(val) || val <= 0);
@@ -704,7 +726,6 @@
       validateAllInputs();
     });
 
-    /* VALIDATION */
     function validateAllInputs() {
       const maxOvers = parseInt(document.getElementById("maxOvers").value);
       const players = parseInt(document.getElementById("playersPerTeam").value);
@@ -739,24 +760,33 @@
       document.querySelectorAll("[data-wicket]").forEach(el => el.disabled = false);
       document.querySelectorAll("[data-undo]").forEach(el => el.disabled = false);
       document.querySelectorAll("[data-extra]").forEach(el => el.disabled = false);
+      document.querySelectorAll("[data-wide]").forEach(el => el.disabled = false);
+      document.querySelectorAll("[data-noball]").forEach(el => el.disabled = false);
       document.querySelectorAll(".run-grid button").forEach(el => el.disabled = false);
     }
 
-    /* OVER DOTS */
     function renderOverDots(container, balls) {
       container.innerHTML = "";
       for (let i = 0; i < 6; i++) {
         const dot = document.createElement("div");
         dot.classList.add("dot");
 
-        if (balls[i] !== undefined) {
-          dot.textContent = balls[i];
+        const val = balls[i];
 
-          if (balls[i] === "W") {
+        if (val !== undefined) {
+          dot.textContent = val;
+
+          if (val === "W") {
             dot.classList.add("wicket-dot");
-          } else if (typeof balls[i] === "number") {
-            if (balls[i] >= 5) dot.classList.add("big-run-dot");
-            else if (balls[i] > 0) dot.classList.add("run-dot");
+          } else if (val === "3bw") {
+            dot.classList.add("thirdball-dot");
+          } else if (typeof val === "string" && val.includes("wd")) {
+            dot.classList.add("wide-dot");
+          } else if (typeof val === "string" && val.includes("nb")) {
+            dot.classList.add("nb-dot");
+          } else if (typeof val === "number") {
+            if (val >= 5) dot.classList.add("big-run-dot");
+            else if (val > 0) dot.classList.add("run-dot");
           }
         }
 
@@ -764,7 +794,6 @@
       }
     }
 
-    /* STAT PULSE */
     function pulseStatBox(container) {
       const statBoxes = container.querySelectorAll(".stat-box");
       statBoxes.forEach(statBox => {
@@ -773,7 +802,6 @@
       });
     }
 
-    /* PAIR CHANGE ANIMATION */
     function animatePairChange(container) {
       const curr = container.querySelector("[data-current-over]");
       const prev = container.querySelector("[data-prev-over]");
@@ -801,7 +829,6 @@
       }, 400);
     }
 
-    /* OVER LAYOUT (FIRST OVER CENTERED) */
     function updateOverLayout(teamKey, container, fullOvers) {
       const currDots = container.querySelector("[data-current-over]");
       const prevDots = container.querySelector("[data-prev-over]");
@@ -819,18 +846,13 @@
       }
     }
 
-    /* WICKET EXPLOSION */
     function wicketExplosion(tileEl) {
       tileEl.classList.add("score-shake", "wicket-explosion");
       setTimeout(() => tileEl.classList.remove("score-shake", "wicket-explosion"), 500);
     }
 
-    /* UPDATE TEAM UI */
     function updateTeamUI(teamKey, container) {
       const state = teams[teamKey];
-
-      if (!state.locked) container.classList.add("active-glow");
-      else container.classList.remove("active-glow");
 
       const oversEl = container.querySelector("[data-overs]");
       const inningsMsg = container.querySelector("[data-innings-msg]");
@@ -861,11 +883,11 @@
 
       const maxOvers = parseInt(document.getElementById("maxOvers").value);
 
-      /* INNINGS OVER */
       if (matchStarted && maxOvers && fullOvers >= maxOvers) {
         state.locked = true;
         inningsMsg.textContent = "INNINGS OVER";
         inningsMsg.classList.add("show");
+        state.thirdBallZeroCount = 0;
 
         setTimeout(() => container.classList.add("collapsed"), 2500);
 
@@ -880,7 +902,6 @@
         inningsMsg.classList.remove("show");
       }
 
-      /* PAIR CHANGE */
       if (
         matchStarted &&
         !state.locked &&
@@ -896,6 +917,7 @@
 
         state.previousOver = [...state.currentOver];
         state.currentOver = [];
+        state.thirdBallZeroCount = 0;
 
         if (state.currentPairIndex < state.pairs.length - 1) {
           state.currentPairIndex++;
@@ -913,7 +935,6 @@
         );
       }
 
-      /* COLLAPSE LOGIC */
       if (matchStarted) {
         if (!teams.A.locked) {
           document.getElementById("teamBBox").classList.add("collapsed");
@@ -924,12 +945,10 @@
       }
     }
 
-    /* HISTORY */
     function pushHistory(teamKey, delta) {
       teams[teamKey].history.push(delta);
     }
 
-    /* UNDO */
     function undo(teamKey, container) {
       const state = teams[teamKey];
       if (state.locked) return;
@@ -955,7 +974,6 @@
       updateTeamUI(teamKey, container);
     }
 
-    /* SUMMARY BUILDER */
     function buildSummary() {
       const tbody = document.getElementById("summaryBody");
       const pairSummaryDiv = document.getElementById("pairSummary");
@@ -1036,7 +1054,6 @@
       document.getElementById("exportBtn").style.display = "block";
     }
 
-    /* WINNER LOGIC */
     function checkWinner() {
       if (!teams.A.locked || !teams.B.locked) return;
 
@@ -1073,22 +1090,74 @@
       }, 2500);
     }
 
-    /* SCORE ANIMATION */
     function animateScore(el, type) {
       el.classList.add(type);
       setTimeout(() => el.classList.remove(type), 250);
     }
 
-    /* INITIALISE TEAM */
+    function handleSpecialBall(teamKey, container, type){
+      const state = teams[teamKey];
+
+      if (!matchStarted) return notify("Please click Start Match first", "error");
+      if (oversLocked || playersLocked) return notify("Enter valid Maximum Overs and Players", "error");
+      if (!teamNamesEntered()) return notify("Enter both team names before scoring", "error");
+      if (state.locked) return;
+
+      if (teams.A.balls > 0 || teams.B.balls > 0) {
+        document.getElementById("maxOvers").disabled = true;
+        document.getElementById("playersPerTeam").disabled = true;
+      }
+
+      const ballIndex = state.balls % 6;
+      const prevBallValue = state.currentOver[ballIndex];
+
+      let base = 2;
+
+      state.currentOver[ballIndex] = type === "wd" ? `${base}wd` : `${base}nb`;
+
+      state.runs += base;
+      state.balls += 1;
+
+      if (state.pairs.length > 0){
+        const pair = state.pairs[state.currentPairIndex];
+        pair.runs += base;
+        pair.balls += 1;
+      }
+
+      state.thirdBallZeroCount = 0;
+
+      if (ballIndex === 5){
+        state.previousOver = [...state.currentOver];
+        state.currentOver = [];
+      }
+
+      pushHistory(teamKey, {
+        runs: base,
+        balls: 1,
+        wickets: 0,
+        ballIndex,
+        prevBallValue,
+        pairIndex: state.currentPairIndex
+      });
+
+      soundRun.currentTime = 0;
+      soundRun.play();
+
+      const scoreTile = container.querySelector("[data-score-tile]");
+      animateScore(scoreTile, "flash-green");
+      updateTeamUI(teamKey, container);
+    }
+
     function initTeam(container) {
       const teamKey = container.getAttribute("data-team");
       const runGrid = container.querySelector("[data-run-grid]");
       const wicketBtn = container.querySelector("[data-wicket]");
       const undoBtn = container.querySelector("[data-undo]");
       const extraBtn = container.querySelector("[data-extra]");
+      const wideBtn = container.querySelector("[data-wide]");
+      const nbBtn = container.querySelector("[data-noball]");
       const scoreTile = container.querySelector("[data-score-tile]");
 
-      /* RUN BUTTONS */
       for (let v = 0; v <= 7; v++) {
         const btn = document.createElement("button");
         btn.textContent = v;
@@ -1147,7 +1216,6 @@
         runGrid.appendChild(btn);
       }
 
-      /* WICKET BUTTON */
       wicketBtn.addEventListener("click", () => {
         const state = teams[teamKey];
 
@@ -1167,6 +1235,7 @@
         state.wickets += 1;
         state.balls += 1;
         state.currentOver[ballIndex] = "W";
+        state.thirdBallZeroCount = 0;
 
         if (state.pairs.length > 0) {
           const pair = state.pairs[state.currentPairIndex];
@@ -1198,67 +1267,88 @@
         updateTeamUI(teamKey, container);
       });
 
-      /* EXTRA BUTTON */
-      extraBtn.addEventListener("click", () => {
-        const state = teams[teamKey];
+extraBtn.addEventListener("click", () => {
+  const state = teams[teamKey];
 
-        if (!matchStarted) return notify("Please click Start Match first", "error");
-        if (oversLocked || playersLocked) return notify("Enter valid Maximum Overs and Players", "error");
-        if (!teamNamesEntered()) return notify("Enter both team names before scoring", "error");
-        if (state.locked) return;
+  if (!matchStarted) return notify("Please click Start Match first", "error");
+  if (oversLocked || playersLocked) return notify("Enter valid Maximum Overs and Players", "error");
+  if (!teamNamesEntered()) return notify("Enter both team names before scoring", "error");
+  if (state.locked) return;
 
-        const ballIndex = state.balls % 6;
+  // NEW RULE: block extra run before first ball
+  if (state.balls === 0) {
+    return notify("Cannot add extra run before first ball is bowled", "error");
+  }
 
-        if (state.currentOver[ballIndex] === "W") {
-          return notify("Cannot add extra run to a wicket ball", "error");
-        }
+  // IMPORTANT: use last ball, not next ball
+  const ballIndex = (state.balls - 1) % 6;
 
-        if (teams.A.balls > 0 || teams.B.balls > 0) {
-          document.getElementById("maxOvers").disabled = true;
-          document.getElementById("playersPerTeam").disabled = true;
-        }
+  // Prevent extra run on wicket ball
+  const currentVal = state.currentOver[ballIndex];
+  if (currentVal === "W") {
+    return notify("Cannot add extra run to a wicket ball", "error");
+  }
 
-        if (state.currentOver[ballIndex] === undefined) {
-          state.currentOver[ballIndex] = 1;
-        } else if (typeof state.currentOver[ballIndex] === "number") {
-          state.currentOver[ballIndex] += 1;
-        }
+  // Add extra run to the ball
+  if (currentVal === undefined) {
+    state.currentOver[ballIndex] = 1;
+  } 
+  else if (typeof currentVal === "number") {
+    state.currentOver[ballIndex] = currentVal + 1;
+  }
+  else if (typeof currentVal === "string" && currentVal.includes("wd")) {
+    const n = parseInt(currentVal);
+    state.currentOver[ballIndex] = `${n + 1}wd`;
+  }
+  else if (typeof currentVal === "string" && currentVal.includes("nb")) {
+    const n = parseInt(currentVal);
+    state.currentOver[ballIndex] = `${n + 1}nb`;
+  }
 
-        state.runs += 1;
+  // Add run to team total
+  state.runs += 1;
 
-        if (state.pairs.length > 0) {
-          const pair = state.pairs[state.currentPairIndex];
-          pair.runs += 1;
-        }
+  // Add run to pair
+  if (state.pairs.length > 0) {
+    const pair = state.pairs[state.currentPairIndex];
+    pair.runs += 1;
+  }
 
-        pushHistory(teamKey, {
-          runs: 1,
-          balls: 0,
-          wickets: 0,
-          ballIndex,
-          prevBallValue: state.currentOver[ballIndex],
-          pairIndex: state.currentPairIndex
-        });
+  // History (no new ball)
+  pushHistory(teamKey, {
+    runs: 1,
+    balls: 0,
+    wickets: 0,
+    ballIndex,
+    prevBallValue: currentVal,
+    pairIndex: state.currentPairIndex
+  });
 
-        soundRun.currentTime = 0;
-        soundRun.play();
+  soundRun.currentTime = 0;
+  soundRun.play();
 
-        animateScore(scoreTile, "flash-green");
-        updateTeamUI(teamKey, container);
-      });
+  animateScore(scoreTile, "flash-green");
+  updateTeamUI(teamKey, container);
+});
 
-      /* UNDO BUTTON */
+
       undoBtn.addEventListener("click", () => {
         undo(teamKey, container);
+      });
+
+      wideBtn.addEventListener("click", () => {
+        handleSpecialBall(teamKey, container, "wd");
+      });
+
+      nbBtn.addEventListener("click", () => {
+        handleSpecialBall(teamKey, container, "nb");
       });
 
       updateTeamUI(teamKey, container);
     }
 
-    /* INIT ALL TEAMS */
     document.querySelectorAll(".team").forEach(initTeam);
 
-    /* HIDE ARROWS WHEN TEAM NAME IS ENTERED */
     document.getElementById("teamAName").addEventListener("input", () => {
       const val = document.getElementById("teamAName").value.trim();
       document.getElementById("teamAArrow").style.display = val === "" ? "inline" : "none";
@@ -1269,19 +1359,16 @@
       document.getElementById("teamBArrow").style.display = val === "" ? "inline" : "none";
     });
 
-    /* RESET ALL */
     document.getElementById("resetAll").addEventListener("click", () => {
       if (confirm("Are you sure you want to reset the scoreboard?")) {
         window.location.reload();
       }
     });
   </script>
-  <script>
-    /* -----------------------------------------------------------
-       PART 4 — ANIMATIONS + CONFETTI + FIREWORKS + EXPORT + ORIENTATION
-       ----------------------------------------------------------- */
 
-    /* CONFETTI ENGINE */
+  <script>
+    /* PART 4 — CONFETTI, FIREWORKS, EXPORT, ORIENTATION */
+
     function launchConfetti() {
       const canvas = document.getElementById("confettiCanvas");
       const ctx = canvas.getContext("2d");
@@ -1344,7 +1431,6 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
-    /* FIREWORKS ENGINE */
     function launchFireworks() {
       const canvas = document.getElementById("fireworksCanvas");
       const ctx = canvas.getContext("2d");
@@ -1423,13 +1509,11 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
-    /* STOP CONFETTI & FIREWORKS ON TAP */
     document.addEventListener("click", () => {
       stopConfettiImmediate();
       stopFireworksImmediate();
     });
 
-    /* EXPORT SUMMARY */
     document.getElementById("exportBtn").addEventListener("click", () => {
       const winnerText = document.getElementById("winner").textContent;
       const summaryTable = document.getElementById("summaryBody").innerText;
@@ -1459,7 +1543,6 @@
       URL.revokeObjectURL(url);
     });
 
-    /* MOBILE DEVICE DETECTION (portrait lock only on mobile) */
     const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|Mobile/i.test(navigator.userAgent);
     if (isMobile) {
       document.body.classList.add("mobile-device");
