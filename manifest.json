@@ -1,0 +1,16 @@
+{
+  "name": "Indoor Cricket Scoreboard",
+  "short_name": "Scoreboard",
+  "icons": [
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#111",
+  "theme_color": "#00ffff"
+}
