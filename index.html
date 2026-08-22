@@ -5,6 +5,7 @@
   <title>Indoor Cricket Scoreboard</title>
   <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+  <link rel="icon" href="scoreboard.png" />
 
   <style>
     :root {
@@ -18,7 +19,6 @@
       --button-bg: #444;
       --button-bg-hover: #555;
       --winner-bg: yellow;
-      --font-scale: 1;
     }
 
     [data-theme="light"] {
@@ -43,7 +43,7 @@
       color:var(--text-color);
       overscroll-behavior:none;
       touch-action:manipulation;
-      font-size:calc(16px * var(--font-scale));
+      font-size:16px;
     }
 
     body.mobile-device { }
@@ -75,7 +75,7 @@
       display:none;
       padding:10px;
       max-width:480px;
-      margin:0 auto;
+      margin:0 auto 70px auto;
     }
     .page.active {
       display:block;
@@ -84,7 +84,7 @@
     .app{
       max-width:480px;
       margin:0 auto;
-      padding:10px;
+      padding:10px 10px 80px 10px;
       flex:1;
     }
 
@@ -149,9 +149,7 @@
     .team.collapsed .run-grid,
     .team.collapsed .ball-type-actions,
     .team.collapsed .modifier-actions,
-    .team.collapsed .run-grid-title,
-    .team.collapsed .over-title,
-    .team.collapsed .over-section{
+    .team.collapsed .run-grid-title{
       display:none!important;
     }
 
@@ -226,11 +224,11 @@
 
     .over-row{
       display:flex;
-      justify-content:center;
-      gap:8px;
+      flex-direction:column;
+      gap:6px;
       margin-bottom:8px;
     }
-    .over-section{flex:1;}
+    .over-section{width:100%;}
     .over-title{
       text-align:center;
       font-size:12px;
@@ -240,40 +238,34 @@
     .over-dots{
       display:flex;
       justify-content:center;
-      gap:6px;
-    }
-    .over-dots.center-only{
-      justify-content:center;
+      gap:4px;
     }
     .dot{
-      width:26px;
-      height:26px;
+      width:20px;
+      height:20px;
       border-radius:50%;
       background:#444;
       display:flex;
       justify-content:center;
       align-items:center;
       font-weight:600;
-      font-size:11px;
+      font-size:10px;
       color:#fff;
       border:1px solid #888;
     }
     .run-dot{
       background:#00c853;
       color:#000;
-      transform:scale(1.05);
       box-shadow:0 0 6px #00c853;
     }
     .big-run-dot{
       background:#ffeb3b;
       color:#000;
-      transform:scale(1.05);
       box-shadow:0 0 6px #ffeb3b;
     }
     .wicket-dot{
       background:#ff5252;
       color:#000;
-      transform:scale(1.05);
       box-shadow:0 0 6px #ff5252;
     }
     .wide-dot{
@@ -336,14 +328,6 @@
       border:none;
       cursor:pointer;
       min-height:60px;
-    }
-
-    .ball-type-actions button:hover,
-    .modifier-actions button:hover{
-      background:var(--button-bg-hover);
-      transform:scale(1.03);
-      box-shadow:0 0 8px rgba(0,229,255,0.6);
-      transition:transform .15s ease,background-color .15s ease,box-shadow .15s ease;
     }
 
     .innings-over{
@@ -430,7 +414,7 @@
       background:#222;
       display:flex;
       justify-content:space-around;
-      padding:10px 0;
+      padding:12px 0;
       border-top:1px solid var(--border-color);
       z-index:9999;
     }
@@ -438,9 +422,10 @@
       background:none;
       border:none;
       color:#fff;
-      font-size:14px;
+      font-size:16px;
       font-weight:600;
       cursor:pointer;
+      padding:6px 10px;
     }
     #bottom-nav button.active{
       color:var(--accent);
@@ -468,7 +453,6 @@
       100%{box-shadow:0 0 10px rgba(255,255,0,0.7);transform:scale(1);}
     }
 
-    /* Pair selector overlay */
     #pairSelectorOverlay{
       position:fixed;
       inset:0;
@@ -572,7 +556,6 @@
       </select>
     </div>
 
-    <!-- TEAM A BLOCK -->
     <div style="margin-top:16px;margin-bottom:12px;">
       <input id="homeTeamAName" class="config-input"
              style="width:100%;text-transform:uppercase;text-align:center;"
@@ -582,7 +565,6 @@
       </div>
     </div>
 
-    <!-- TEAM B BLOCK -->
     <div style="margin-top:8px;margin-bottom:12px;">
       <input id="homeTeamBName" class="config-input"
              style="width:100%;text-transform:uppercase;text-align:center;"
@@ -596,8 +578,8 @@
       <label style="font-size:14px;">First batting side:</label>
       <select id="firstBattingSide" class="config-input" style="width:160px;">
         <option value="">--</option>
-        <option value="A">Team A</option>
-        <option value="B">Team B</option>
+        <option value="A">TEAM A</option>
+        <option value="B">TEAM B</option>
       </select>
     </div>
 
@@ -657,12 +639,12 @@
 
       <div class="over-row">
         <div class="over-section">
-          <div class="over-title">Previous Over</div>
-          <div class="over-dots" data-prev-over></div>
+          <div class="over-title">Current Over</div>
+          <div class="over-dots" data-current-over></div>
         </div>
         <div class="over-section">
-          <div class="over-title">Current Over</div>
-          <div class="over-dots center-only" data-current-over></div>
+          <div class="over-title">Previous Over</div>
+          <div class="over-dots" data-prev-over></div>
         </div>
       </div>
 
@@ -670,13 +652,13 @@
       <div class="run-grid" data-run-grid></div>
 
       <div class="ball-type-actions">
-        <button data-wide-nb disabled>WB/NB</button>
-        <button data-wicket disabled>Wicket</button>
+        <button data-wide-nb disabled style="background:#00bcd4;color:#000;">WB/NB</button>
+        <button data-wicket disabled style="background:#ff5252;color:#000;">Wicket</button>
         <button data-undo disabled>Undo</button>
       </div>
 
       <div class="modifier-actions">
-        <!-- Extra run now lives in run-grid as 9th button -->
+        <!-- Extra run is in run-grid -->
       </div>
 
       <div class="innings-over" data-innings-msg></div>
@@ -706,12 +688,12 @@
 
       <div class="over-row">
         <div class="over-section">
-          <div class="over-title">Previous Over</div>
-          <div class="over-dots" data-prev-over></div>
+          <div class="over-title">Current Over</div>
+          <div class="over-dots" data-current-over></div>
         </div>
         <div class="over-section">
-          <div class="over-title">Current Over</div>
-          <div class="over-dots center-only" data-current-over></div>
+          <div class="over-title">Previous Over</div>
+          <div class="over-dots" data-prev-over></div>
         </div>
       </div>
 
@@ -719,13 +701,13 @@
       <div class="run-grid" data-run-grid></div>
 
       <div class="ball-type-actions">
-        <button data-wide-nb disabled>WB/NB</button>
-        <button data-wicket disabled>Wicket</button>
+        <button data-wide-nb disabled style="background:#00bcd4;color:#000;">WB/NB</button>
+        <button data-wicket disabled style="background:#ff5252;color:#000;">Wicket</button>
         <button data-undo disabled>Undo</button>
       </div>
 
       <div class="modifier-actions">
-        <!-- Extra run now lives in run-grid as 9th button -->
+        <!-- Extra run is in run-grid -->
       </div>
 
       <div class="innings-over" data-innings-msg></div>
@@ -789,15 +771,21 @@
     </div>
 
     <div style="margin-bottom:16px;">
-      <strong>Font size:</strong>
+      <strong>Sound effects:</strong>
       <div style="margin-top:8px;">
-        <input type="range" id="fontSizeSlider" min="-1.5" max="1.5" step="0.1" value="0" style="width:100%;">
-        <div id="fontSizeLabel" style="margin-top:4px;font-size:12px;">Font scale: 1.0x</div>
+        <label style="margin-right:12px;">
+          <input type="checkbox" id="soundToggle" checked> Enable sounds
+        </label>
       </div>
     </div>
 
-    <div style="margin-top:20px;text-align:center;font-size:13px;opacity:.7;">
-      App is designed to work offline when saved locally (static HTML/JS).
+    <div style="margin-bottom:16px;">
+      <strong>Celebrations:</strong>
+      <div style="margin-top:8px;">
+        <label style="margin-right:12px;">
+          <input type="checkbox" id="celebrationToggle" checked> Confetti & fireworks on result
+        </label>
+      </div>
     </div>
   </div>
 
@@ -835,8 +823,6 @@
   </div>
 </div>
 <script>
-/* PART 3 — CORE ENGINE + PAIR LOGIC + BUTTONS */
-
 let matchStarted = false;
 let oversLocked = true;
 let playersLocked = true;
@@ -849,15 +835,11 @@ const soundPairChange = document.getElementById("soundPairChange");
 
 let confettiActive = false;
 let fireworksActive = false;
+let soundEnabled = true;
+let celebrationEnabled = true;
 
-const teamPlayers = {
-  A: [],
-  B: []
-};
-const teamUsedPlayers = {
-  A: new Set(),
-  B: new Set()
-};
+const teamPlayers = { A: [], B: [] };
+const teamUsedPlayers = { A: new Set(), B: new Set() };
 
 let pairSelectorContext = null;
 
@@ -888,12 +870,11 @@ function createTeamState() {
   };
 }
 
-const teams = {
+let teams = {
   A: createTeamState(),
   B: createTeamState()
 };
 
-/* DYNAMIC PLAYER FIELD GENERATION */
 function renderPlayerFields() {
   const count = parseInt(document.getElementById("playersPerTeam").value);
   const teamA = document.getElementById("teamAPlayersContainer");
@@ -909,13 +890,11 @@ function renderPlayerFields() {
     teamB.innerHTML += `<input id="teamBPlayer${i}" class="config-input" placeholder="Player ${i}">`;
   }
 }
-
 document.getElementById("playersPerTeam").addEventListener("change", renderPlayerFields);
 
-/* Update first batting side dropdown labels from team names */
 function updateBattingSideLabels() {
-  const aName = document.getElementById("homeTeamAName").value.trim() || "Team A";
-  const bName = document.getElementById("homeTeamBName").value.trim() || "Team B";
+  const aName = (document.getElementById("homeTeamAName").value.trim() || "TEAM A").toUpperCase();
+  const bName = (document.getElementById("homeTeamBName").value.trim() || "TEAM B").toUpperCase();
   const select = document.getElementById("firstBattingSide");
   const options = select.querySelectorAll("option");
   options.forEach(opt => {
@@ -923,7 +902,6 @@ function updateBattingSideLabels() {
     if (opt.value === "B") opt.textContent = bName;
   });
 }
-
 document.getElementById("homeTeamAName").addEventListener("input", updateBattingSideLabels);
 document.getElementById("homeTeamBName").addEventListener("input", updateBattingSideLabels);
 
@@ -1032,27 +1010,6 @@ function pulseStatBox(container) {
   });
 }
 
-function updateOverLayout(container, fullOvers) {
-  const currDots = container.querySelector("[data-current-over]");
-  const prevDots = container.querySelector("[data-prev-over]");
-  const prevSection = prevDots.parentElement;
-  const currSection = currDots.parentElement;
-
-  prevSection.style.display = "block";
-  currSection.style.display = "block";
-
-  if (fullOvers === 0) {
-    currDots.classList.add("center-only");
-  } else {
-    currDots.classList.remove("center-only");
-  }
-}
-
-function wicketExplosion(tileEl) {
-  tileEl.classList.add("score-shake", "wicket-explosion");
-  setTimeout(() => tileEl.classList.remove("score-shake", "wicket-explosion"), 500);
-}
-
 function updateTeamUI(teamKey, container) {
   const state = teams[teamKey];
 
@@ -1062,6 +1019,7 @@ function updateTeamUI(teamKey, container) {
   const currOverEl = container.querySelector("[data-current-over]");
   const scoreTile = container.querySelector("[data-score-tile]");
   const netTile = container.querySelector("[data-net-tile]");
+  const overRow = container.querySelector(".over-row");
 
   const fullOvers = Math.floor(state.balls / 6);
   const remainingBalls = state.balls % 6;
@@ -1085,7 +1043,6 @@ function updateTeamUI(teamKey, container) {
   renderOverDots(currOverEl, state.currentOver);
   renderOverDots(prevOverEl, state.previousOver);
 
-  updateOverLayout(container, fullOvers);
   pulseStatBox(container);
 
   if (matchStarted && maxOvers && fullOvers >= maxOvers) {
@@ -1093,6 +1050,8 @@ function updateTeamUI(teamKey, container) {
     inningsMsg.textContent = "INNINGS OVER";
     inningsMsg.classList.add("show");
     state.thirdBallZeroCount = 0;
+
+    if (overRow) overRow.style.display = "none";
 
     setTimeout(() => container.classList.add("collapsed"), 2500);
 
@@ -1107,6 +1066,7 @@ function updateTeamUI(teamKey, container) {
   } else {
     inningsMsg.textContent = "";
     inningsMsg.classList.remove("show");
+    if (overRow) overRow.style.display = "flex";
   }
 
   const thresholds = state.pairOversThresholds || [];
@@ -1120,8 +1080,10 @@ function updateTeamUI(teamKey, container) {
     if (fullOvers >= currentThreshold && state.lastPairAlertOvers !== fullOvers) {
       state.lastPairAlertOvers = fullOvers;
 
-      soundPairChange.currentTime = 0;
-      soundPairChange.play();
+      if (soundEnabled) {
+        soundPairChange.currentTime = 0;
+        soundPairChange.play();
+      }
 
       state.previousOver = [...state.currentOver];
       state.currentOver = [];
@@ -1129,17 +1091,11 @@ function updateTeamUI(teamKey, container) {
 
       if (state.currentPairIndex < state.pairs.length - 1) {
         state.currentPairIndex++;
-        promptPairPlayers(teamKey, state.currentPairIndex);
+        promptPairPlayers(teamKey, state.currentPairIndex, true);
       }
 
       renderOverDots(currOverEl, state.currentOver);
       renderOverDots(prevOverEl, state.previousOver);
-
-      notify(
-        `Batting pair for ${
-          teamKey === "A" ? "Team A" : "Team B"
-        } completed allocated overs — change pair now`
-      );
     }
   }
 }
@@ -1173,15 +1129,16 @@ function undo(teamKey, container) {
   updateTeamUI(teamKey, container);
 }
 
-/* PAIR SELECTOR UI */
-function openPairSelector(teamKey, pairIndex) {
+function openPairSelector(teamKey, pairIndex, fromChange = false) {
   const overlay = document.getElementById("pairSelectorOverlay");
   const title = document.getElementById("pairSelectorTitle");
   const list = document.getElementById("pairSelectorPlayers");
   const confirmBtn = document.getElementById("pairSelectorConfirm");
 
-  const teamLabel = teamKey === "A" ? (document.getElementById("teamAName").value || "Team A") : (document.getElementById("teamBName").value || "Team B");
-  title.textContent = `Select batting pair for ${teamLabel.toUpperCase()} (Pair ${pairIndex + 1})`;
+  const teamLabel = teamKey === "A" ? (document.getElementById("teamAName").value || "TEAM A") : (document.getElementById("teamBName").value || "TEAM B");
+  const baseText = `Select batting pair for ${teamLabel.toUpperCase()} (Pair ${pairIndex + 1})`;
+  const extraText = fromChange ? " — previous pair completed their overs." : "";
+  title.textContent = baseText + extraText;
 
   list.innerHTML = "";
   const players = teamPlayers[teamKey] || [];
@@ -1196,12 +1153,13 @@ function openPairSelector(teamKey, pairIndex) {
     btn.dataset.index = idx;
     btn.addEventListener("click", () => {
       const selected = list.querySelectorAll(".pair-player-btn.selected");
-      if (!btn.classList.contains("selected") && selected.length >= 2) {
-        return; // do not allow more than 2
+      const maxSelect = available.length === 1 ? 1 : 2;
+      if (!btn.classList.contains("selected") && selected.length >= maxSelect) {
+        return;
       }
       btn.classList.toggle("selected");
       const selectedNow = list.querySelectorAll(".pair-player-btn.selected");
-      confirmBtn.disabled = !(selectedNow.length === 2);
+      confirmBtn.disabled = !(selectedNow.length === maxSelect);
     });
     list.appendChild(btn);
   });
@@ -1226,25 +1184,28 @@ document.getElementById("pairSelectorConfirm").addEventListener("click", () => {
   const { teamKey, pairIndex } = pairSelectorContext;
   const list = document.getElementById("pairSelectorPlayers");
   const selected = Array.from(list.querySelectorAll(".pair-player-btn.selected"));
-  if (selected.length !== 2) return;
+  if (selected.length === 0) return;
 
   const p1 = selected[0].textContent;
-  const p2 = selected[1].textContent;
+  const p2 = selected[1] ? selected[1].textContent : null;
 
   if (!teams[teamKey].pairs[pairIndex]) return;
-  teams[teamKey].pairs[pairIndex].players = [p1, p2];
+  teams[teamKey].pairs[pairIndex].players = p2 ? [p1, p2] : [p1, ""];
 
   teamUsedPlayers[teamKey].add(p1);
-  teamUsedPlayers[teamKey].add(p2);
+  if (p2) teamUsedPlayers[teamKey].add(p2);
 
   teams[teamKey].pairSelectionActive = false;
 
   document.getElementById("pairSelectorOverlay").style.display = "none";
   pairSelectorContext = null;
+
+  const container = teamKey === "A" ? document.getElementById("teamABox") : document.getElementById("teamBBox");
+  updateTeamUI(teamKey, container);
 });
 
-function promptPairPlayers(teamKey, pairIndex) {
-  openPairSelector(teamKey, pairIndex);
+function promptPairPlayers(teamKey, pairIndex, fromChange = false) {
+  openPairSelector(teamKey, pairIndex, fromChange);
 }
 
 function buildSummary() {
@@ -1360,10 +1321,12 @@ function checkWinner() {
     showPage("result");
   }, 1000);
 
-  setTimeout(() => {
-    launchConfetti();
-    launchFireworks();
-  }, 300);
+  if (celebrationEnabled) {
+    setTimeout(() => {
+      launchConfetti();
+      launchFireworks();
+    }, 300);
+  }
 }
 
 function animateScore(el, type) {
@@ -1416,8 +1379,10 @@ function handleSpecialBall(teamKey, container){
     pairIndex: state.currentPairIndex
   });
 
-  soundRun.currentTime = 0;
-  soundRun.play();
+  if (soundEnabled) {
+    soundRun.currentTime = 0;
+    soundRun.play();
+  }
 
   const scoreTile = container.querySelector("[data-score-tile]");
   animateScore(scoreTile, "flash-green");
@@ -1432,7 +1397,6 @@ function initTeam(container) {
   const wideNbBtn = container.querySelector("[data-wide-nb]");
   const scoreTile = container.querySelector("[data-score-tile]");
 
-  // 0-7 run buttons + 9th "+Extra Run" button
   for (let v = 0; v <= 7; v++) {
     const btn = document.createElement("button");
     btn.textContent = v;
@@ -1482,8 +1446,10 @@ function initTeam(container) {
         pairIndex: state.currentPairIndex
       });
 
-      soundRun.currentTime = 0;
-      soundRun.play();
+      if (soundEnabled) {
+        soundRun.currentTime = 0;
+        soundRun.play();
+      }
 
       animateScore(scoreTile, "flash-green");
       updateTeamUI(teamKey, container);
@@ -1492,9 +1458,8 @@ function initTeam(container) {
     runGrid.appendChild(btn);
   }
 
-  // 9th button: +Extra Run (placed after 0-7, grid makes it under 5 and next to 7)
   const extraBtnGrid = document.createElement("button");
-  extraBtnGrid.textContent = "+EX";
+  extraBtnGrid.textContent = "+ExRun";
   extraBtnGrid.disabled = true;
   extraBtnGrid.addEventListener("click", () => {
     const state = teams[teamKey];
@@ -1547,8 +1512,10 @@ function initTeam(container) {
       pairIndex: state.currentPairIndex
     });
 
-    soundRun.currentTime = 0;
-    soundRun.play();
+    if (soundEnabled) {
+      soundRun.currentTime = 0;
+      soundRun.play();
+    }
 
     animateScore(scoreTile, "flash-green");
     updateTeamUI(teamKey, container);
@@ -1600,10 +1567,15 @@ function initTeam(container) {
       pairIndex: state.currentPairIndex
     });
 
-    soundWicket.currentTime = 0;
-    soundWicket.play();
+    if (soundEnabled) {
+      soundWicket.currentTime = 0;
+      soundWicket.play();
+    }
 
-    wicketExplosion(scoreTile);
+    const scoreTileLocal = container.querySelector("[data-score-tile]");
+    scoreTileLocal.classList.add("flash-red");
+    setTimeout(() => scoreTileLocal.classList.remove("flash-red"), 250);
+
     updateTeamUI(teamKey, container);
   });
 
@@ -1624,10 +1596,11 @@ function initTeam(container) {
 
 document.querySelectorAll(".team").forEach(initTeam);
 
-/* RESET SCOREBOARD WITH OPTION TO RETAIN HOME ENTRIES */
 function resetMatchStateRetainHome() {
-  teams.A = createTeamState();
-  teams.B = createTeamState();
+  teams = {
+    A: createTeamState(),
+    B: createTeamState()
+  };
   teamUsedPlayers.A = new Set();
   teamUsedPlayers.B = new Set();
 
@@ -1656,6 +1629,7 @@ function resetMatchStateRetainHome() {
     const prevOverEl = container.querySelector("[data-prev-over]");
     const currOverEl = container.querySelector("[data-current-over]");
     const inningsMsg = container.querySelector("[data-innings-msg]");
+    const overRow = container.querySelector(".over-row");
 
     scoreTile.textContent = "0/0";
     netTile.textContent = "0";
@@ -1665,6 +1639,7 @@ function resetMatchStateRetainHome() {
     currOverEl.innerHTML = "";
     inningsMsg.textContent = "";
     inningsMsg.classList.remove("show");
+    if (overRow) overRow.style.display = "flex";
     container.classList.remove("collapsed");
   });
 
@@ -1693,8 +1668,6 @@ document.getElementById("resetAll").addEventListener("click", () => {
 });
 </script>
 <script>
-/* PART 4 — CONFETTI, FIREWORKS, EXPORT, NAV, START MATCH, SETTINGS, OFFLINE */
-
 function launchConfetti() {
   const canvas = document.getElementById("confettiCanvas");
   const ctx = canvas.getContext("2d");
@@ -1835,11 +1808,6 @@ function stopFireworksImmediate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
-document.addEventListener("click", () => {
-  stopConfettiImmediate();
-  stopFireworksImmediate();
-});
-
 document.getElementById("exportBtn").addEventListener("click", () => {
   const winnerText = document.getElementById("winner").textContent;
   const summaryTable = document.getElementById("summaryBody").innerText;
@@ -1874,7 +1842,6 @@ if (isMobile) {
   document.body.classList.add("mobile-device");
 }
 
-/* PAGE NAVIGATION ENGINE */
 const pages = {
   home: document.getElementById("page-home"),
   match: document.getElementById("page-match"),
@@ -1898,9 +1865,7 @@ document.querySelectorAll("#bottom-nav button").forEach(btn => {
   });
 });
 
-/* START MATCH LOGIC */
 document.getElementById("startMatchBtn").addEventListener("click", () => {
-  // Reset scoreboard state when starting a new match (retaining Home entries)
   resetMatchStateRetainHome();
 
   const maxOvers = document.getElementById("maxOvers").value;
@@ -1942,8 +1907,8 @@ document.getElementById("startMatchBtn").addEventListener("click", () => {
     if (b) b.disabled = true;
   }
 
-  document.getElementById("teamAName").value = teamA;
-  document.getElementById("teamBName").value = teamB;
+  document.getElementById("teamAName").value = teamA.toUpperCase();
+  document.getElementById("teamBName").value = teamB.toUpperCase();
 
   matchStarted = true;
 
@@ -1954,6 +1919,13 @@ document.getElementById("startMatchBtn").addEventListener("click", () => {
     el.textContent = `0.0/${maxOversNum}`;
   });
 
+  document.querySelectorAll(".team").forEach(container => {
+    const currOverEl = container.querySelector("[data-current-over]");
+    const prevOverEl = container.querySelector("[data-prev-over]");
+    renderOverDots(currOverEl, []);
+    renderOverDots(prevOverEl, []);
+  });
+
   if (firstBattingSide === "A") {
     document.getElementById("teamABox").classList.remove("collapsed");
     document.getElementById("teamBBox").classList.add("collapsed");
@@ -1962,12 +1934,11 @@ document.getElementById("startMatchBtn").addEventListener("click", () => {
     document.getElementById("teamBBox").classList.remove("collapsed");
   }
 
-  promptPairPlayers(firstBattingSide, 0);
+  promptPairPlayers(firstBattingSide, 0, false);
 
   showPage("match");
 });
 
-/* SETTINGS: THEME + FONT SIZE */
 document.querySelectorAll('input[name="theme"]').forEach(radio => {
   radio.addEventListener("change", () => {
     const val = radio.value;
@@ -1975,22 +1946,13 @@ document.querySelectorAll('input[name="theme"]').forEach(radio => {
   });
 });
 
-const fontSlider = document.getElementById("fontSizeSlider");
-const fontLabel = document.getElementById("fontSizeLabel");
-
-fontSlider.addEventListener("input", () => {
-  const delta = parseFloat(fontSlider.value);
-  const scale = 1 + delta;
-  document.documentElement.style.setProperty("--font-scale", scale.toFixed(2));
-  fontLabel.textContent = `Font scale: ${scale.toFixed(2)}x`;
+document.getElementById("soundToggle").addEventListener("change", (e) => {
+  soundEnabled = e.target.checked;
 });
 
-/* OFFLINE HOOK */
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
-  });
-}
+document.getElementById("celebrationToggle").addEventListener("change", (e) => {
+  celebrationEnabled = e.target.checked;
+});
 </script>
 
 </body>
