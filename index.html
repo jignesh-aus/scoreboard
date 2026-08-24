@@ -563,6 +563,33 @@
     .innings-content.active{
       display:block;
     }
+
+    /* Match page innings tabs */
+    .match-innings-tabs{
+      display:flex;
+      justify-content:space-around;
+      margin-bottom:10px;
+      background:#1c1f26;
+      padding:6px;
+      border-radius:8px;
+    }
+    .match-innings-tab{
+      flex:1;
+      text-align:center;
+      padding:8px;
+      cursor:pointer;
+      font-weight:600;
+      border-radius:6px;
+      color:#fff;
+    }
+    .match-innings-tab.active{
+      background:var(--accent);
+      color:#000;
+    }
+    .match-innings-tab.disabled{
+      opacity:.4;
+      cursor:not-allowed;
+    }
   </style>
 </head>
 <body data-theme="dark">
@@ -654,78 +681,121 @@
     <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
   </audio>
 
-  <div id="teamABox" class="team a" data-team="A">
-    <div class="team-header-row">
-      <input class="team-name-input" id="teamAName" disabled />
-    </div>
+  <div class="match-innings-tabs">
+    <div class="match-innings-tab active" data-match-innings-tab="1">First Innings</div>
+    <div class="match-innings-tab disabled" data-match-innings-tab="2">Second Innings</div>
+  </div>
 
-    <div class="stats-row">
-      <div class="stat-box">
-        <div class="stat-label">Score</div>
-        <div class="stat-value" data-score-tile>0/0</div>
+  <div id="matchInnings1" class="innings-content active">
+    <div id="teamABox" class="team a" data-team="A">
+      <div class="team-header-row">
+        <input class="team-name-input" id="teamAName" disabled />
       </div>
-      <div class="stat-box">
-        <div class="stat-label">Net Score</div>
-        <div class="stat-value" data-net-tile>0</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Overs</div>
-        <div class="stat-value" data-overs>0.0/--</div>
-      </div>
-    </div>
 
-    <div class="over-layout">
-      <div class="over-left">
-        <div id="targetTile" style="display:none;">
-          <div class="over-title">Target</div>
-          <div id="targetValue" style="font-size:16px;font-weight:700;">0</div>
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-label">Score</div>
+          <div class="stat-value" data-score-tile>0/0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Net Score</div>
+          <div class="stat-value" data-net-tile>0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Overs</div>
+          <div class="stat-value" data-overs>0.0/--</div>
         </div>
       </div>
-      <div class="over-center">
-        <div class="over-block">
-          <div class="over-title">Current Over</div>
-          <div class="over-dots" data-current-over></div>
+
+      <div class="over-layout">
+        <div class="over-left">
+          <div id="targetTile" style="display:none;">
+            <div class="over-title">Target</div>
+            <div id="targetValue" style="font-size:16px;font-weight:700;">0</div>
+          </div>
         </div>
-        <div class="over-block">
-          <div class="over-title">Previous Over</div>
-          <div class="over-dots" data-prev-over></div>
+        <div class="over-center">
+          <div class="over-block">
+            <div class="over-title">Current Over</div>
+            <div class="over-dots" data-current-over></div>
+          </div>
+          <div class="over-block">
+            <div class="over-title">Previous Over</div>
+            <div class="over-dots" data-prev-over></div>
+          </div>
+        </div>
+        <div class="over-right">
+          <div id="rrTile" style="display:none;">
+            <div class="over-title">Req. RR</div>
+            <div id="rrValue" style="font-size:16px;font-weight:700;">0.00</div>
+          </div>
         </div>
       </div>
-      <div class="over-right">
-        <div id="rrTile" style="display:none;">
-          <div class="over-title">Req. RR</div>
-          <div id="rrValue" style="font-size:16px;font-weight:700;">0.00</div>
-        </div>
+
+      <div class="run-grid-title">Ball outcomes</div>
+      <div class="run-grid" data-run-grid></div>
+
+      <div class="ball-type-actions">
+        <button data-wide-nb style="background:#00bcd4;color:#000;">WB/NB</button>
+        <button data-wicket style="background:#ff5252;color:#000;">Wicket</button>
+        <button data-undo>Undo</button>
       </div>
-    </div>
-
-    <div class="run-grid-title">Ball outcomes</div>
-    <div class="run-grid" data-run-grid></div>
-
-    <div class="ball-type-actions">
-      <button data-wide-nb style="background:#00bcd4;color:#000;">WB/NB</button>
-      <button data-wicket style="background:#ff5252;color:#000;">Wicket</button>
-      <button data-undo>Undo</button>
     </div>
   </div>
 
-  <div id="teamBBox" class="team b" data-team="B" style="display:none;">
-    <div class="team-header-row">
-      <input class="team-name-input" id="teamBName" disabled />
-    </div>
+  <div id="matchInnings2" class="innings-content">
+    <div id="teamBBox" class="team b" data-team="B">
+      <div class="team-header-row">
+        <input class="team-name-input" id="teamBName" disabled />
+      </div>
 
-    <div class="stats-row">
-      <div class="stat-box">
-        <div class="stat-label">Score</div>
-        <div class="stat-value" data-score-tile>0/0</div>
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-label">Score</div>
+          <div class="stat-value" data-score-tile>0/0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Net Score</div>
+          <div class="stat-value" data-net-tile>0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Overs</div>
+          <div class="stat-value" data-overs>0.0/--</div>
+        </div>
       </div>
-      <div class="stat-box">
-        <div class="stat-label">Net Score</div>
-        <div class="stat-value" data-net-tile>0</div>
+
+      <div class="over-layout">
+        <div class="over-left">
+          <div id="targetTile2">
+            <div class="over-title">Target</div>
+            <div id="targetValue2" style="font-size:16px;font-weight:700;">0</div>
+          </div>
+        </div>
+        <div class="over-center">
+          <div class="over-block">
+            <div class="over-title">Current Over</div>
+            <div class="over-dots" data-current-over></div>
+          </div>
+          <div class="over-block">
+            <div class="over-title">Previous Over</div>
+            <div class="over-dots" data-prev-over></div>
+          </div>
+        </div>
+        <div class="over-right">
+          <div id="rrTile2">
+            <div class="over-title">Req. RR</div>
+            <div id="rrValue2" style="font-size:16px;font-weight:700;">0.00</div>
+          </div>
+        </div>
       </div>
-      <div class="stat-box">
-        <div class="stat-label">Overs</div>
-        <div class="stat-value" data-overs>0.0/--</div>
+
+      <div class="run-grid-title">Ball outcomes</div>
+      <div class="run-grid" data-run-grid></div>
+
+      <div class="ball-type-actions">
+        <button data-wide-nb style="background:#00bcd4;color:#000;">WB/NB</button>
+        <button data-wicket style="background:#ff5252;color:#000;">Wicket</button>
+        <button data-undo>Undo</button>
       </div>
     </div>
   </div>
@@ -1113,9 +1183,6 @@ function startMatch() {
   document.getElementById("teamAName").value = aName;
   document.getElementById("teamBName").value = bName;
 
-  document.getElementById("teamABox").style.display = battingTeam === "A" ? "block" : "none";
-  document.getElementById("teamBBox").style.display = battingTeam === "B" ? "block" : "none";
-
   matchStarted = true;
   showPage("match");
 
@@ -1132,6 +1199,7 @@ function startMatch() {
 
   initRunGrid();
   disableScoringButtons();
+  setMatchInningsTab(1);
   openCombinedSelector(true, true, "start");
 }
 
@@ -1159,9 +1227,9 @@ function initRunGrid() {
     });
   });
 
-  document.querySelectorAll("[data-wide-nb]").forEach(btn => btn.addEventListener("click", addWideNoBall));
-  document.querySelectorAll("[data-wicket]").forEach(btn => btn.addEventListener("click", addWicket));
-  document.querySelectorAll("[data-undo]").forEach(btn => btn.addEventListener("click", undoLast));
+  document.querySelectorAll("[data-wide-nb]").forEach(btn => btn.onclick = addWideNoBall);
+  document.querySelectorAll("[data-wicket]").forEach(btn => btn.onclick = addWicket);
+  document.querySelectorAll("[data-undo]").forEach(btn => btn.onclick = undoLast);
 }
 
 /* ENABLE/DISABLE SCORING BUTTONS */
@@ -1177,6 +1245,33 @@ function disableScoringButtons() {
   document.querySelectorAll("[data-wicket]").forEach(b => b.disabled = true);
   document.querySelectorAll("[data-undo]").forEach(b => b.disabled = true);
 }
+
+/* MATCH INNINGS TABS */
+function setMatchInningsTab(innings) {
+  document.querySelectorAll(".match-innings-tab").forEach(tab => {
+    tab.classList.remove("active");
+  });
+  const tab1 = document.querySelector('.match-innings-tab[data-match-innings-tab="1"]');
+  const tab2 = document.querySelector('.match-innings-tab[data-match-innings-tab="2"]');
+
+  if (innings === 1) {
+    tab1.classList.add("active");
+  } else {
+    tab2.classList.remove("disabled");
+    tab2.classList.add("active");
+  }
+
+  document.getElementById("matchInnings1").classList.toggle("active", innings === 1);
+  document.getElementById("matchInnings2").classList.toggle("active", innings === 2);
+}
+
+document.querySelectorAll(".match-innings-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    const innings = parseInt(tab.dataset.matchInningsTab);
+    if (innings === 2 && currentInnings === 1) return;
+    setMatchInningsTab(innings);
+  });
+});
 
 /* COMBINED SELECTOR */
 let combinedNeedPair = false;
@@ -1538,13 +1633,13 @@ function updateOverTiles() {
     prevOverDots.appendChild(d);
   });
 
-  const targetTile = document.getElementById("targetTile");
-  const rrTile = document.getElementById("rrTile");
+  const targetTile = document.getElementById("targetTile2");
+  const rrTile = document.getElementById("rrTile2");
   if (currentInnings === 2) {
     const target = firstBattingSide === "A" ? scoreA.runs + 1 : scoreB.runs + 1;
     targetTile.style.display = "block";
     rrTile.style.display = "block";
-    document.getElementById("targetValue").textContent = target;
+    document.getElementById("targetValue2").textContent = target;
 
     const chasingScore = battingTeam === "A" ? scoreA.runs : scoreB.runs;
     const chasingOvers = battingTeam === "A" ? scoreA.overs : scoreB.overs;
@@ -1552,16 +1647,16 @@ function updateOverTiles() {
     const remainingOvers = maxOvers - chasingOvers;
     let rr = 0;
     if (remainingOvers > 0) rr = remainingRuns / remainingOvers;
-    document.getElementById("rrValue").textContent = rr.toFixed(2);
+    document.getElementById("rrValue2").textContent = rr.toFixed(2);
   } else {
-    targetTile.style.display = "none";
-    rrTile.style.display = "none";
+    if (targetTile) targetTile.style.display = "none";
+    if (rrTile) rrTile.style.display = "none";
   }
 }
 
 /* CHECK OVER COMPLETION */
 function checkOverCompletion() {
-  if (ballCount % ballsPerOver === 0 && ballCount > 0) {
+  if (ballCount > 0 && ballCount % ballsPerOver === 0) {
     previousOverBalls = [...currentOverBalls];
     currentOverBalls = [];
 
@@ -1596,7 +1691,7 @@ function checkPairCompletion() {
     const oversForPair = currentPairStats.balls / ballsPerOver;
     if (currentPairStats.pair.length) {
       pairHistory.push({
-        innings: currentPairStats.innings,
+        innings: currentInnings,
         pair: [...currentPairStats.pair],
         runs: currentPairStats.runs,
         wickets: currentPairStats.wickets,
@@ -1679,9 +1774,7 @@ function switchInnings() {
   bowlerBallsMapA = {};
   bowlerBallsMapB = {};
 
-  document.getElementById("teamABox").style.display = battingTeam === "A" ? "block" : "none";
-  document.getElementById("teamBBox").style.display = battingTeam === "B" ? "block" : "none";
-
+  setMatchInningsTab(2);
   disableScoringButtons();
   openCombinedSelector(true, true, "innings");
 }
@@ -1773,12 +1866,12 @@ function updateLiveScoreboard() {
   });
 }
 
-/* FINAL SCOREBOARD (same as live, reused) */
+/* FINAL SCOREBOARD */
 function buildFinalScoreboard() {
   updateLiveScoreboard();
 }
 
-/* INNINGS TABS */
+/* INNINGS TABS (scoreboard page) */
 document.querySelectorAll(".innings-tab").forEach(tab => {
   tab.addEventListener("click", () => {
     const innings = tab.dataset.inningsTab;
@@ -1882,8 +1975,11 @@ function playSound(type) {
   } catch (e) {}
 }
 
-/* RESET ALL */
+/* RESET ALL WITH CONFIRMATION */
 document.getElementById("resetAll").addEventListener("click", () => {
+  const ok = confirm("Are you sure you want to reset the scoreboard?");
+  if (!ok) return;
+
   matchStarted = false;
   firstBattingSide = null;
   secondBattingSide = null;
@@ -1945,6 +2041,8 @@ document.getElementById("resetAll").addEventListener("click", () => {
   document.querySelector("#scoreboardPairs2 tbody").innerHTML = "";
   document.querySelector("#scoreboardBowlers1 tbody").innerHTML = "";
   document.querySelector("#scoreboardBowlers2 tbody").innerHTML = "";
+
+  setMatchInningsTab(1);
 
   notify("Scoreboard reset");
   showPage("home");
