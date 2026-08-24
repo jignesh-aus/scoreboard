@@ -516,11 +516,10 @@
     }
     .combined-actions{
       display:flex;
-      justify-content:space-between;
+      justify-content:flex-end;
       gap:8px;
     }
     .combined-actions button{
-      flex:1;
       padding:8px;
       border-radius:6px;
       border:none;
@@ -530,10 +529,7 @@
     .combined-confirm{
       background:#00e5ff;
       color:#000;
-    }
-    .combined-cancel{
-      background:#555;
-      color:#fff;
+      flex:0 0 auto;
     }
 
     /* Scoreboard Tabs */
@@ -1038,7 +1034,6 @@
     </div>
 
     <div class="combined-actions">
-      <button id="combinedSelectorCancel" class="combined-cancel">Cancel</button>
       <button id="combinedSelectorConfirm" class="combined-confirm" disabled>Confirm</button>
     </div>
   </div>
@@ -1198,7 +1193,7 @@ let bowlerHistory = [];
 
 let ballCount = 0;
 
-let oversPerPair = 0;
+let oversPerPair = 0; // no longer used for triggering, kept for reference
 let pairBallsCount = 0;
 
 let currentPairStats = { innings: 1, pair: [], runs: 0, wickets: 0, balls: 0 };
@@ -1210,6 +1205,7 @@ let bowlerBallsMapA = {};
 let bowlerBallsMapB = {};
 
 let inningsCompletedThisBall = false;
+let secondInningsStarted = false;
 
 /* START MATCH */
 document.getElementById("startMatchBtn").addEventListener("click", startMatch);
@@ -1236,7 +1232,7 @@ function startMatch() {
   bowlerOversLimit = Math.ceil(maxOvers / playersPerTeam);
 
   const pairsCount = Math.ceil(playersPerTeam / 2);
-  oversPerPair = Math.floor(maxOvers / pairsCount);
+  oversPerPair = Math.floor(maxOvers / pairsCount); // informational only
 
   firstBattingSide = firstSide;
   secondBattingSide = firstSide === "A" ? "B" : "A";
@@ -1265,6 +1261,7 @@ function startMatch() {
   bowlerBallsMapB = {};
 
   inningsCompletedThisBall = false;
+  secondInningsStarted = false;
 
   initRunGrid();
   disableScoringButtons();
@@ -1283,9 +1280,7 @@ function initRunGrid() {
       if (label === "+ExRun") {
         btn.style.fontSize = "16px";
         btn.addEventListener("click", () => {
-          const val = prompt("Enter extra runs for this ball (e.g. 2, 3):");
-          const runs = parseInt(val);
-          if (!isNaN(runs) && runs > 0) addRun(runs);
+          addExtraRunOnCurrentBall();
         });
       } else if (label === 0) {
         btn.addEventListener("click", () => addDotBall());
@@ -1338,6 +1333,15 @@ document.querySelectorAll(".match-innings-tab").forEach(tab => {
   tab.addEventListener("click", () => {
     const innings = parseInt(tab.dataset.matchInningsTab);
     if (innings === 2 && currentInnings === 1) return;
+
+    if (innings === 2 && currentInnings === 2 && !secondInningsStarted) {
+      setMatchInningsTab(2);
+      disableScoringButtons();
+      openCombinedSelector(true, true, "innings");
+      secondInningsStarted = true;
+      return;
+    }
+
     setMatchInningsTab(innings);
   });
 });
@@ -1477,10 +1481,6 @@ function updateCombinedConfirmState() {
   confirmBtn.disabled = !(pairOk && bowlerOk);
 }
 
-document.getElementById("combinedSelectorCancel").addEventListener("click", () => {
-  document.getElementById("combinedSelectorOverlay").style.display = "none";
-});
-
 document.getElementById("combinedSelectorConfirm").addEventListener("click", () => {
   const pairGrid = document.getElementById("combinedPairGrid");
   const bowlerGrid = document.getElementById("combinedBowlerGrid");
@@ -1545,6 +1545,37 @@ function addWicket() {
   pushBall({ type: "wicket", value: -5 });
 }
 
+/* EXTRA RUN ON CURRENT BALL */
+function addExtraRunOnCurrentBall() {
+  const scoreObj = battingTeam === "A" ? scoreA : scoreB;
+
+  if (currentOverBalls.length === 0) return;
+
+  const lastBall = currentOverBalls[currentOverBalls.length - 1];
+  if (lastBall.type === "wicket") return;
+
+  scoreObj.runs += 1;
+  scoreObj.net += 1;
+
+  currentPairStats.runs += 1;
+  currentBowlerStats.runs += 1;
+
+  undoStack.push({ runs: 1, net: 1, wicket: false, extraOnBall: true });
+
+  if (lastBall.type === "run") {
+    lastBall.value += 1;
+  } else if (lastBall.type === "extra") {
+    lastBall.value += 1;
+  } else if (lastBall.type === "dot") {
+    lastBall.type = "run";
+    lastBall.value = 1;
+  }
+
+  updateScoreTiles();
+  updateOverTiles();
+  updateLiveScoreboard();
+}
+
 /* UNDO */
 function undoLast() {
   if (undoStack.length === 0) return;
@@ -1556,23 +1587,46 @@ function undoLast() {
   scoreObj.net -= last.net;
   if (last.wicket) scoreObj.wickets--;
 
-  ballCount--;
-  pairBallsCount--;
+  if (!last.extraOnBall) {
+    ballCount--;
+    pairBallsCount--;
+    currentPairStats.balls--;
+    currentBowlerStats.balls--;
+
+    currentOverBalls.pop();
+
+    const bowlerMap = bowlingTeam === "A" ? bowlerBallsMapA : bowlerBallsMapB;
+    if (currentBowler) {
+      bowlerMap[currentBowler] = (bowlerMap[currentBowler] || 0) - 1;
+      if (bowlerMap[currentBowler] < 0) bowlerMap[currentBowler] = 0;
+    }
+  } else {
+    currentPairStats.balls = currentPairStats.balls;
+    currentBowlerStats.balls = currentBowlerStats.balls;
+
+    const lastBall = currentOverBalls[currentOverBalls.length - 1];
+    if (lastBall) {
+      if (lastBall.type === "run") {
+        lastBall.value -= 1;
+        if (lastBall.value <= 0) {
+          lastBall.type = "dot";
+          lastBall.value = 0;
+        }
+      } else if (lastBall.type === "extra") {
+        lastBall.value -= 1;
+        if (lastBall.value <= 0) {
+          lastBall.type = "dot";
+          lastBall.value = 0;
+        }
+      }
+    }
+  }
+
   currentPairStats.runs -= last.runs;
-  currentPairStats.balls--;
   if (last.wicket) currentPairStats.wickets--;
 
   currentBowlerStats.runs -= last.runs;
-  currentBowlerStats.balls--;
   if (last.wicket) currentBowlerStats.wickets--;
-
-  currentOverBalls.pop();
-
-  const bowlerMap = bowlingTeam === "A" ? bowlerBallsMapA : bowlerBallsMapB;
-  if (currentBowler) {
-    bowlerMap[currentBowler] = (bowlerMap[currentBowler] || 0) - 1;
-    if (bowlerMap[currentBowler] < 0) bowlerMap[currentBowler] = 0;
-  }
 
   updateScoreTiles();
   updateOverTiles();
@@ -1608,7 +1662,7 @@ function pushBall(ball) {
   scoreObj.net += net;
   if (wicket) scoreObj.wickets++;
 
-  undoStack.push({ runs, net, wicket });
+  undoStack.push({ runs, net, wicket, extraOnBall: false });
 
   ballCount++;
   pairBallsCount++;
@@ -1705,12 +1759,12 @@ function updateOverTiles() {
     prevOverDots.appendChild(d);
   });
 
-  const targetTile = document.getElementById("targetTile2");
-  const rrTile = document.getElementById("rrTile2");
+  const targetTile2 = document.getElementById("targetTile2");
+  const rrTile2 = document.getElementById("rrTile2");
   if (currentInnings === 2) {
     const target = firstBattingSide === "A" ? scoreA.runs + 1 : scoreB.runs + 1;
-    targetTile.style.display = "block";
-    rrTile.style.display = "block";
+    targetTile2.style.display = "block";
+    rrTile2.style.display = "block";
     document.getElementById("targetValue2").textContent = target;
 
     const chasingScore = battingTeam === "A" ? scoreA.runs : scoreB.runs;
@@ -1721,8 +1775,8 @@ function updateOverTiles() {
     if (remainingOvers > 0) rr = remainingRuns / remainingOvers;
     document.getElementById("rrValue2").textContent = rr.toFixed(2);
   } else {
-    if (targetTile) targetTile.style.display = "none";
-    if (rrTile) rrTile.style.display = "none";
+    if (targetTile2) targetTile2.style.display = "none";
+    if (rrTile2) rrTile2.style.display = "none";
   }
 }
 
@@ -1759,35 +1813,37 @@ function checkOverCompletion() {
   }
 }
 
-/* CHECK PAIR COMPLETION */
+/* CHECK PAIR COMPLETION (every 2 overs) */
 function checkPairCompletion() {
-  const pairOvers = pairBallsCount / ballsPerOver;
-  if (oversPerPair > 0 && pairOvers >= oversPerPair && pairBallsCount % ballsPerOver === 0) {
-    const oversForPair = currentPairStats.balls / ballsPerOver;
-    if (currentPairStats.pair.length) {
-      pairHistory.push({
+  if (ballCount > 0 && ballCount % ballsPerOver === 0) {
+    const completedOvers = Math.floor(ballCount / ballsPerOver);
+    if (completedOvers % 2 === 0 && completedOvers < maxOvers) {
+      const oversForPair = currentPairStats.balls / ballsPerOver;
+      if (currentPairStats.pair.length) {
+        pairHistory.push({
+          innings: currentInnings,
+          pair: [...currentPairStats.pair],
+          runs: currentPairStats.runs,
+          wickets: currentPairStats.wickets,
+          overs: oversForPair
+        });
+
+        const completedSet = battingTeam === "A" ? completedBattersA : completedBattersB;
+        currentPairStats.pair.forEach(p => completedSet.add(p));
+      }
+
+      pairBallsCount = 0;
+      currentPairStats = {
         innings: currentInnings,
-        pair: [...currentPairStats.pair],
-        runs: currentPairStats.runs,
-        wickets: currentPairStats.wickets,
-        overs: oversForPair
-      });
+        pair: [],
+        runs: 0,
+        wickets: 0,
+        balls: 0
+      };
 
-      const completedSet = battingTeam === "A" ? completedBattersA : completedBattersB;
-      currentPairStats.pair.forEach(p => completedSet.add(p));
+      disableScoringButtons();
+      openCombinedSelector(true, true, "pair");
     }
-
-    pairBallsCount = 0;
-    currentPairStats = {
-      innings: currentInnings,
-      pair: [],
-      runs: 0,
-      wickets: 0,
-      balls: 0
-    };
-
-    disableScoringButtons();
-    openCombinedSelector(true, true, "pair");
   }
 }
 
@@ -1831,7 +1887,7 @@ function checkInningsCompletion() {
   }
 }
 
-/* SWITCH INNINGS */
+/* SWITCH INNINGS (no auto tab switch) */
 function switchInnings() {
   battingTeam = secondBattingSide;
   bowlingTeam = firstBattingSide;
@@ -1852,10 +1908,10 @@ function switchInnings() {
   bowlerBallsMapB = {};
 
   inningsCompletedThisBall = false;
+  secondInningsStarted = false;
 
-  setMatchInningsTab(2);
   disableScoringButtons();
-  openCombinedSelector(true, true, "innings");
+  setMatchInningsTab(1); // stay on first innings tab until user clicks Second Innings
 }
 
 /* END MATCH */
@@ -2103,6 +2159,7 @@ function resetScoreboard(resetHome) {
 
   consecutiveDotBalls = 0;
   inningsCompletedThisBall = false;
+  secondInningsStarted = false;
 
   completedBattersA.clear();
   completedBattersB.clear();
