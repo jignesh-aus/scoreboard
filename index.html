@@ -1,3 +1,4 @@
+<!-- PART 1/4: DOCTYPE, HEAD, STYLES -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -123,12 +124,12 @@
       text-transform:uppercase;
       text-align:center;
       margin-bottom:6px;
-      padding:4px 6px;
+      padding:3px 6px;
       border-radius:4px;
       border:none;
       background:#333a45;
       color:#fff;
-      font-size:13px;
+      font-size:12px;
       box-sizing:border-box;
     }
     [data-theme="light"] .home-team-name{
@@ -640,6 +641,8 @@
     }
   </style>
 </head>
+
+<!-- PART 2/4: BODY, HOME PAGE, MATCH PAGE -->
 <body data-theme="dark">
 <div id="notifyBanner"></div>
 <canvas id="confettiCanvas"></canvas>
@@ -864,6 +867,7 @@
   ">Reset Scoreboard</button>
 </div>
 
+<!-- PART 3/4: SCOREBOARD PAGE, SETTINGS, MODALS, NAV -->
 <!-- SCOREBOARD PAGE -->
 <div id="page-scoreboard" class="page">
   <h1>Indoor Cricket Scoreboard</h1>
@@ -1052,6 +1056,7 @@
   </div>
 </div>
 
+<!-- PART 4/4: SCRIPT (FULL LOGIC WITH ALL PATCHES) -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   renderPlayerFields();
@@ -1193,7 +1198,7 @@ let bowlerHistory = [];
 
 let ballCount = 0;
 
-let oversPerPair = 0; // no longer used for triggering, kept for reference
+let oversPerPair = 0;
 let pairBallsCount = 0;
 
 let currentPairStats = { innings: 1, pair: [], runs: 0, wickets: 0, balls: 0 };
@@ -1232,7 +1237,7 @@ function startMatch() {
   bowlerOversLimit = Math.ceil(maxOvers / playersPerTeam);
 
   const pairsCount = Math.ceil(playersPerTeam / 2);
-  oversPerPair = Math.floor(maxOvers / pairsCount); // informational only
+  oversPerPair = Math.floor(maxOvers / pairsCount);
 
   firstBattingSide = firstSide;
   secondBattingSide = firstSide === "A" ? "B" : "A";
@@ -1601,9 +1606,6 @@ function undoLast() {
       if (bowlerMap[currentBowler] < 0) bowlerMap[currentBowler] = 0;
     }
   } else {
-    currentPairStats.balls = currentPairStats.balls;
-    currentBowlerStats.balls = currentBowlerStats.balls;
-
     const lastBall = currentOverBalls[currentOverBalls.length - 1];
     if (lastBall) {
       if (lastBall.type === "run") {
@@ -1762,17 +1764,24 @@ function updateOverTiles() {
   const targetTile2 = document.getElementById("targetTile2");
   const rrTile2 = document.getElementById("rrTile2");
   if (currentInnings === 2) {
-    const target = firstBattingSide === "A" ? scoreA.runs + 1 : scoreB.runs + 1;
+    const target = firstBattingSide === "A"
+      ? scoreA.net + 1
+      : scoreB.net + 1;
+
     targetTile2.style.display = "block";
     rrTile2.style.display = "block";
+
     document.getElementById("targetValue2").textContent = target;
 
-    const chasingScore = battingTeam === "A" ? scoreA.runs : scoreB.runs;
+    const chasingNet = battingTeam === "A" ? scoreA.net : scoreB.net;
     const chasingOvers = battingTeam === "A" ? scoreA.overs : scoreB.overs;
-    const remainingRuns = target - chasingScore;
+
+    const remainingNet = target - chasingNet;
     const remainingOvers = maxOvers - chasingOvers;
+
     let rr = 0;
-    if (remainingOvers > 0) rr = remainingRuns / remainingOvers;
+    if (remainingOvers > 0) rr = remainingNet / remainingOvers;
+
     document.getElementById("rrValue2").textContent = rr.toFixed(2);
   } else {
     if (targetTile2) targetTile2.style.display = "none";
@@ -1879,8 +1888,10 @@ function checkInningsCompletion() {
     inningsCompletedThisBall = true;
 
     if (currentInnings === 1) {
+      notify("Innings Over");
       currentInnings = 2;
       switchInnings();
+      return;
     } else {
       endMatch();
     }
@@ -1911,7 +1922,11 @@ function switchInnings() {
   secondInningsStarted = false;
 
   disableScoringButtons();
-  setMatchInningsTab(1); // stay on first innings tab until user clicks Second Innings
+  setMatchInningsTab(1);
+
+  document.getElementById("targetTile2").style.display = "block";
+  document.getElementById("rrTile2").style.display = "block";
+  updateOverTiles();
 }
 
 /* END MATCH */
@@ -2021,6 +2036,7 @@ document.querySelectorAll(".innings-tab").forEach(tab => {
 function launchConfetti() {
   if (confettiActive) return;
   confettiActive = true;
+
   const canvas = document.getElementById("confettiCanvas");
   const ctx = canvas.getContext("2d");
   canvas.width = window.innerWidth;
@@ -2051,10 +2067,17 @@ function launchConfetti() {
   }
   draw();
 
-  setTimeout(() => {
+  const stopConfetti = () => {
     confettiActive = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }, 5000);
+    window.removeEventListener("touchstart", stopConfetti);
+    window.removeEventListener("click", stopConfetti);
+  };
+
+  window.addEventListener("touchstart", stopConfetti);
+  window.addEventListener("click", stopConfetti);
+
+  setTimeout(stopConfetti, 10000);
 }
 
 function launchFireworks() {
