@@ -672,9 +672,9 @@
     <div class="run-grid" data-run-grid></div>
 
     <div class="ball-type-actions">
-      <button data-wide-nb disabled style="background:#00bcd4;color:#000;">WB/NB</button>
-      <button data-wicket disabled style="background:#ff5252;color:#000;">Wicket</button>
-      <button data-undo disabled>Undo</button>
+      <button data-wide-nb style="background:#00bcd4;color:#000;">WB/NB</button>
+      <button data-wicket style="background:#ff5252;color:#000;">Wicket</button>
+      <button data-undo>Undo</button>
     </div>
   </div>
 
@@ -737,10 +737,30 @@
     </table>
 
     <h3 style="text-align:center;margin-top:6px;font-size:14px;">Live Pair Summary</h3>
-    <div id="scoreboardPairsLive"></div>
+    <table id="scoreboardPairsLive">
+      <thead>
+        <tr>
+          <th>Innings</th>
+          <th>Pair</th>
+          <th>Runs/Wkts</th>
+          <th>Overs</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
     <h3 style="text-align:center;margin-top:6px;font-size:14px;">Live Bowling Summary</h3>
-    <div id="scoreboardBowlersLive"></div>
+    <table id="scoreboardBowlersLive">
+      <thead>
+        <tr>
+          <th>Innings</th>
+          <th>Bowler</th>
+          <th>Runs/Wkts</th>
+          <th>Overs</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
     <h3 style="text-align:center;margin-top:6px;font-size:14px;">Final Scoreboard</h3>
     <table id="scoreboardTeamsTableFinal">
@@ -756,10 +776,30 @@
     </table>
 
     <h3 style="text-align:center;margin-top:6px;font-size:14px;">Final Pair Summary</h3>
-    <div id="scoreboardPairs"></div>
+    <table id="scoreboardPairs">
+      <thead>
+        <tr>
+          <th>Innings</th>
+          <th>Pair</th>
+          <th>Runs/Wkts</th>
+          <th>Overs</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
     <h3 style="text-align:center;margin-top:6px;font-size:14px;">Final Bowling Summary</h3>
-    <div id="scoreboardBowlers"></div>
+    <table id="scoreboardBowlers">
+      <thead>
+        <tr>
+          <th>Innings</th>
+          <th>Bowler</th>
+          <th>Runs/Wkts</th>
+          <th>Overs</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
 </div>
 
@@ -794,23 +834,11 @@
       <strong>Third ball rule:</strong>
       <div style="margin-top:8px;">
         <label style="margin-right:12px;">
-          <input type="checkbox" id="thirdBallRuleToggle"> Enable third ball rule (visual only)
+          <input type="checkbox" id="thirdBallRuleToggle"> Enable full third ball rule
         </label>
       </div>
       <div style="margin-top:6px;font-size:12px;opacity:.8;">
-        This toggle is reserved for future logic; currently it is a visual setting only.
-      </div>
-    </div>
-
-    <div style="margin-bottom:16px;">
-      <strong>Spectator mode:</strong>
-      <div style="margin-top:8px;">
-        <label style="margin-right:12px;">
-          <input type="checkbox" id="spectatorModeToggle"> Enable spectator mode (read-only)
-        </label>
-      </div>
-      <div style="margin-top:6px;font-size:12px;opacity:.8;">
-        Spectator mode shows only Match and Scoreboard pages and disables scoring controls.
+        When enabled, three consecutive dot balls result in an automatic wicket.
       </div>
     </div>
 
@@ -883,7 +911,6 @@ let firstBattingSide = null;
 let secondBattingSide = null;
 
 let soundEnabled = true;
-let spectatorMode = false;
 
 let confettiActive = false;
 let fireworksActive = false;
@@ -900,10 +927,6 @@ const pages = {
 };
 
 function showPage(pageName) {
-  if (spectatorMode && (pageName === "home" || pageName === "settings")) {
-    notify("Spectator mode: only Match and Scoreboard are available", "error");
-    return;
-  }
   Object.values(pages).forEach(p => p.classList.remove("active"));
   pages[pageName].classList.add("active");
 
@@ -968,26 +991,12 @@ document.querySelectorAll('input[name="theme"]').forEach(radio => {
 });
 document.getElementById("soundToggle").addEventListener("change", e => soundEnabled = e.target.checked);
 
-/* THIRD BALL RULE (placeholder) */
+/* THIRD BALL RULE */
+let thirdBallRuleEnabled = false;
+let consecutiveDotBalls = 0;
 document.getElementById("thirdBallRuleToggle").addEventListener("change", e => {
-  // reserved for future logic; currently no scoring impact
-});
-
-/* SPECTATOR MODE */
-document.getElementById("spectatorModeToggle").addEventListener("change", e => {
-  spectatorMode = e.target.checked;
-  const disabled = spectatorMode;
-
-  document.querySelectorAll(".run-grid button").forEach(b => b.disabled = disabled);
-  document.querySelectorAll("[data-wide-nb]").forEach(b => b.disabled = disabled);
-  document.querySelectorAll("[data-wicket]").forEach(b => b.disabled = disabled);
-  document.querySelectorAll("[data-undo]").forEach(b => b.disabled = disabled);
-  document.getElementById("startMatchBtn").disabled = disabled;
-  document.getElementById("resetAll").disabled = disabled;
-
-  if (spectatorMode) {
-    showPage("match");
-  }
+  thirdBallRuleEnabled = e.target.checked;
+  consecutiveDotBalls = 0;
 });
 
 /* FEEDBACK */
@@ -1030,6 +1039,13 @@ let bowlerHistory = [];
 
 let ballCount = 0;
 
+/* per-pair and per-bowler stats */
+let oversPerPair = 0;
+let pairBallsCount = 0;
+
+let currentPairStats = { innings: 1, pair: [], runs: 0, wickets: 0, balls: 0 };
+let currentBowlerStats = { innings: 1, bowler: "", runs: 0, wickets: 0, balls: 0 };
+
 /* START MATCH */
 document.getElementById("startMatchBtn").addEventListener("click", startMatch);
 
@@ -1071,6 +1087,15 @@ function startMatch() {
   matchStarted = true;
   showPage("match");
 
+  const pairsPerTeam = pCount / 2;
+  oversPerPair = maxOvers / pairsPerTeam;
+
+  currentInnings = 1;
+  ballCount = 0;
+  pairBallsCount = 0;
+  currentPairStats = { innings: 1, pair: [], runs: 0, wickets: 0, balls: 0 };
+  currentBowlerStats = { innings: 1, bowler: "", runs: 0, wickets: 0, balls: 0 };
+
   openPairSelector();
 }
 
@@ -1085,6 +1110,8 @@ function openPairSelector() {
   title.textContent = `Select Batting Pair (Innings ${currentInnings})`;
   grid.innerHTML = "";
 
+  document.getElementById("pairSelectorConfirm").disabled = true;
+
   team.forEach((p, idx) => {
     const btn = document.createElement("button");
     btn.className = "modal-btn";
@@ -1093,6 +1120,9 @@ function openPairSelector() {
     btn.addEventListener("click", () => {
       btn.classList.toggle("selected");
       const selected = grid.querySelectorAll(".selected");
+      if (selected.length > 2) {
+        selected[0].classList.remove("selected");
+      }
       document.getElementById("pairSelectorConfirm").disabled = selected.length !== 2;
     });
     grid.appendChild(btn);
@@ -1111,7 +1141,13 @@ document.getElementById("pairSelectorConfirm").addEventListener("click", () => {
   const selected = [...grid.querySelectorAll(".selected")].map(btn => btn.textContent);
 
   currentPair = selected;
-  pairHistory.push({ innings: currentInnings, pair: selected });
+  currentPairStats = {
+    innings: currentInnings,
+    pair: [...selected],
+    runs: 0,
+    wickets: 0,
+    balls: 0
+  };
 
   document.getElementById("pairSelectorOverlay").style.display = "none";
   playSound("pair");
@@ -1128,6 +1164,8 @@ function openBowlerSelector() {
 
   title.textContent = `Select Bowler (Innings ${currentInnings})`;
   grid.innerHTML = "";
+
+  document.getElementById("bowlerSelectorConfirm").disabled = true;
 
   team.forEach((p, idx) => {
     const btn = document.createElement("button");
@@ -1155,7 +1193,13 @@ document.getElementById("bowlerSelectorConfirm").addEventListener("click", () =>
   const selected = grid.querySelector(".selected").textContent;
 
   currentBowler = selected;
-  bowlerHistory.push({ innings: currentInnings, bowler: selected });
+  currentBowlerStats = {
+    innings: currentInnings,
+    bowler: selected,
+    runs: 0,
+    wickets: 0,
+    balls: 0
+  };
 
   document.getElementById("bowlerSelectorOverlay").style.display = "none";
 
@@ -1164,7 +1208,6 @@ document.getElementById("bowlerSelectorConfirm").addEventListener("click", () =>
 
 /* ENABLE SCORING BUTTONS */
 function enableScoringButtons() {
-  if (spectatorMode) return;
   document.querySelectorAll(".run-grid button").forEach(b => b.disabled = false);
   document.querySelectorAll("[data-wide-nb]").forEach(b => b.disabled = false);
   document.querySelectorAll("[data-wicket]").forEach(b => b.disabled = false);
@@ -1197,20 +1240,30 @@ document.querySelectorAll("[data-run-grid]").forEach(grid => {
 /* SCORING FUNCTIONS */
 function addRun(runs) {
   playSound("run");
+  consecutiveDotBalls = 0;
   pushBall({ type: "run", value: runs });
 }
 
 function addDotBall() {
-  pushBall({ type: "dot", value: 0 });
+  consecutiveDotBalls++;
+  if (thirdBallRuleEnabled && consecutiveDotBalls >= 3) {
+    consecutiveDotBalls = 0;
+    playSound("wicket");
+    pushBall({ type: "wicket", value: -5, autoThirdBall: true });
+  } else {
+    pushBall({ type: "dot", value: 0 });
+  }
 }
 
 function addWideNoBall() {
   playSound("run");
+  consecutiveDotBalls = 0;
   pushBall({ type: "extra", value: 1 });
 }
 
 function addWicket() {
   playSound("wicket");
+  consecutiveDotBalls = 0;
   pushBall({ type: "wicket", value: -5 });
 }
 
@@ -1231,6 +1284,15 @@ function undoLast() {
   if (last.wicket) scoreObj.wickets--;
 
   ballCount--;
+  pairBallsCount--;
+  currentPairStats.runs -= last.runs;
+  currentPairStats.balls--;
+  if (last.wicket) currentPairStats.wickets--;
+
+  currentBowlerStats.runs -= last.runs;
+  currentBowlerStats.balls--;
+  if (last.wicket) currentBowlerStats.wickets--;
+
   currentOverBalls.pop();
 
   updateScoreTiles();
@@ -1270,14 +1332,26 @@ function pushBall(ball) {
   undoStack.push({ runs, net, wicket });
 
   ballCount++;
+  pairBallsCount++;
+  currentPairStats.runs += runs;
+  currentPairStats.balls++;
+  if (wicket) currentPairStats.wickets++;
+
+  currentBowlerStats.runs += runs;
+  currentBowlerStats.balls++;
+  if (wicket) currentBowlerStats.wickets++;
+
   currentOverBalls.push(ball);
 
   updateScoreTiles();
   updateOverTiles();
   updateLiveScoreboard();
 
-  checkOverCompletion();
   checkInningsCompletion();
+  if (currentInnings <= 2) {
+    checkOverCompletion();
+    checkPairCompletion();
+  }
 }
 
 /* UPDATE SCORE TILES */
@@ -1370,7 +1444,50 @@ function checkOverCompletion() {
   if (ballCount % ballsPerOver === 0 && ballCount > 0) {
     previousOverBalls = [...currentOverBalls];
     currentOverBalls = [];
+    /* push current bowler stats for this over */
+    const oversForBowler = currentBowlerStats.balls / ballsPerOver;
+    bowlerHistory.push({
+      innings: currentBowlerStats.innings,
+      bowler: currentBowlerStats.bowler,
+      runs: currentBowlerStats.runs,
+      wickets: currentBowlerStats.wickets,
+      overs: oversForBowler
+    });
+    currentBowlerStats = {
+      innings: currentInnings,
+      bowler: "",
+      runs: 0,
+      wickets: 0,
+      balls: 0
+    };
     openBowlerSelector();
+  }
+}
+
+/* CHECK PAIR COMPLETION (after their allocated overs) */
+function checkPairCompletion() {
+  const pairOvers = pairBallsCount / ballsPerOver;
+  if (oversPerPair > 0 && pairOvers >= oversPerPair) {
+    /* store pair stats */
+    const oversForPair = currentPairStats.balls / ballsPerOver;
+    pairHistory.push({
+      innings: currentPairStats.innings,
+      pair: [...currentPairStats.pair],
+      runs: currentPairStats.runs,
+      wickets: currentPairStats.wickets,
+      overs: oversForPair
+    });
+
+    pairBallsCount = 0;
+    currentPairStats = {
+      innings: currentInnings,
+      pair: [],
+      runs: 0,
+      wickets: 0,
+      balls: 0
+    };
+
+    openPairSelector();
   }
 }
 
@@ -1378,6 +1495,28 @@ function checkOverCompletion() {
 function checkInningsCompletion() {
   const completedOvers = Math.floor(ballCount / ballsPerOver);
   if (completedOvers >= maxOvers) {
+    /* push last pair and bowler stats for this innings */
+    const pairOvers = currentPairStats.balls / ballsPerOver;
+    if (currentPairStats.pair.length) {
+      pairHistory.push({
+        innings: currentPairStats.innings,
+        pair: [...currentPairStats.pair],
+        runs: currentPairStats.runs,
+        wickets: currentPairStats.wickets,
+        overs: pairOvers
+      });
+    }
+    const bowlerOvers = currentBowlerStats.balls / ballsPerOver;
+    if (currentBowlerStats.bowler) {
+      bowlerHistory.push({
+        innings: currentBowlerStats.innings,
+        bowler: currentBowlerStats.bowler,
+        runs: currentBowlerStats.runs,
+        wickets: currentBowlerStats.wickets,
+        overs: bowlerOvers
+      });
+    }
+
     if (currentInnings === 1) {
       currentInnings = 2;
       switchInnings();
@@ -1400,13 +1539,17 @@ function switchInnings() {
     bowlingTeam = firstBattingSide;
 
     ballCount = 0;
+    pairBallsCount = 0;
     currentOverBalls = [];
     previousOverBalls = [];
+    undoStack = [];
+    consecutiveDotBalls = 0;
+
+    currentPairStats = { innings: 2, pair: [], runs: 0, wickets: 0, balls: 0 };
+    currentBowlerStats = { innings: 2, bowler: "", runs: 0, wickets: 0, balls: 0 };
 
     document.getElementById("teamABox").style.display = battingTeam === "A" ? "block" : "none";
     document.getElementById("teamBBox").style.display = battingTeam === "B" ? "block" : "none";
-
-    undoStack = [];
 
     openPairSelector();
   };
@@ -1465,16 +1608,30 @@ function updateLiveScoreboard() {
     </tr>
   `;
 
-  const pairsLive = document.getElementById("scoreboardPairsLive");
-  pairsLive.innerHTML = "";
+  const pairsLiveBody = document.querySelector("#scoreboardPairsLive tbody");
+  pairsLiveBody.innerHTML = "";
   pairHistory.forEach(p => {
-    pairsLive.innerHTML += `<div>Innings ${p.innings}: ${p.pair.join(" & ")}</div>`;
+    pairsLiveBody.innerHTML += `
+      <tr>
+        <td>${p.innings}</td>
+        <td>${p.pair.join(" & ")}</td>
+        <td>${p.runs}/${p.wickets}</td>
+        <td>${p.overs.toFixed(1)}</td>
+      </tr>
+    `;
   });
 
-  const bowlersLive = document.getElementById("scoreboardBowlersLive");
-  bowlersLive.innerHTML = "";
+  const bowlersLiveBody = document.querySelector("#scoreboardBowlersLive tbody");
+  bowlersLiveBody.innerHTML = "";
   bowlerHistory.forEach(b => {
-    bowlersLive.innerHTML += `<div>Innings ${b.innings}: ${b.bowler}</div>`;
+    bowlersLiveBody.innerHTML += `
+      <tr>
+        <td>${b.innings}</td>
+        <td>${b.bowler}</td>
+        <td>${b.runs}/${b.wickets}</td>
+        <td>${b.overs.toFixed(1)}</td>
+      </tr>
+    `;
   });
 }
 
@@ -1501,16 +1658,30 @@ function buildFinalScoreboard() {
     </tr>
   `;
 
-  const pairsDiv = document.getElementById("scoreboardPairs");
-  pairsDiv.innerHTML = "";
+  const pairsBody = document.querySelector("#scoreboardPairs tbody");
+  pairsBody.innerHTML = "";
   pairHistory.forEach(p => {
-    pairsDiv.innerHTML += `<div>Innings ${p.innings}: ${p.pair.join(" & ")}</div>`;
+    pairsBody.innerHTML += `
+      <tr>
+        <td>${p.innings}</td>
+        <td>${p.pair.join(" & ")}</td>
+        <td>${p.runs}/${p.wickets}</td>
+        <td>${p.overs.toFixed(1)}</td>
+      </tr>
+    `;
   });
 
-  const bowlersDiv = document.getElementById("scoreboardBowlers");
-  bowlersDiv.innerHTML = "";
+  const bowlersBody = document.querySelector("#scoreboardBowlers tbody");
+  bowlersBody.innerHTML = "";
   bowlerHistory.forEach(b => {
-    bowlersDiv.innerHTML += `<div>Innings ${b.innings}: ${b.bowler}</div>`;
+    bowlersBody.innerHTML += `
+      <tr>
+        <td>${b.innings}</td>
+        <td>${b.bowler}</td>
+        <td>${b.runs}/${b.wickets}</td>
+        <td>${b.overs.toFixed(1)}</td>
+      </tr>
+    `;
   });
 }
 
@@ -1628,8 +1799,15 @@ document.getElementById("resetAll").addEventListener("click", () => {
   bowlerHistory = [];
 
   ballCount = 0;
+  pairBallsCount = 0;
   currentOverBalls = [];
   previousOverBalls = [];
+
+  oversPerPair = 0;
+  currentPairStats = { innings: 1, pair: [], runs: 0, wickets: 0, balls: 0 };
+  currentBowlerStats = { innings: 1, bowler: "", runs: 0, wickets: 0, balls: 0 };
+
+  consecutiveDotBalls = 0;
 
   document.getElementById("playersPerTeam").value = "";
   document.getElementById("maxOvers").value = "";
@@ -1657,10 +1835,10 @@ document.getElementById("resetAll").addEventListener("click", () => {
   document.getElementById("winner").style.display = "none";
   document.querySelector("#scoreboardTeamsTableLive tbody").innerHTML = "";
   document.querySelector("#scoreboardTeamsTableFinal tbody").innerHTML = "";
-  document.getElementById("scoreboardPairsLive").innerHTML = "";
-  document.getElementById("scoreboardBowlersLive").innerHTML = "";
-  document.getElementById("scoreboardPairs").innerHTML = "";
-  document.getElementById("scoreboardBowlers").innerHTML = "";
+  document.querySelector("#scoreboardPairsLive tbody").innerHTML = "";
+  document.querySelector("#scoreboardBowlersLive tbody").innerHTML = "";
+  document.querySelector("#scoreboardPairs tbody").innerHTML = "";
+  document.querySelector("#scoreboardBowlers tbody").innerHTML = "";
 
   notify("Scoreboard reset");
   showPage("home");
