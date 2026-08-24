@@ -5,8 +5,6 @@
   <title>Indoor Cricket Scoreboard</title>
   <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
-  <link rel="icon" href="scoreboard.png" />
-
   <style>
     :root {
       --bg-color: #0b0b10;
@@ -255,18 +253,25 @@
       font-size:18px;
       font-weight:700;
     }
-    .negative{color:#ff5252;}
-    .positive{color:#00a000;}
 
-    .over-row{
+    .over-layout{
       display:flex;
       justify-content:space-between;
       gap:8px;
       margin-bottom:8px;
       align-items:flex-start;
     }
-    .over-section{
+    .over-left,
+    .over-right{
+      flex:0 0 80px;
+      text-align:center;
+      font-size:12px;
+    }
+    .over-center{
       flex:1;
+    }
+    .over-block{
+      margin-bottom:6px;
     }
     .over-title{
       text-align:center;
@@ -312,11 +317,6 @@
       background:#00bcd4;
       color:#000;
       box-shadow:0 0 6px #00bcd4;
-    }
-    .nb-dot{
-      background:#ff9800;
-      color:#000;
-      box-shadow:0 0 6px #ff9800;
     }
 
     .run-grid-title{
@@ -366,16 +366,6 @@
       cursor:pointer;
       min-height:64px;
     }
-
-    .innings-over{
-      text-align:center;
-      font-size:15px;
-      font-weight:600;
-      color:#ff5252;
-      margin-top:6px;
-      opacity:0;
-    }
-    .innings-over.show{opacity:1;}
 
     .winner{
       text-align:center;
@@ -648,18 +638,28 @@
       </div>
     </div>
 
-    <div class="over-row">
-      <div class="over-section">
-        <div class="over-title">Target / Net RR</div>
-        <div class="over-dots" data-target-rr></div>
+    <div class="over-layout">
+      <div class="over-left">
+        <div id="targetTile" style="display:none;">
+          <div class="over-title">Target</div>
+          <div id="targetValue" style="font-size:16px;font-weight:700;">0</div>
+        </div>
       </div>
-      <div class="over-section">
-        <div class="over-title">Current Over</div>
-        <div class="over-dots" data-current-over></div>
+      <div class="over-center">
+        <div class="over-block">
+          <div class="over-title">Current Over</div>
+          <div class="over-dots" data-current-over></div>
+        </div>
+        <div class="over-block">
+          <div class="over-title">Previous Over</div>
+          <div class="over-dots" data-prev-over></div>
+        </div>
       </div>
-      <div class="over-section">
-        <div class="over-title">Previous Over</div>
-        <div class="over-dots" data-prev-over></div>
+      <div class="over-right">
+        <div id="rrTile" style="display:none;">
+          <div class="over-title">Req. RR</div>
+          <div id="rrValue" style="font-size:16px;font-weight:700;">0.00</div>
+        </div>
       </div>
     </div>
 
@@ -671,11 +671,9 @@
       <button data-wicket disabled style="background:#ff5252;color:#000;">Wicket</button>
       <button data-undo disabled>Undo</button>
     </div>
-
-    <div class="innings-over" data-innings-msg></div>
   </div>
 
-  <div id="teamBBox" class="team b" data-team="B">
+  <div id="teamBBox" class="team b" data-team="B" style="display:none;">
     <div class="team-header-row">
       <input class="team-name-input" id="teamBName" disabled />
     </div>
@@ -694,32 +692,6 @@
         <div class="stat-value" data-overs>0.0/--</div>
       </div>
     </div>
-
-    <div class="over-row">
-      <div class="over-section">
-        <div class="over-title">Target / Net RR</div>
-        <div class="over-dots" data-target-rr></div>
-      </div>
-      <div class="over-section">
-        <div class="over-title">Current Over</div>
-        <div class="over-dots" data-current-over></div>
-      </div>
-      <div class="over-section">
-        <div class="over-title">Previous Over</div>
-        <div class="over-dots" data-prev-over></div>
-      </div>
-    </div>
-
-    <div class="run-grid-title">+ Run per ball</div>
-    <div class="run-grid" data-run-grid></div>
-
-    <div class="ball-type-actions">
-      <button data-wide-nb disabled style="background:#00bcd4;color:#000;">WB/NB</button>
-      <button data-wicket disabled style="background:#ff5252;color:#000;">Wicket</button>
-      <button data-undo disabled>Undo</button>
-    </div>
-
-    <div class="innings-over" data-innings-msg></div>
   </div>
 
   <button id="resetAll" style="
@@ -746,8 +718,8 @@
   <div id="winner" class="winner"></div>
 
   <div id="scoreboardSummary">
-    <h3 style="text-align:center;margin-top:4px;font-size:14px;">First Innings Scoreboard</h3>
-    <table id="scoreboardTeamsTable1">
+    <h3 style="text-align:center;margin-top:4px;font-size:14px;">Live Match Summary</h3>
+    <table id="scoreboardTeamsTableLive">
       <thead>
         <tr>
           <th>Team</th>
@@ -759,8 +731,8 @@
       <tbody></tbody>
     </table>
 
-    <h3 style="text-align:center;margin-top:6px;font-size:14px;">Second Innings Scoreboard</h3>
-    <table id="scoreboardTeamsTable2">
+    <h3 style="text-align:center;margin-top:6px;font-size:14px;">Final Scoreboard</h3>
+    <table id="scoreboardTeamsTableFinal">
       <thead>
         <tr>
           <th>Team</th>
@@ -808,49 +780,14 @@
     </div>
 
     <div style="margin-bottom:16px;">
-      <strong>Celebrations:</strong>
-      <div style="margin-top:8px;">
-        <label style="margin-right:12px;">
-          <input type="checkbox" id="celebrationToggle" checked> Confetti & fireworks on result
-        </label>
-      </div>
-    </div>
-
-    <div style="margin-bottom:16px;">
-      <strong>Third ball rule:</strong>
-      <div style="margin-top:8px;">
-        <label style="margin-right:12px;">
-          <input type="checkbox" id="thirdBallRuleToggle"> Enable third ball wicket rule
-        </label>
-      </div>
-      <div style="margin-top:6px;font-size:12px;opacity:.8;">
-        Three consecutive zero-run balls by the same batting pair convert the third ball into a wicket.
-      </div>
-    </div>
-
-    <div style="margin-bottom:16px;">
       <strong>Spectator mode:</strong>
       <div style="margin-top:8px;">
         <label style="margin-right:12px;">
-          <input type="checkbox" id="spectatorModeToggle"> Read-only mode (disable scoring controls)
+          <input type="checkbox" id="spectatorModeToggle"> Enable spectator mode (read-only)
         </label>
       </div>
-
-      <button id="spectatorShareBtn" style="
-        width:100%;
-        margin-top:10px;
-        padding:10px;
-        border:none;
-        border-radius:8px;
-        background:var(--accent);
-        color:#000;
-        font-size:14px;
-        font-weight:600;
-        cursor:pointer;
-      ">Share Spectator Link</button>
-
-      <div id="spectatorShareMsg" style="margin-top:6px;font-size:12px;opacity:.8;display:none;">
-        Link copied to clipboard.
+      <div style="margin-top:6px;font-size:12px;opacity:.8;">
+        Spectator mode shows only Match and Scoreboard pages and disables scoring controls.
       </div>
     </div>
 
@@ -919,14 +856,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* NAV + NOTIFY */
 let matchStarted = false;
-let oversLocked = true;
-let playersLocked = true;
 let firstBattingSide = null;
 let secondBattingSide = null;
 
 let soundEnabled = true;
-let celebrationEnabled = true;
-let thirdBallRuleEnabled = false;
 let spectatorMode = false;
 
 let confettiActive = false;
@@ -944,6 +877,10 @@ const pages = {
 };
 
 function showPage(pageName) {
+  if (spectatorMode && (pageName === "home" || pageName === "settings")) {
+    notify("Spectator mode: only Match and Scoreboard are available", "error");
+    return;
+  }
   Object.values(pages).forEach(p => p.classList.remove("active"));
   pages[pageName].classList.add("active");
 
@@ -968,7 +905,7 @@ function notify(msg, type = "info") {
   setTimeout(() => banner.classList.remove("show"), 3000);
 }
 
-/* PLAYER FIELD RENDERING */
+/* PLAYER FIELD RENDERING (optional names) */
 function renderPlayerFields() {
   const count = parseInt(document.getElementById("playersPerTeam").value);
   const teamA = document.getElementById("teamAPlayersContainer");
@@ -980,8 +917,8 @@ function renderPlayerFields() {
   if (!count || count < 4 || count > 8) return;
 
   for (let i = 1; i <= count; i++) {
-    teamA.innerHTML += `<input id="teamAPlayer${i}" class="player-input" placeholder="Player ${i}">`;
-    teamB.innerHTML += `<input id="teamBPlayer${i}" class="player-input" placeholder="Player ${i}">`;
+    teamA.innerHTML += `<input id="teamAPlayer${i}" class="player-input" placeholder="Player ${i} (optional)">`;
+    teamB.innerHTML += `<input id="teamBPlayer${i}" class="player-input" placeholder="Player ${i} (optional)">`;
   }
 }
 document.getElementById("playersPerTeam").addEventListener("change", renderPlayerFields);
@@ -1007,10 +944,8 @@ document.querySelectorAll('input[name="theme"]').forEach(radio => {
   });
 });
 document.getElementById("soundToggle").addEventListener("change", e => soundEnabled = e.target.checked);
-document.getElementById("celebrationToggle").addEventListener("change", e => celebrationEnabled = e.target.checked);
-document.getElementById("thirdBallRuleToggle").addEventListener("change", e => thirdBallRuleEnabled = e.target.checked);
 
-/* SPECTATOR MODE + SHARE LINK */
+/* SPECTATOR MODE */
 document.getElementById("spectatorModeToggle").addEventListener("change", e => {
   spectatorMode = e.target.checked;
   const disabled = spectatorMode;
@@ -1021,13 +956,10 @@ document.getElementById("spectatorModeToggle").addEventListener("change", e => {
   document.querySelectorAll("[data-undo]").forEach(b => b.disabled = disabled);
   document.getElementById("startMatchBtn").disabled = disabled;
   document.getElementById("resetAll").disabled = disabled;
-});
 
-document.getElementById("spectatorShareBtn").addEventListener("click", () => {
-  navigator.clipboard.writeText(window.location.href);
-  const msg = document.getElementById("spectatorShareMsg");
-  msg.style.display = "block";
-  setTimeout(() => msg.style.display = "none", 2000);
+  if (spectatorMode) {
+    showPage("match");
+  }
 });
 
 /* FEEDBACK */
@@ -1080,19 +1012,15 @@ function startMatch() {
   const firstSide = document.getElementById("firstBattingSide").value;
 
   if (!pCount || !oCount || !firstSide) {
-    notify("Please complete all match setup fields", "error");
+    notify("Please complete players, overs and first batting side", "error");
     return;
   }
 
   playersA = [];
   playersB = [];
   for (let i = 1; i <= pCount; i++) {
-    const a = document.getElementById(`teamAPlayer${i}`).value.trim();
-    const b = document.getElementById(`teamBPlayer${i}`).value.trim();
-    if (!a || !b) {
-      notify("Please enter all player names", "error");
-      return;
-    }
+    const a = document.getElementById(`teamAPlayer${i}`)?.value.trim() || `Player ${i}`;
+    const b = document.getElementById(`teamBPlayer${i}`)?.value.trim() || `Player ${i}`;
     playersA.push(a);
     playersB.push(b);
   }
@@ -1109,6 +1037,10 @@ function startMatch() {
 
   document.getElementById("teamAName").value = aName;
   document.getElementById("teamBName").value = bName;
+
+  // show only batting side box
+  document.getElementById("teamABox").style.display = battingTeam === "A" ? "block" : "none";
+  document.getElementById("teamBBox").style.display = battingTeam === "B" ? "block" : "none";
 
   matchStarted = true;
   showPage("match");
@@ -1255,6 +1187,7 @@ function undoLast() {
 
   updateScoreTiles();
   updateOverTiles();
+  updateLiveScoreboard();
 }
 
 /* PUSH BALL */
@@ -1289,6 +1222,7 @@ function pushBall(ball) {
 
   updateScoreTiles();
   updateOverTiles();
+  updateLiveScoreboard();
 
   checkOverCompletion();
   checkInningsCompletion();
@@ -1296,31 +1230,38 @@ function pushBall(ball) {
 
 /* UPDATE SCORE TILES */
 function updateScoreTiles() {
-  const scoreObjA = scoreA;
-  const scoreObjB = scoreB;
-
   const tilesA = document.querySelector('#teamABox [data-score-tile]');
   const tilesB = document.querySelector('#teamBBox [data-score-tile]');
 
-  tilesA.textContent = `${scoreObjA.runs}/${scoreObjA.wickets}`;
-  tilesB.textContent = `${scoreObjB.runs}/${scoreObjB.wickets}`;
+  tilesA.textContent = `${scoreA.runs}/${scoreA.wickets}`;
+  tilesB.textContent = `${scoreB.runs}/${scoreB.wickets}`;
 
-  document.querySelector('#teamABox [data-net-tile]').textContent = scoreObjA.net;
-  document.querySelector('#teamBBox [data-net-tile]').textContent = scoreObjB.net;
+  document.querySelector('#teamABox [data-net-tile]').textContent = scoreA.net;
+  document.querySelector('#teamBBox [data-net-tile]').textContent = scoreB.net;
+
+  document.querySelector('#teamABox [data-overs]').textContent = `${scoreA.overs.toFixed(1)}/${maxOvers}`;
+  document.querySelector('#teamBBox [data-overs]').textContent = `${scoreB.overs.toFixed(1)}/${maxOvers}`;
 }
 
 /* UPDATE OVER TILES */
 function updateOverTiles() {
-  const overTileA = document.querySelector('#teamABox [data-overs]');
-  const overTileB = document.querySelector('#teamBBox [data-overs]');
+  const ballsThisInnings = battingTeam === "A" ? scoreA.overs * ballsPerOver : scoreB.overs * ballsPerOver;
+  const overTile = document.querySelector(`#team${battingTeam}Box [data-overs]`);
+  const completedOvers = Math.floor(ballCount / ballsPerOver);
+  const ballsInCurrentOver = ballCount % ballsPerOver;
+
   if (battingTeam === "A") {
-    overTileA.textContent = `${overCount}.${ballCount % 6}/${maxOvers}`;
+    scoreA.overs = completedOvers + ballsInCurrentOver / ballsPerOver;
   } else {
-    overTileB.textContent = `${overCount}.${ballCount % 6}/${maxOvers}`;
+    scoreB.overs = completedOvers + ballsInCurrentOver / ballsPerOver;
   }
 
-  const currentOverDots = document.querySelectorAll(`#team${battingTeam}Box [data-current-over]`);
-  currentOverDots.forEach(dot => dot.innerHTML = "");
+  overTile.textContent = `${completedOvers}.${ballsInCurrentOver}/${maxOvers}`;
+
+  const currentOverDots = document.querySelector(`#team${battingTeam}Box [data-current-over]`);
+  const prevOverDots = document.querySelector(`#team${battingTeam}Box [data-prev-over]`);
+  currentOverDots.innerHTML = "";
+  prevOverDots.innerHTML = "";
 
   currentOverBalls.forEach(ball => {
     const d = document.createElement("div");
@@ -1329,24 +1270,54 @@ function updateOverTiles() {
     if (ball.type === "extra") d.classList.add("wide-dot");
     if (ball.type === "wicket") d.classList.add("wicket-dot");
     d.textContent = ball.type === "run" ? ball.value : ball.type === "extra" ? "E" : "W";
-    currentOverDots[0].appendChild(d);
+    currentOverDots.appendChild(d);
   });
+
+  previousOverBalls.forEach(ball => {
+    const d = document.createElement("div");
+    d.className = "dot";
+    if (ball.type === "run") d.classList.add(ball.value >= 4 ? "big-run-dot" : "run-dot");
+    if (ball.type === "extra") d.classList.add("wide-dot");
+    if (ball.type === "wicket") d.classList.add("wicket-dot");
+    d.textContent = ball.type === "run" ? ball.value : ball.type === "extra" ? "E" : "W";
+    prevOverDots.appendChild(d);
+  });
+
+  // Target/RR only in second innings
+  const targetTile = document.getElementById("targetTile");
+  const rrTile = document.getElementById("rrTile");
+  if (currentInnings === 2) {
+    const target = firstBattingSide === "A" ? scoreA.runs + 1 : scoreB.runs + 1;
+    targetTile.style.display = "block";
+    rrTile.style.display = "block";
+    document.getElementById("targetValue").textContent = target;
+
+    const chasingScore = battingTeam === "A" ? scoreA.runs : scoreB.runs;
+    const chasingOvers = battingTeam === "A" ? scoreA.overs : scoreB.overs;
+    const remainingRuns = target - chasingScore;
+    const remainingOvers = maxOvers - chasingOvers;
+    let rr = 0;
+    if (remainingOvers > 0) rr = remainingRuns / remainingOvers;
+    document.getElementById("rrValue").textContent = rr.toFixed(2);
+  } else {
+    targetTile.style.display = "none";
+    rrTile.style.display = "none";
+  }
 }
 
 /* CHECK OVER COMPLETION */
 function checkOverCompletion() {
-  if (ballCount % 6 === 0) {
-    overCount++;
+  if (ballCount % ballsPerOver === 0 && ballCount > 0) {
     previousOverBalls = [...currentOverBalls];
     currentOverBalls = [];
-
     openBowlerSelector();
   }
 }
 
 /* CHECK INNINGS COMPLETION */
 function checkInningsCompletion() {
-  if (overCount >= maxOvers) {
+  const completedOvers = Math.floor(ballCount / ballsPerOver);
+  if (completedOvers >= maxOvers) {
     if (currentInnings === 1) {
       currentInnings = 2;
       switchInnings();
@@ -1369,9 +1340,12 @@ function switchInnings() {
     bowlingTeam = firstBattingSide;
 
     ballCount = 0;
-    overCount = 0;
     currentOverBalls = [];
     previousOverBalls = [];
+
+    // show only batting side box
+    document.getElementById("teamABox").style.display = battingTeam === "A" ? "block" : "none";
+    document.getElementById("teamBBox").style.display = battingTeam === "B" ? "block" : "none";
 
     openPairSelector();
   };
@@ -1380,7 +1354,7 @@ function switchInnings() {
 /* END MATCH */
 function endMatch() {
   showPage("scoreboard");
-  buildScoreboard();
+  buildFinalScoreboard();
 
   const winnerBox = document.getElementById("winner");
   const netA = scoreA.net;
@@ -1399,38 +1373,54 @@ function endMatch() {
 
   winnerBox.style.display = "block";
 
-  if (celebrationEnabled) {
-    launchConfetti();
-    launchFireworks();
-  }
+  launchConfetti();
+  launchFireworks();
 }
 
-/* SCOREBOARD BUILDER */
-function buildScoreboard() {
-  const t1 = document.querySelector("#scoreboardTeamsTable1 tbody");
-  const t2 = document.querySelector("#scoreboardTeamsTable2 tbody");
-
-  t1.innerHTML = "";
-  t2.innerHTML = "";
+/* LIVE SCOREBOARD */
+function updateLiveScoreboard() {
+  const tbody = document.querySelector("#scoreboardTeamsTableLive tbody");
+  tbody.innerHTML = "";
 
   const aName = document.getElementById("homeTeamAName").value.trim() || "TEAM A";
   const bName = document.getElementById("homeTeamBName").value.trim() || "TEAM B";
 
-  t1.innerHTML += `
+  tbody.innerHTML += `
     <tr>
-      <td>${firstBattingSide === "A" ? aName : bName}</td>
-      <td>${firstBattingSide === "A" ? `${scoreA.runs}/${scoreA.wickets}` : `${scoreB.runs}/${scoreB.wickets}`}</td>
-      <td>${firstBattingSide === "A" ? scoreA.net : scoreB.net}</td>
-      <td>${maxOvers}</td>
+      <td>${aName}</td>
+      <td>${scoreA.runs}/${scoreA.wickets}</td>
+      <td>${scoreA.net}</td>
+      <td>${scoreA.overs.toFixed(1)}/${maxOvers}</td>
+    </tr>
+    <tr>
+      <td>${bName}</td>
+      <td>${scoreB.runs}/${scoreB.wickets}</td>
+      <td>${scoreB.net}</td>
+      <td>${scoreB.overs.toFixed(1)}/${maxOvers}</td>
     </tr>
   `;
+}
 
-  t2.innerHTML += `
+/* FINAL SCOREBOARD */
+function buildFinalScoreboard() {
+  const tFinal = document.querySelector("#scoreboardTeamsTableFinal tbody");
+  tFinal.innerHTML = "";
+
+  const aName = document.getElementById("homeTeamAName").value.trim() || "TEAM A";
+  const bName = document.getElementById("homeTeamBName").value.trim() || "TEAM B";
+
+  tFinal.innerHTML += `
     <tr>
-      <td>${secondBattingSide === "A" ? aName : bName}</td>
-      <td>${secondBattingSide === "A" ? `${scoreA.runs}/${scoreA.wickets}` : `${scoreB.runs}/${scoreB.wickets}`}</td>
-      <td>${secondBattingSide === "A" ? scoreA.net : scoreB.net}</td>
-      <td>${maxOvers}</td>
+      <td>${aName}</td>
+      <td>${scoreA.runs}/${scoreA.wickets}</td>
+      <td>${scoreA.net}</td>
+      <td>${scoreA.overs.toFixed(1)}/${maxOvers}</td>
+    </tr>
+    <tr>
+      <td>${bName}</td>
+      <td>${scoreB.runs}/${scoreB.wickets}</td>
+      <td>${scoreB.net}</td>
+      <td>${scoreB.overs.toFixed(1)}/${maxOvers}</td>
     </tr>
   `;
 
@@ -1589,8 +1579,8 @@ document.getElementById("resetAll").addEventListener("click", () => {
   document.querySelector('#teamBBox [data-overs]').textContent = `0.0/--`;
 
   document.getElementById("winner").style.display = "none";
-  document.querySelector("#scoreboardTeamsTable1 tbody").innerHTML = "";
-  document.querySelector("#scoreboardTeamsTable2 tbody").innerHTML = "";
+  document.querySelector("#scoreboardTeamsTableLive tbody").innerHTML = "";
+  document.querySelector("#scoreboardTeamsTableFinal tbody").innerHTML = "";
   document.getElementById("scoreboardPairs").innerHTML = "";
   document.getElementById("scoreboardBowlers").innerHTML = "";
 
