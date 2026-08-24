@@ -284,6 +284,7 @@
       justify-content:center;
       gap:4px;
       flex-wrap:nowrap;
+      min-height:24px;
     }
     .dot{
       width:20px;
@@ -317,6 +318,10 @@
       background:#00bcd4;
       color:#000;
       box-shadow:0 0 6px #00bcd4;
+    }
+    .dot-ball{
+      background:#444;
+      color:#fff;
     }
 
     .run-grid-title{
@@ -357,14 +362,14 @@
     }
     .ball-type-actions button{
       flex:1;
-      font-size:18px;
-      padding:16px 10px;
+      font-size:16px;
+      padding:14px 10px;
       border-radius:10px;
       background:var(--button-bg);
       color:var(--text-color);
       border:none;
       cursor:pointer;
-      min-height:64px;
+      min-height:56px;
     }
 
     .winner{
@@ -663,7 +668,7 @@
       </div>
     </div>
 
-    <div class="run-grid-title">+ Run per ball</div>
+    <div class="run-grid-title">Ball outcomes</div>
     <div class="run-grid" data-run-grid></div>
 
     <div class="ball-type-actions">
@@ -731,6 +736,12 @@
       <tbody></tbody>
     </table>
 
+    <h3 style="text-align:center;margin-top:6px;font-size:14px;">Live Pair Summary</h3>
+    <div id="scoreboardPairsLive"></div>
+
+    <h3 style="text-align:center;margin-top:6px;font-size:14px;">Live Bowling Summary</h3>
+    <div id="scoreboardBowlersLive"></div>
+
     <h3 style="text-align:center;margin-top:6px;font-size:14px;">Final Scoreboard</h3>
     <table id="scoreboardTeamsTableFinal">
       <thead>
@@ -744,10 +755,10 @@
       <tbody></tbody>
     </table>
 
-    <h3 style="text-align:center;margin-top:6px;font-size:14px;">Batting Pairs</h3>
+    <h3 style="text-align:center;margin-top:6px;font-size:14px;">Final Pair Summary</h3>
     <div id="scoreboardPairs"></div>
 
-    <h3 style="text-align:center;margin-top:6px;font-size:14px;">Bowling Figures</h3>
+    <h3 style="text-align:center;margin-top:6px;font-size:14px;">Final Bowling Summary</h3>
     <div id="scoreboardBowlers"></div>
   </div>
 </div>
@@ -776,6 +787,18 @@
         <label style="margin-right:12px;">
           <input type="checkbox" id="soundToggle" checked> Enable sounds
         </label>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <strong>Third ball rule:</strong>
+      <div style="margin-top:8px;">
+        <label style="margin-right:12px;">
+          <input type="checkbox" id="thirdBallRuleToggle"> Enable third ball rule (visual only)
+        </label>
+      </div>
+      <div style="margin-top:6px;font-size:12px;opacity:.8;">
+        This toggle is reserved for future logic; currently it is a visual setting only.
       </div>
     </div>
 
@@ -945,6 +968,11 @@ document.querySelectorAll('input[name="theme"]').forEach(radio => {
 });
 document.getElementById("soundToggle").addEventListener("change", e => soundEnabled = e.target.checked);
 
+/* THIRD BALL RULE (placeholder) */
+document.getElementById("thirdBallRuleToggle").addEventListener("change", e => {
+  // reserved for future logic; currently no scoring impact
+});
+
 /* SPECTATOR MODE */
 document.getElementById("spectatorModeToggle").addEventListener("change", e => {
   spectatorMode = e.target.checked;
@@ -1001,7 +1029,6 @@ let pairHistory = [];
 let bowlerHistory = [];
 
 let ballCount = 0;
-let overCount = 0;
 
 /* START MATCH */
 document.getElementById("startMatchBtn").addEventListener("click", startMatch);
@@ -1038,7 +1065,6 @@ function startMatch() {
   document.getElementById("teamAName").value = aName;
   document.getElementById("teamBName").value = bName;
 
-  // show only batting side box
   document.getElementById("teamABox").style.display = battingTeam === "A" ? "block" : "none";
   document.getElementById("teamBBox").style.display = battingTeam === "B" ? "block" : "none";
 
@@ -1056,7 +1082,7 @@ function openPairSelector() {
 
   const team = battingTeam === "A" ? playersA : playersB;
 
-  title.textContent = "Select Batting Pair";
+  title.textContent = `Select Batting Pair (Innings ${currentInnings})`;
   grid.innerHTML = "";
 
   team.forEach((p, idx) => {
@@ -1072,6 +1098,8 @@ function openPairSelector() {
     grid.appendChild(btn);
   });
 
+  document.getElementById("pairSelectorBody").textContent =
+    "Select two batters for the current innings.";
   overlay.style.display = "flex";
 }
 
@@ -1086,6 +1114,7 @@ document.getElementById("pairSelectorConfirm").addEventListener("click", () => {
   pairHistory.push({ innings: currentInnings, pair: selected });
 
   document.getElementById("pairSelectorOverlay").style.display = "none";
+  playSound("pair");
   openBowlerSelector();
 });
 
@@ -1097,7 +1126,7 @@ function openBowlerSelector() {
 
   const team = bowlingTeam === "A" ? playersA : playersB;
 
-  title.textContent = "Select Bowler";
+  title.textContent = `Select Bowler (Innings ${currentInnings})`;
   grid.innerHTML = "";
 
   team.forEach((p, idx) => {
@@ -1113,6 +1142,8 @@ function openBowlerSelector() {
     grid.appendChild(btn);
   });
 
+  document.getElementById("bowlerSelectorBody").textContent =
+    "Select the bowler for this over.";
   overlay.style.display = "flex";
 }
 
@@ -1133,19 +1164,32 @@ document.getElementById("bowlerSelectorConfirm").addEventListener("click", () =>
 
 /* ENABLE SCORING BUTTONS */
 function enableScoringButtons() {
+  if (spectatorMode) return;
   document.querySelectorAll(".run-grid button").forEach(b => b.disabled = false);
   document.querySelectorAll("[data-wide-nb]").forEach(b => b.disabled = false);
   document.querySelectorAll("[data-wicket]").forEach(b => b.disabled = false);
   document.querySelectorAll("[data-undo]").forEach(b => b.disabled = false);
 }
 
-/* RUN GRID GENERATION */
+/* RUN GRID GENERATION (0–7 + ExRun) */
 document.querySelectorAll("[data-run-grid]").forEach(grid => {
   grid.innerHTML = "";
-  [1,2,3,4,5,6].forEach(r => {
+  const labels = [0,1,2,3,4,5,6,7,"+ExRun"];
+  labels.forEach(label => {
     const btn = document.createElement("button");
-    btn.textContent = r;
-    btn.addEventListener("click", () => addRun(r));
+    btn.textContent = label;
+    if (label === "+ExRun") {
+      btn.style.fontSize = "16px";
+      btn.addEventListener("click", () => {
+        const val = prompt("Enter extra runs for this ball (e.g. 2, 3):");
+        const runs = parseInt(val);
+        if (!isNaN(runs) && runs > 0) addRun(runs);
+      });
+    } else if (label === 0) {
+      btn.addEventListener("click", () => addDotBall());
+    } else {
+      btn.addEventListener("click", () => addRun(label));
+    }
     grid.appendChild(btn);
   });
 });
@@ -1154,6 +1198,10 @@ document.querySelectorAll("[data-run-grid]").forEach(grid => {
 function addRun(runs) {
   playSound("run");
   pushBall({ type: "run", value: runs });
+}
+
+function addDotBall() {
+  pushBall({ type: "dot", value: 0 });
 }
 
 function addWideNoBall() {
@@ -1210,6 +1258,10 @@ function pushBall(ball) {
     wicket = true;
     net = -5;
   }
+  if (ball.type === "dot") {
+    runs = 0;
+    net = 0;
+  }
 
   scoreObj.runs += runs;
   scoreObj.net += net;
@@ -1239,14 +1291,12 @@ function updateScoreTiles() {
   document.querySelector('#teamABox [data-net-tile]').textContent = scoreA.net;
   document.querySelector('#teamBBox [data-net-tile]').textContent = scoreB.net;
 
-  document.querySelector('#teamABox [data-overs]').textContent = `${scoreA.overs.toFixed(1)}/${maxOvers}`;
-  document.querySelector('#teamBBox [data-overs]').textContent = `${scoreB.overs.toFixed(1)}/${maxOvers}`;
+  document.querySelector('#teamABox [data-overs]').textContent = `${scoreA.overs.toFixed(1)}/${maxOvers || "--"}`;
+  document.querySelector('#teamBBox [data-overs]').textContent = `${scoreB.overs.toFixed(1)}/${maxOvers || "--"}`;
 }
 
 /* UPDATE OVER TILES */
 function updateOverTiles() {
-  const ballsThisInnings = battingTeam === "A" ? scoreA.overs * ballsPerOver : scoreB.overs * ballsPerOver;
-  const overTile = document.querySelector(`#team${battingTeam}Box [data-overs]`);
   const completedOvers = Math.floor(ballCount / ballsPerOver);
   const ballsInCurrentOver = ballCount % ballsPerOver;
 
@@ -1256,6 +1306,7 @@ function updateOverTiles() {
     scoreB.overs = completedOvers + ballsInCurrentOver / ballsPerOver;
   }
 
+  const overTile = document.querySelector(`#team${battingTeam}Box [data-overs]`);
   overTile.textContent = `${completedOvers}.${ballsInCurrentOver}/${maxOvers}`;
 
   const currentOverDots = document.querySelector(`#team${battingTeam}Box [data-current-over]`);
@@ -1269,7 +1320,12 @@ function updateOverTiles() {
     if (ball.type === "run") d.classList.add(ball.value >= 4 ? "big-run-dot" : "run-dot");
     if (ball.type === "extra") d.classList.add("wide-dot");
     if (ball.type === "wicket") d.classList.add("wicket-dot");
-    d.textContent = ball.type === "run" ? ball.value : ball.type === "extra" ? "E" : "W";
+    if (ball.type === "dot") d.classList.add("dot-ball");
+    d.textContent =
+      ball.type === "run" ? ball.value :
+      ball.type === "extra" ? "E" :
+      ball.type === "wicket" ? "W" :
+      "•";
     currentOverDots.appendChild(d);
   });
 
@@ -1279,11 +1335,15 @@ function updateOverTiles() {
     if (ball.type === "run") d.classList.add(ball.value >= 4 ? "big-run-dot" : "run-dot");
     if (ball.type === "extra") d.classList.add("wide-dot");
     if (ball.type === "wicket") d.classList.add("wicket-dot");
-    d.textContent = ball.type === "run" ? ball.value : ball.type === "extra" ? "E" : "W";
+    if (ball.type === "dot") d.classList.add("dot-ball");
+    d.textContent =
+      ball.type === "run" ? ball.value :
+      ball.type === "extra" ? "E" :
+      ball.type === "wicket" ? "W" :
+      "•";
     prevOverDots.appendChild(d);
   });
 
-  // Target/RR only in second innings
   const targetTile = document.getElementById("targetTile");
   const rrTile = document.getElementById("rrTile");
   if (currentInnings === 2) {
@@ -1343,13 +1403,18 @@ function switchInnings() {
     currentOverBalls = [];
     previousOverBalls = [];
 
-    // show only batting side box
     document.getElementById("teamABox").style.display = battingTeam === "A" ? "block" : "none";
     document.getElementById("teamBBox").style.display = battingTeam === "B" ? "block" : "none";
+
+    undoStack = [];
 
     openPairSelector();
   };
 }
+
+document.getElementById("inningsPromptCancel").onclick = () => {
+  document.getElementById("inningsPromptOverlay").style.display = "none";
+};
 
 /* END MATCH */
 function endMatch() {
@@ -1399,6 +1464,18 @@ function updateLiveScoreboard() {
       <td>${scoreB.overs.toFixed(1)}/${maxOvers}</td>
     </tr>
   `;
+
+  const pairsLive = document.getElementById("scoreboardPairsLive");
+  pairsLive.innerHTML = "";
+  pairHistory.forEach(p => {
+    pairsLive.innerHTML += `<div>Innings ${p.innings}: ${p.pair.join(" & ")}</div>`;
+  });
+
+  const bowlersLive = document.getElementById("scoreboardBowlersLive");
+  bowlersLive.innerHTML = "";
+  bowlerHistory.forEach(b => {
+    bowlersLive.innerHTML += `<div>Innings ${b.innings}: ${b.bowler}</div>`;
+  });
 }
 
 /* FINAL SCOREBOARD */
@@ -1551,7 +1628,6 @@ document.getElementById("resetAll").addEventListener("click", () => {
   bowlerHistory = [];
 
   ballCount = 0;
-  overCount = 0;
   currentOverBalls = [];
   previousOverBalls = [];
 
@@ -1581,6 +1657,8 @@ document.getElementById("resetAll").addEventListener("click", () => {
   document.getElementById("winner").style.display = "none";
   document.querySelector("#scoreboardTeamsTableLive tbody").innerHTML = "";
   document.querySelector("#scoreboardTeamsTableFinal tbody").innerHTML = "";
+  document.getElementById("scoreboardPairsLive").innerHTML = "";
+  document.getElementById("scoreboardBowlersLive").innerHTML = "";
   document.getElementById("scoreboardPairs").innerHTML = "";
   document.getElementById("scoreboardBowlers").innerHTML = "";
 
