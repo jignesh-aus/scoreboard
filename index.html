@@ -130,42 +130,55 @@
 }
 
     .home-team-name{
-      width:100%;
-      text-transform:uppercase;
-      text-align:center;
-      margin-bottom:6px;
-      padding:3px 6px;
-      border-radius:4px;
-      border:none;
-      background:#333a45;
-      color:#fff;
-      font-size:12px;
-      box-sizing:border-box;
-    }
+  width:100%;
+  max-width:160px;        /* NEW: fits mobile */
+  text-transform:uppercase;
+  text-align:center;
+  margin:0 auto 6px auto; /* NEW: centers input */
+  padding:3px 6px;
+  border-radius:4px;
+  border:none;
+  background:#333a45;
+  color:#fff;
+  font-size:12px;
+  box-sizing:border-box;
+}
+
+
+
     [data-theme="light"] .home-team-name{
       background:#d7dbe6;
       color:#000;
     }
+
+
     .home-players-box {
   margin-top: 4px;
   background: var(--players-bg);
   border-radius: 8px;
   padding: 6px;
   display: flex;
-  flex-direction: column; /* ← STACK vertically */
+  flex-direction: column;
   gap: 6px;
+  max-width:180px;        /* NEW: keeps column narrow */
+  margin:0 auto;          /* NEW: centers the whole box */
 }
 
 
+
     .player-input{
-      padding:6px 8px;
-      border-radius:4px;
-      border:none;
-      background:#333a45;
-      color:#fff;
-      font-size:12px;
-      box-sizing:border-box;
-    }
+  width:100%;
+  max-width:160px;        /* NEW: fits mobile */
+  margin:0 auto;          /* NEW: centers input */
+  padding:6px 8px;
+  border-radius:4px;
+  border:none;
+  background:#333a45;
+  color:#fff;
+  font-size:12px;
+  box-sizing:border-box;
+}
+
     [data-theme="light"] .player-input{
       background:#d7dbe6;
       color:#000;
@@ -182,6 +195,20 @@
       color:#000;
       cursor:pointer;
     }
+
+.reset-btn{
+  margin-bottom:60px;     /* lifts above bottom nav */
+  padding:10px;           /* slightly smaller */
+  font-size:15px;
+}
+
+.reset-btn{
+  display:block;
+  width:90%;          /* smaller width for mobile */
+  max-width:260px;    /* perfect size */
+  margin:20px auto 70px auto; /* centered + lifted above bottom nav */
+  padding:12px;
+}
 
     #bottom-nav{
       position:fixed;
@@ -834,20 +861,8 @@
     </div>
   </div>
 
-  <button id="resetAll" style="
-    width:100%;
-    padding:12px;
-    background:#e53935;
-    border:none;
-    border-radius:8px;
-    font-size:16px;
-    margin-top:10px;
-    color:#fff;
-    font-weight:600;
-    cursor:pointer;
-    position:relative;
-    z-index:10000;
-  ">Reset Scoreboard</button>
+  <button id="resetAll" class="danger-btn reset-btn">Reset Scoreboard</button>
+
 </div>
 
 <!-- SCOREBOARD PAGE -->
