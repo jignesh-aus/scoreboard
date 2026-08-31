@@ -1258,8 +1258,39 @@ function startMatch() {
   initRunGrid();
   disableScoringButtons();
   setMatchInningsTab(1);
+
+  /* 🔥 FIX: SWAP TEAM BOXES WHEN TEAM B BATS FIRST */
+  const innings1 = document.getElementById("matchInnings1");
+  const innings2 = document.getElementById("matchInnings2");
+  const boxA = document.getElementById("teamABox");
+  const boxB = document.getElementById("teamBBox");
+
+  if (firstBattingSide === "B") {
+    innings1.appendChild(boxB);
+    innings2.appendChild(boxA);
+  } else {
+    innings1.appendChild(boxA);
+    innings2.appendChild(boxB);
+  }
+
+/* 🔥 FIX: MOVE TARGET + RR TILES TO THE CORRECT SECOND-INNINGS BOX */
+const targetTile2 = document.getElementById("targetTile2");
+const rrTile2 = document.getElementById("rrTile2");
+
+if (secondBattingSide === "A") {
+    // Team A bats second → tiles must be inside teamABox
+    document.getElementById("teamABox").querySelector(".over-left").appendChild(targetTile2);
+    document.getElementById("teamABox").querySelector(".over-right").appendChild(rrTile2);
+} else {
+    // Team B bats second → tiles must be inside teamBBox
+    document.getElementById("teamBBox").querySelector(".over-left").appendChild(targetTile2);
+    document.getElementById("teamBBox").querySelector(".over-right").appendChild(rrTile2);
+}
+
+  /* Open pair + bowler selector */
   openCombinedSelector(true, true, "start");
 }
+
 
 /* RUN GRID GENERATION */
 function initRunGrid() {
