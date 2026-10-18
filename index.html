@@ -7,31 +7,31 @@
 
   <style>
     :root {
-      --bg-color: #0b0b10;
-      --text-color: #fff;
-      --card-bg-a: #1c1f26;
-      --card-bg-b: #151820;
-      --players-bg: #262a33;
-      --accent: #00e5ff;
-      --border-color: #444;
-      --stat-bg: #262a33;
-      --button-bg: #333a45;
-      --button-bg-hover: #3f4754;
-      --winner-bg: #ffeb3b;
+      --bg-color: #101827;
+      --text-color: #f8fafc;
+      --card-bg-a: #1e293b;
+      --card-bg-b: #172235;
+      --players-bg: #27364d;
+      --accent: #38bdf8;
+      --border-color: #52647c;
+      --stat-bg: #26364d;
+      --button-bg: #334155;
+      --button-bg-hover: #475569;
+      --winner-bg: #fde047;
     }
 
     [data-theme="light"] {
-      --bg-color: #f3f5f9;
-      --text-color: #111;
+      --bg-color: #edf2f7;
+      --text-color: #172033;
       --card-bg-a: #ffffff;
-      --card-bg-b: #f0f2f7;
-      --players-bg: #e3e6ef;
-      --accent: #007acc;
-      --border-color: #c0c4d0;
-      --stat-bg: #e3e6ef;
-      --button-bg: #d7dbe6;
-      --button-bg-hover: #c7cbd8;
-      --winner-bg: #ffeb3b;
+      --card-bg-b: #f8fafc;
+      --players-bg: #e2e8f0;
+      --accent: #075985;
+      --border-color: #a8b5c7;
+      --stat-bg: #e2e8f0;
+      --button-bg: #dbe4ef;
+      --button-bg-hover: #c7d5e5;
+      --winner-bg: #fde047;
     }
 
     html,body{
@@ -298,17 +298,24 @@
       transition:transform .2s ease,text-shadow .2s ease,color .2s ease;
     }
     [data-score-tile]{
-      font-size:24px;
-      font-weight:800;
+      font-size:28px;
+      font-weight:900;
+      line-height:1.2;
+      color:var(--text-color);
+      letter-spacing:.2px;
+      text-shadow:0 1px 1px rgba(0,0,0,.12);
     }
     [data-net-tile]{
-      font-size:20px;
-      font-weight:700;
+      font-size:22px;
+      font-weight:800;
+      color:var(--text-color);
     }
     [data-overs]{
-      font-size:18px;
-      font-weight:700;
+      font-size:19px;
+      font-weight:800;
+      color:var(--text-color);
     }
+    .stat-label{color:var(--text-color);font-weight:600;opacity:.9;}
 
     .over-layout{
       display:flex;
@@ -977,6 +984,16 @@
     </div>
 
     <div style="margin-bottom:16px;">
+      <strong>Player selection:</strong>
+      <div style="margin-top:8px;">
+        <label>
+          <input type="checkbox" id="autoPlayerSelectionToggle" checked> Automatically select batters and bowler (no prompts)
+        </label>
+      </div>
+      <div style="margin-top:6px;font-size:12px;opacity:.8;">Enabled by default. The scoreboard automatically chooses the next available batters and an eligible bowler. Turn this off to select them manually.</div>
+    </div>
+
+    <div style="margin-bottom:16px;">
       <strong>Sound effects:</strong>
       <div style="margin-top:8px;">
         <label style="margin-right:12px;">
@@ -1259,7 +1276,7 @@ function startMatch() {
   disableScoringButtons();
   setMatchInningsTab(1);
 
-  /* 🔥 FIX: SWAP TEAM BOXES WHEN TEAM B BATS FIRST */
+  /* ðŸ”¥ FIX: SWAP TEAM BOXES WHEN TEAM B BATS FIRST */
   const innings1 = document.getElementById("matchInnings1");
   const innings2 = document.getElementById("matchInnings2");
   const boxA = document.getElementById("teamABox");
@@ -1273,16 +1290,16 @@ function startMatch() {
     innings2.appendChild(boxB);
   }
 
-/* 🔥 FIX: MOVE TARGET + RR TILES TO THE CORRECT SECOND-INNINGS BOX */
+/* ðŸ”¥ FIX: MOVE TARGET + RR TILES TO THE CORRECT SECOND-INNINGS BOX */
 const targetTile2 = document.getElementById("targetTile2");
 const rrTile2 = document.getElementById("rrTile2");
 
 if (secondBattingSide === "A") {
-    // Team A bats second → tiles must be inside teamABox
+    // Team A bats second â†’ tiles must be inside teamABox
     document.getElementById("teamABox").querySelector(".over-left").appendChild(targetTile2);
     document.getElementById("teamABox").querySelector(".over-right").appendChild(rrTile2);
 } else {
-    // Team B bats second → tiles must be inside teamBBox
+    // Team B bats second â†’ tiles must be inside teamBBox
     document.getElementById("teamBBox").querySelector(".over-left").appendChild(targetTile2);
     document.getElementById("teamBBox").querySelector(".over-right").appendChild(rrTile2);
 }
@@ -1389,6 +1406,45 @@ function openCombinedSelector(needPair, needBowler, reason) {
   const bowlerBody = document.getElementById("combinedBowlerBody");
   const confirmBtn = document.getElementById("combinedSelectorConfirm");
 
+  // Default mode avoids selection prompts and chooses eligible players automatically.
+  if (document.getElementById("autoPlayerSelectionToggle").checked) {
+    if (needPair) {
+      const teamPlayers = battingTeam === "A" ? playersA : playersB;
+      const completedSet = battingTeam === "A" ? completedBattersA : completedBattersB;
+      const remaining = teamPlayers.filter(p => !completedSet.has(p));
+      const selectedPair = remaining.slice(0, Math.min(2, remaining.length));
+      currentPair = selectedPair;
+      currentPairStats = {
+        innings: currentInnings,
+        pair: [...selectedPair],
+        runs: 0,
+        wickets: 0,
+        balls: 0
+      };
+    }
+    if (needBowler) {
+      const teamPlayers = bowlingTeam === "A" ? playersA : playersB;
+      const bowlerMap = bowlingTeam === "A" ? bowlerBallsMapA : bowlerBallsMapB;
+      let eligible = teamPlayers.filter(p => (bowlerMap[p] || 0) / ballsPerOver < bowlerOversLimit && p !== lastBowlerForNextOver);
+      if (!eligible.length) eligible = teamPlayers.filter(p => (bowlerMap[p] || 0) / ballsPerOver < bowlerOversLimit);
+      if (!eligible.length) eligible = teamPlayers;
+      const selectedBowler = eligible[0] || null;
+      currentBowler = selectedBowler;
+      currentBowlerStats = {
+        innings: currentInnings,
+        bowler: selectedBowler || "",
+        runs: 0,
+        wickets: 0,
+        balls: 0,
+        extrasWN: 0
+      };
+    }
+    document.getElementById("combinedSelectorOverlay").style.display = "none";
+    enableScoringButtons();
+    playSound("pair");
+    return;
+  }
+
   confirmBtn.disabled = true;
   pairGrid.innerHTML = "";
   bowlerGrid.innerHTML = "";
@@ -1404,7 +1460,7 @@ function openCombinedSelector(needPair, needBowler, reason) {
 
   if (needPair) {
     pairSection.style.display = "block";
-    pairTitle.textContent = `Batting Pair – ${battingName}`;
+    pairTitle.textContent = `Batting Pair â€“ ${battingName}`;
     pairBody.textContent = "Select the batters for this phase.";
 
     const teamPlayers = battingTeam === "A" ? playersA : playersB;
@@ -1447,7 +1503,7 @@ function openCombinedSelector(needPair, needBowler, reason) {
 
   if (needBowler) {
     bowlerSection.style.display = "block";
-    bowlerTitle.textContent = `Bowler – ${bowlingName}`;
+    bowlerTitle.textContent = `Bowler â€“ ${bowlingName}`;
     bowlerBody.textContent = "Select the bowler for the next over.";
 
     const teamPlayers = bowlingTeam === "A" ? playersA : playersB;
@@ -1765,7 +1821,7 @@ function updateOverTiles() {
       ball.type === "run" ? ball.value :
       ball.type === "extra" ? "2wd" :
       ball.type === "wicket" ? "W" :
-      "•";
+      "â€¢";
     currentOverDots.appendChild(d);
   });
 
@@ -1780,7 +1836,7 @@ function updateOverTiles() {
       ball.type === "run" ? ball.value :
       ball.type === "extra" ? "E" :
       ball.type === "wicket" ? "W" :
-      "•";
+      "â€¢";
     prevOverDots.appendChild(d);
   });
 
