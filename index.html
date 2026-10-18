@@ -78,13 +78,14 @@
       top:-60px;
       left:0;
       width:100%;
-      background:#ffeb3b;
-      color:#000;
+      background:#0f766e;
+      color:#fff;
       text-align:center;
       padding:10px;
       font-size:14px;
       font-weight:700;
-      box-shadow:0 0 10px rgba(0,0,0,0.4);
+      box-shadow:0 3px 14px rgba(0,0,0,0.35);
+      border-bottom:2px solid rgba(255,255,255,.35);
       transition:top .4s ease;
       z-index:9999;
     }
@@ -128,6 +129,30 @@
   flex-direction: column;
   gap: 10px;
 }
+
+    .team-name-guidance{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:7px;
+      margin:12px 0 8px;
+      padding:9px 10px;
+      border:1px solid var(--accent);
+      border-radius:8px;
+      background:var(--card-bg-a);
+      color:var(--text-color);
+      text-align:center;
+      font-size:13px;
+      font-weight:700;
+      line-height:1.35;
+    }
+    .guidance-arrow{
+      color:var(--accent);
+      font-size:22px;
+      font-weight:900;
+      line-height:1;
+      flex-shrink:0;
+    }
 
     .home-team-name{
   width:100%;
@@ -206,7 +231,7 @@
   display:block;
   width:60%;          /* smaller width for mobile */
   max-width:160px;    /* perfect size */
-  margin:20px auto 100px auto; /* centered + lifted above bottom nav */
+  margin:8px auto 80px auto; /* raised clear of the bottom navigation */
   padding:6px;
 }
 
@@ -323,8 +348,8 @@
       letter-spacing:.2px;
     }
     [data-overs]{
-      font-size:19px;
-      font-weight:800;
+      font-size:28px;
+      font-weight:900;
       color:var(--text-color);
     }
     .stat-label{color:var(--text-color);font-weight:600;opacity:.9;}
@@ -384,8 +409,8 @@
       box-shadow:0 0 6px #00c853;
     }
     .big-run-dot{
-      background:#ffeb3b;
-      color:#000;
+      background:#0f766e;
+      color:#fff;
       box-shadow:0 0 6px #ffeb3b;
     }
     .wicket-dot{
@@ -722,16 +747,21 @@
       </select>
     </div>
 
+    <div class="team-name-guidance">
+      <span class="guidance-arrow" aria-hidden="true">â†“</span>
+      <span>Insert names of both teams and players (optional):</span>
+    </div>
+
     <div class="teams-two-col">
   <div class="team-col">
     
-    <input id="homeTeamAName" class="home-team-name" placeholder="TEAM A NAME">
+    <input id="homeTeamAName" class="home-team-name" placeholder="TEAM A">
     <div id="teamAPlayersContainer" class="home-players-box"></div>
   </div>
 
   <div class="team-col">
     
-    <input id="homeTeamBName" class="home-team-name" placeholder="TEAM B NAME">
+    <input id="homeTeamBName" class="home-team-name" placeholder="TEAM B">
     <div id="teamBPlayersContainer" class="home-players-box"></div>
   </div>
 </div>
@@ -988,38 +1018,33 @@
 
   <div style="margin-top:20px;font-size:14px;">
     <div style="margin-bottom:16px;">
-      <strong>Theme:</strong>
       <div style="margin-top:8px;">
         <label style="margin-right:12px;">
-          <input type="radio" name="theme" value="dark" checked> Dark
+          <input type="radio" name="theme" value="dark" checked> Dark theme
         </label>
         <label>
-          <input type="radio" name="theme" value="light"> Light
+          <input type="radio" name="theme" value="light"> Light theme
         </label>
       </div>
     </div>
 
     <div style="margin-bottom:16px;">
-      <strong>Player selection:</strong>
       <div style="margin-top:8px;">
         <label>
           <input type="checkbox" id="autoPlayerSelectionToggle" checked> Auto-select batters &amp; bowler
         </label>
       </div>
-      <div style="margin-top:6px;font-size:12px;opacity:.8;">On by default. Turn off for manual selection.</div>
     </div>
 
     <div style="margin-bottom:16px;">
-      <strong>Sound effects:</strong>
       <div style="margin-top:8px;">
         <label style="margin-right:12px;">
-          <input type="checkbox" id="soundToggle" checked> Enable sounds
+          <input type="checkbox" id="soundToggle"> Enable sounds
         </label>
       </div>
     </div>
 
     <div style="margin-bottom:16px;">
-      <strong>Third ball rule:</strong>
       <div style="margin-top:8px;">
         <label style="margin-right:12px;">
           <input type="checkbox" id="thirdBallRuleToggle"> Enable full third ball rule
@@ -1085,7 +1110,7 @@ let matchStarted = false;
 let firstBattingSide = null;
 let secondBattingSide = null;
 
-let soundEnabled = true;
+let soundEnabled = false;
 
 let confettiActive = false;
 let fireworksActive = false;
@@ -1138,8 +1163,8 @@ function renderPlayerFields() {
   if (!count || count < 4 || count > 8) return;
 
   for (let i = 1; i <= count; i++) {
-    teamA.innerHTML += `<input id="teamAPlayer${i}" class="player-input" placeholder="Player ${i} (optional)">`;
-    teamB.innerHTML += `<input id="teamBPlayer${i}" class="player-input" placeholder="Player ${i} (optional)">`;
+    teamA.innerHTML += `<input id="teamAPlayer${i}" class="player-input" placeholder="Player ${i}">`;
+    teamB.innerHTML += `<input id="teamBPlayer${i}" class="player-input" placeholder="Player ${i}">`;
   }
 }
 document.getElementById("playersPerTeam").addEventListener("change", renderPlayerFields);
@@ -1292,7 +1317,7 @@ function startMatch() {
   disableScoringButtons();
   setMatchInningsTab(1);
 
-  /* 🔥 FIX: SWAP TEAM BOXES WHEN TEAM B BATS FIRST */
+  /* ðŸ”¥ FIX: SWAP TEAM BOXES WHEN TEAM B BATS FIRST */
   const innings1 = document.getElementById("matchInnings1");
   const innings2 = document.getElementById("matchInnings2");
   const boxA = document.getElementById("teamABox");
@@ -1306,16 +1331,16 @@ function startMatch() {
     innings2.appendChild(boxB);
   }
 
-/* 🔥 FIX: MOVE TARGET + RR TILES TO THE CORRECT SECOND-INNINGS BOX */
+/* ðŸ”¥ FIX: MOVE TARGET + RR TILES TO THE CORRECT SECOND-INNINGS BOX */
 const targetTile2 = document.getElementById("targetTile2");
 const rrTile2 = document.getElementById("rrTile2");
 
 if (secondBattingSide === "A") {
-    // Team A bats second → tiles must be inside teamABox
+    // Team A bats second â†’ tiles must be inside teamABox
     document.getElementById("teamABox").querySelector(".over-left").appendChild(targetTile2);
     document.getElementById("teamABox").querySelector(".over-right").appendChild(rrTile2);
 } else {
-    // Team B bats second → tiles must be inside teamBBox
+    // Team B bats second â†’ tiles must be inside teamBBox
     document.getElementById("teamBBox").querySelector(".over-left").appendChild(targetTile2);
     document.getElementById("teamBBox").querySelector(".over-right").appendChild(rrTile2);
 }
@@ -1476,7 +1501,7 @@ function openCombinedSelector(needPair, needBowler, reason) {
 
   if (needPair) {
     pairSection.style.display = "block";
-    pairTitle.textContent = `Batting Pair – ${battingName}`;
+    pairTitle.textContent = `Batting Pair â€“ ${battingName}`;
     pairBody.textContent = "Select the batters for this phase.";
 
     const teamPlayers = battingTeam === "A" ? playersA : playersB;
@@ -1519,7 +1544,7 @@ function openCombinedSelector(needPair, needBowler, reason) {
 
   if (needBowler) {
     bowlerSection.style.display = "block";
-    bowlerTitle.textContent = `Bowler – ${bowlingName}`;
+    bowlerTitle.textContent = `Bowler â€“ ${bowlingName}`;
     bowlerBody.textContent = "Select the bowler for the next over.";
 
     const teamPlayers = bowlingTeam === "A" ? playersA : playersB;
