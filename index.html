@@ -78,8 +78,8 @@
       top:-60px;
       left:0;
       width:100%;
-      background:#0f766e;
-      color:#fff;
+      background:#fde047;
+      color:#111827;
       text-align:center;
       padding:10px;
       font-size:14px;
@@ -131,28 +131,16 @@
 }
 
     .team-name-guidance{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:7px;
+      display:block;
       margin:12px 0 8px;
-      padding:9px 10px;
-      border:1px solid var(--accent);
-      border-radius:8px;
-      background:var(--card-bg-a);
+      padding:0;
       color:var(--text-color);
-      text-align:center;
-      font-size:13px;
-      font-weight:700;
-      line-height:1.35;
+      text-align:left;
+      font-size:14px;
+      font-weight:600;
+      line-height:1.4;
     }
-    .guidance-arrow{
-      color:var(--accent);
-      font-size:22px;
-      font-weight:900;
-      line-height:1;
-      flex-shrink:0;
-    }
+    .guidance-arrow{display:none;}
 
     .home-team-name{
   width:100%;
@@ -378,6 +366,7 @@
       font-size:12px;
       margin-bottom:4px;
       font-weight:600;
+  text-align:center;
     }
     .over-dots{
       display:flex;
@@ -409,9 +398,10 @@
       box-shadow:0 0 6px #00c853;
     }
     .big-run-dot{
-      background:#0f766e;
-      color:#fff;
-      box-shadow:0 0 6px #ffeb3b;
+      background:#fde047;
+      color:#111827;
+      border-color:#facc15;
+      box-shadow:0 0 6px rgba(253,224,71,.75);
     }
     .wicket-dot{
       background:#ff5252;
@@ -1113,6 +1103,7 @@ let secondBattingSide = null;
 let soundEnabled = false;
 
 let confettiActive = false;
+let milestoneConfettiActive = false;
 let fireworksActive = false;
 
 const soundRun = document.getElementById("soundRun");
@@ -1637,6 +1628,58 @@ document.getElementById("combinedSelectorConfirm").addEventListener("click", () 
   playSound("pair");
 });
 
+/* CELEBRATE EACH NEW 50-POINT NET-SCORE MILESTONE */
+function checkNetMilestone(previousNet, currentNet) {
+  if (currentNet > previousNet && Math.floor(currentNet / 50) > Math.floor(previousNet / 50)) {
+    celebrateNetMilestone();
+  }
+}
+
+function celebrateNetMilestone() {
+  const canvas = document.getElementById("confettiCanvas");
+  if (!canvas) return;
+  milestoneConfettiActive = true;
+  const ctx = canvas.getContext("2d");
+  const resize = () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  };
+  resize();
+  const pieces = Array.from({length: 110}, () => ({
+    x: Math.random() * canvas.width,
+    y: -Math.random() * canvas.height * 0.7,
+    size: 3 + Math.random() * 5,
+    speed: 2 + Math.random() * 3,
+    drift: (Math.random() - 0.5) * 2,
+    color: `hsl(${Math.random() * 360}, 95%, 58%)`,
+    angle: Math.random() * Math.PI,
+    spin: (Math.random() - 0.5) * 0.15
+  }));
+  const started = performance.now();
+  function frame(now) {
+    if (!milestoneConfettiActive) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(piece => {
+      piece.y += piece.speed;
+      piece.x += piece.drift;
+      piece.angle += piece.spin;
+      ctx.save();
+      ctx.translate(piece.x, piece.y);
+      ctx.rotate(piece.angle);
+      ctx.fillStyle = piece.color;
+      ctx.fillRect(-piece.size / 2, -piece.size / 2, piece.size, piece.size * 1.7);
+      ctx.restore();
+      if (piece.y > canvas.height + 12) piece.y = -12;
+    });
+    if (now - started < 3000) requestAnimationFrame(frame);
+    else {
+      milestoneConfettiActive = false;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
 /* SCORING FUNCTIONS */
 function addRun(runs) {
   playSound("run");
@@ -1670,6 +1713,7 @@ function addWicket() {
 /* EXTRA RUN ON CURRENT BALL */
 function addExtraRunOnCurrentBall() {
   const scoreObj = battingTeam === "A" ? scoreA : scoreB;
+  const previousNet = scoreObj.net;
 
   if (currentOverBalls.length === 0) return;
 
@@ -1678,6 +1722,7 @@ function addExtraRunOnCurrentBall() {
 
   scoreObj.runs += 1;
   scoreObj.net += 1;
+  checkNetMilestone(previousNet, scoreObj.net);
 
   currentPairStats.runs += 1;
   currentBowlerStats.runs += 1;
@@ -1755,6 +1800,7 @@ function undoLast() {
 /* PUSH BALL */
 function pushBall(ball) {
   const scoreObj = battingTeam === "A" ? scoreA : scoreB;
+  const previousNet = scoreObj.net;
 
   let runs = 0;
   let net = 0;
@@ -1779,6 +1825,7 @@ function pushBall(ball) {
 
   scoreObj.runs += runs;
   scoreObj.net += net;
+  checkNetMilestone(previousNet, scoreObj.net);
   if (wicket) scoreObj.wickets++;
 
   undoStack.push({ runs, net, wicket, extraOnBall: false });
@@ -1839,7 +1886,7 @@ function createOverHistoryDot(ball, isPreviousOver = false) {
 
   switch (ball && ball.type) {
     case "run":
-      d.classList.add(ball.value >= 4 ? "big-run-dot" : "run-dot");
+      d.classList.add(ball.value >= 5 ? "big-run-dot" : "run-dot");
       d.textContent = String(ball.value);
       break;
     case "extra":
