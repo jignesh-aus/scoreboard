@@ -305,10 +305,22 @@
       letter-spacing:.2px;
       text-shadow:0 1px 1px rgba(0,0,0,.12);
     }
+    .net-score-box{
+      background:#facc15;
+      border:2px solid #ffffff;
+      box-shadow:0 0 0 1px #b45309, 0 3px 8px rgba(0,0,0,.32);
+    }
+    .net-score-box .stat-label,
+    .net-score-box [data-net-tile]{
+      color:#111827;
+      opacity:1;
+    }
     [data-net-tile]{
-      font-size:22px;
-      font-weight:800;
-      color:var(--text-color);
+      font-size:30px;
+      font-weight:900;
+      line-height:1.1;
+      color:#111827;
+      letter-spacing:.2px;
     }
     [data-overs]{
       font-size:19px;
@@ -345,23 +357,27 @@
     .over-dots{
       display:flex;
       justify-content:center;
-      gap:4px;
+      gap:3px;
       flex-wrap:nowrap;
-      min-height:24px;
+      min-height:25px;
     }
     .dot{
-      width:20px;
-      height:20px;
+      width:21px;
+      height:21px;
+      flex:0 0 21px;
+      box-sizing:border-box;
       border-radius:50%;
       background:#444;
       display:flex;
       justify-content:center;
       align-items:center;
-      font-weight:600;
-      font-size:10px;
+      font-weight:700;
+      font-size:12px;
+      line-height:1;
       color:#fff;
       border:1px solid #888;
     }
+    .over-dots .wide-dot{font-size:9px;}
     .run-dot{
       background:#00c853;
       color:#000;
@@ -765,7 +781,7 @@
           <div class="stat-label">Score</div>
           <div class="stat-value" data-score-tile>0/0</div>
         </div>
-        <div class="stat-box">
+        <div class="stat-box net-score-box">
           <div class="stat-label">Net Score</div>
           <div class="stat-value" data-net-tile>0</div>
         </div>
@@ -822,7 +838,7 @@
           <div class="stat-label">Score</div>
           <div class="stat-value" data-score-tile>0/0</div>
         </div>
-        <div class="stat-box">
+        <div class="stat-box net-score-box">
           <div class="stat-label">Net Score</div>
           <div class="stat-value" data-net-tile>0</div>
         </div>
@@ -987,10 +1003,10 @@
       <strong>Player selection:</strong>
       <div style="margin-top:8px;">
         <label>
-          <input type="checkbox" id="autoPlayerSelectionToggle" checked> Automatically select batters and bowler (no prompts)
+          <input type="checkbox" id="autoPlayerSelectionToggle" checked> Auto-select batters &amp; bowler
         </label>
       </div>
-      <div style="margin-top:6px;font-size:12px;opacity:.8;">Enabled by default. The scoreboard automatically chooses the next available batters and an eligible bowler. Turn this off to select them manually.</div>
+      <div style="margin-top:6px;font-size:12px;opacity:.8;">On by default. Turn off for manual selection.</div>
     </div>
 
     <div style="margin-bottom:16px;">
@@ -1276,7 +1292,7 @@ function startMatch() {
   disableScoringButtons();
   setMatchInningsTab(1);
 
-  /* ðŸ”¥ FIX: SWAP TEAM BOXES WHEN TEAM B BATS FIRST */
+  /* 🔥 FIX: SWAP TEAM BOXES WHEN TEAM B BATS FIRST */
   const innings1 = document.getElementById("matchInnings1");
   const innings2 = document.getElementById("matchInnings2");
   const boxA = document.getElementById("teamABox");
@@ -1290,16 +1306,16 @@ function startMatch() {
     innings2.appendChild(boxB);
   }
 
-/* ðŸ”¥ FIX: MOVE TARGET + RR TILES TO THE CORRECT SECOND-INNINGS BOX */
+/* 🔥 FIX: MOVE TARGET + RR TILES TO THE CORRECT SECOND-INNINGS BOX */
 const targetTile2 = document.getElementById("targetTile2");
 const rrTile2 = document.getElementById("rrTile2");
 
 if (secondBattingSide === "A") {
-    // Team A bats second â†’ tiles must be inside teamABox
+    // Team A bats second → tiles must be inside teamABox
     document.getElementById("teamABox").querySelector(".over-left").appendChild(targetTile2);
     document.getElementById("teamABox").querySelector(".over-right").appendChild(rrTile2);
 } else {
-    // Team B bats second â†’ tiles must be inside teamBBox
+    // Team B bats second → tiles must be inside teamBBox
     document.getElementById("teamBBox").querySelector(".over-left").appendChild(targetTile2);
     document.getElementById("teamBBox").querySelector(".over-right").appendChild(rrTile2);
 }
@@ -1460,7 +1476,7 @@ function openCombinedSelector(needPair, needBowler, reason) {
 
   if (needPair) {
     pairSection.style.display = "block";
-    pairTitle.textContent = `Batting Pair â€“ ${battingName}`;
+    pairTitle.textContent = `Batting Pair – ${battingName}`;
     pairBody.textContent = "Select the batters for this phase.";
 
     const teamPlayers = battingTeam === "A" ? playersA : playersB;
@@ -1503,7 +1519,7 @@ function openCombinedSelector(needPair, needBowler, reason) {
 
   if (needBowler) {
     bowlerSection.style.display = "block";
-    bowlerTitle.textContent = `Bowler â€“ ${bowlingName}`;
+    bowlerTitle.textContent = `Bowler – ${bowlingName}`;
     bowlerBody.textContent = "Select the bowler for the next over.";
 
     const teamPlayers = bowlingTeam === "A" ? playersA : playersB;
@@ -1791,6 +1807,41 @@ function updateScoreTiles() {
   document.querySelector('#teamBBox [data-overs]').textContent = `${scoreB.overs.toFixed(1)}/${maxOvers || "--"}`;
 }
 
+/* RENDER ONE BALL IN THE CURRENT/PREVIOUS OVER HISTORY */
+function createOverHistoryDot(ball, isPreviousOver = false) {
+  const d = document.createElement("div");
+  d.className = "dot";
+
+  switch (ball && ball.type) {
+    case "run":
+      d.classList.add(ball.value >= 4 ? "big-run-dot" : "run-dot");
+      d.textContent = String(ball.value);
+      break;
+    case "extra":
+      d.classList.add("wide-dot");
+      d.textContent = isPreviousOver ? "E" : "2wd";
+      d.setAttribute("aria-label", "Wide/no-ball extra");
+      break;
+    case "wicket":
+      d.classList.add("wicket-dot");
+      d.textContent = "W";
+      d.setAttribute("aria-label", "Wicket");
+      break;
+    case "dot":
+      d.classList.add("dot-ball");
+      d.textContent = "0";
+      d.setAttribute("aria-label", "Dot ball (zero runs)");
+      break;
+    default:
+      // Unknown event types must not be mistaken for dot balls.
+      d.textContent = "?";
+      d.setAttribute("aria-label", "Unknown ball event");
+      break;
+  }
+
+  return d;
+}
+
 /* UPDATE OVER TILES */
 function updateOverTiles() {
   const completedOvers = Math.floor(ballCount / ballsPerOver);
@@ -1811,33 +1862,11 @@ function updateOverTiles() {
   prevOverDots.innerHTML = "";
 
   currentOverBalls.forEach(ball => {
-    const d = document.createElement("div");
-    d.className = "dot";
-    if (ball.type === "run") d.classList.add(ball.value >= 4 ? "big-run-dot" : "run-dot");
-    if (ball.type === "extra") d.classList.add("wide-dot");
-    if (ball.type === "wicket") d.classList.add("wicket-dot");
-    if (ball.type === "dot") d.classList.add("dot-ball");
-    d.textContent =
-      ball.type === "run" ? ball.value :
-      ball.type === "extra" ? "2wd" :
-      ball.type === "wicket" ? "W" :
-      "â€¢";
-    currentOverDots.appendChild(d);
+    currentOverDots.appendChild(createOverHistoryDot(ball, false));
   });
 
   previousOverBalls.forEach(ball => {
-    const d = document.createElement("div");
-    d.className = "dot";
-    if (ball.type === "run") d.classList.add(ball.value >= 4 ? "big-run-dot" : "run-dot");
-    if (ball.type === "extra") d.classList.add("wide-dot");
-    if (ball.type === "wicket") d.classList.add("wicket-dot");
-    if (ball.type === "dot") d.classList.add("dot-ball");
-    d.textContent =
-      ball.type === "run" ? ball.value :
-      ball.type === "extra" ? "E" :
-      ball.type === "wicket" ? "W" :
-      "â€¢";
-    prevOverDots.appendChild(d);
+    prevOverDots.appendChild(createOverHistoryDot(ball, true));
   });
 
   const targetTile2 = document.getElementById("targetTile2");
@@ -1876,6 +1905,9 @@ function checkOverCompletion() {
 
     previousOverBalls = [...currentOverBalls];
     currentOverBalls = [];
+    // Refresh immediately so the completed over (including dot balls) is visible
+    // before the next ball is recorded or a player-selection prompt is dismissed.
+    updateOverTiles();
 
     const oversForBowler = currentBowlerStats.balls / ballsPerOver;
     if (currentBowlerStats.bowler) {
@@ -1947,6 +1979,12 @@ function checkPairCompletion() {
 function checkInningsCompletion() {
   const completedOvers = Math.floor(ballCount / ballsPerOver);
   if (completedOvers >= maxOvers) {
+    if (ballCount > 0 && ballCount % ballsPerOver === 0 && currentOverBalls.length) {
+      previousOverBalls = [...currentOverBalls];
+      currentOverBalls = [];
+      updateOverTiles();
+    }
+
     const pairOvers = currentPairStats.balls / ballsPerOver;
     if (currentPairStats.pair.length) {
       pairHistory.push({
