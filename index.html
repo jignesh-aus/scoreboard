@@ -732,6 +732,16 @@
 
     <button id="startMatchBtn" class="primary-btn">Start Match</button>
   </div>
+  <div id="liveAccessPanel" style="position:relative;z-index:10000;max-width:480px;margin:8px auto;padding:12px;background:#1e293b;color:#fff;border:1px solid #64748b;border-radius:10px;font:14px Arial,sans-serif;box-sizing:border-box;">
+  <div style="font-weight:700;margin-bottom:6px;">Scorer Login</div>
+  <div id="liveAccessStatus" style="margin-bottom:8px;">Connecting to live scoreboardâ€¦</div>
+  <div id="scorerLoginFields" style="display:none;gap:6px;flex-wrap:wrap;">
+    <input id="scorerEmail" type="email" autocomplete="username" placeholder="Scorer email" value="jignesh_aus@yahoo.com" style="min-width:0;flex:1;padding:8px;border-radius:5px;border:1px solid #94a3b8;">
+    <input id="scorerPassword" type="password" autocomplete="current-password" placeholder="Firebase account password" style="min-width:0;flex:1;padding:8px;border-radius:5px;border:1px solid #94a3b8;">
+    <button id="scorerSignIn" type="button" style="padding:8px 10px;border:0;border-radius:5px;font-weight:700;">Scorer sign in</button>
+    <button id="scorerSignOut" type="button" style="display:none;padding:8px 10px;border:0;border-radius:5px;">Sign out</button>
+  </div>
+</div>
 </div>
 
 <!-- MATCH PAGE -->
@@ -1059,17 +1069,6 @@
   </div>
 </div>
 
-<div id="liveAccessPanel" style="position:relative;z-index:10000;max-width:480px;margin:8px auto;padding:12px;background:#1e293b;color:#fff;border:1px solid #64748b;border-radius:10px;font:14px Arial,sans-serif;box-sizing:border-box;">
-  <div style="font-weight:700;margin-bottom:6px;">LIVE MATCH SHARING</div>
-  <div id="liveAccessStatus" style="margin-bottom:8px;">Connecting to live scoreboard…</div>
-  <div id="scorerLoginFields" style="display:none;gap:6px;flex-wrap:wrap;">
-    <input id="scorerEmail" type="email" autocomplete="username" placeholder="Scorer email" value="jignesh_aus@yahoo.com" style="min-width:0;flex:1;padding:8px;border-radius:5px;border:1px solid #94a3b8;">
-    <input id="scorerPassword" type="password" autocomplete="current-password" placeholder="Firebase account password" style="min-width:0;flex:1;padding:8px;border-radius:5px;border:1px solid #94a3b8;">
-    <button id="scorerSignIn" type="button" style="padding:8px 10px;border:0;border-radius:5px;font-weight:700;">Scorer sign in</button>
-    <button id="scorerSignOut" type="button" style="display:none;padding:8px 10px;border:0;border-radius:5px;">Sign out</button>
-  </div>
-  <div style="font-size:11px;opacity:.8;margin-top:7px;">Viewers can watch without signing in. Only the authorised scorer account can change scores.</div>
-</div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
@@ -1080,6 +1079,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* NAV + NOTIFY */
 let matchStarted = false;
+let matchEnded = false;
 let firstBattingSide = null;
 let secondBattingSide = null;
 
@@ -1099,7 +1099,11 @@ const pages = {
   settings: document.getElementById("page-settings")
 };
 
+// Initial page is Home, so the scorer login panel is shown only here.
+document.getElementById("liveAccessPanel").style.display = "block";
+
 function showPage(pageName) {
+  if (!Object.prototype.hasOwnProperty.call(pages, pageName)) return;
   Object.values(pages).forEach(p => p.classList.remove("active"));
   pages[pageName].classList.add("active");
 
@@ -1107,6 +1111,10 @@ function showPage(pageName) {
     btn.classList.remove("active");
     if (btn.dataset.nav === pageName) btn.classList.add("active");
   });
+
+  // Scorer login controls belong on Home only; never force the selected page.
+  const liveAccessPanel = document.getElementById("liveAccessPanel");
+  if (liveAccessPanel) liveAccessPanel.style.display = pageName === "home" ? "block" : "none";
 }
 
 document.querySelectorAll("#bottom-nav button").forEach(btn => {
@@ -1223,6 +1231,7 @@ let lastBowlerForNextOver = null;
 document.getElementById("startMatchBtn").addEventListener("click", startMatch);
 
 function startMatch() {
+  matchEnded = false;
   // reset scoreboard state before starting
   resetScoreboard(false, true);
 
@@ -1290,7 +1299,7 @@ function startMatch() {
   disableScoringButtons();
   setMatchInningsTab(1);
 
-  /* 🔥 FIX: SWAP TEAM BOXES WHEN TEAM B BATS FIRST */
+  /* ðŸ”¥ FIX: SWAP TEAM BOXES WHEN TEAM B BATS FIRST */
   const innings1 = document.getElementById("matchInnings1");
   const innings2 = document.getElementById("matchInnings2");
   const boxA = document.getElementById("teamABox");
@@ -1304,16 +1313,16 @@ function startMatch() {
     innings2.appendChild(boxB);
   }
 
-/* 🔥 FIX: MOVE TARGET + RR TILES TO THE CORRECT SECOND-INNINGS BOX */
+/* ðŸ”¥ FIX: MOVE TARGET + RR TILES TO THE CORRECT SECOND-INNINGS BOX */
 const targetTile2 = document.getElementById("targetTile2");
 const rrTile2 = document.getElementById("rrTile2");
 
 if (secondBattingSide === "A") {
-    // Team A bats second → tiles must be inside teamABox
+    // Team A bats second â†’ tiles must be inside teamABox
     document.getElementById("teamABox").querySelector(".over-left").appendChild(targetTile2);
     document.getElementById("teamABox").querySelector(".over-right").appendChild(rrTile2);
 } else {
-    // Team B bats second → tiles must be inside teamBBox
+    // Team B bats second â†’ tiles must be inside teamBBox
     document.getElementById("teamBBox").querySelector(".over-left").appendChild(targetTile2);
     document.getElementById("teamBBox").querySelector(".over-right").appendChild(rrTile2);
 }
@@ -1474,7 +1483,7 @@ function openCombinedSelector(needPair, needBowler, reason) {
 
   if (needPair) {
     pairSection.style.display = "block";
-    pairTitle.textContent = `Batting Pair – ${battingName}`;
+    pairTitle.textContent = `Batting Pair â€“ ${battingName}`;
     pairBody.textContent = "Select the batters for this phase.";
 
     const teamPlayers = battingTeam === "A" ? playersA : playersB;
@@ -1517,7 +1526,7 @@ function openCombinedSelector(needPair, needBowler, reason) {
 
   if (needBowler) {
     bowlerSection.style.display = "block";
-    bowlerTitle.textContent = `Bowler – ${bowlingName}`;
+    bowlerTitle.textContent = `Bowler â€“ ${bowlingName}`;
     bowlerBody.textContent = "Select the bowler for the next over.";
 
     const teamPlayers = bowlingTeam === "A" ? playersA : playersB;
@@ -1835,7 +1844,7 @@ function updateOverTiles() {
       ball.type === "run" ? ball.value :
       ball.type === "extra" ? "2wd" :
       ball.type === "wicket" ? "W" :
-      "•";
+      "â€¢";
     currentOverDots.appendChild(d);
   });
 
@@ -1850,7 +1859,7 @@ function updateOverTiles() {
       ball.type === "run" ? ball.value :
       ball.type === "extra" ? "E" :
       ball.type === "wicket" ? "W" :
-      "•";
+      "â€¢";
     prevOverDots.appendChild(d);
   });
 
@@ -2035,6 +2044,7 @@ function switchInnings() {
 
 /* END MATCH */
 function endMatch() {
+  matchEnded = true;
   showPage("scoreboard");
   buildFinalScoreboard();
 
@@ -2279,6 +2289,7 @@ document.getElementById("resetAllFields").addEventListener("click", () => {
 
 function resetScoreboard(resetHome, stayOnPage) {
   matchStarted = false;
+  matchEnded = false;
   firstBattingSide = null;
   secondBattingSide = null;
   battingTeam = null;
@@ -2359,7 +2370,7 @@ function resetScoreboard(resetHome, stayOnPage) {
   }
 }
 
-/* FIREBASE LIVE SHARING — database rules must be configured separately. */
+/* FIREBASE LIVE SHARING â€” database rules must be configured separately. */
 (function setupLiveSharing(){
   const liveStatus = document.getElementById('liveAccessStatus');
   const loginFields = document.getElementById('scorerLoginFields');
@@ -2392,7 +2403,7 @@ function resetScoreboard(resetHome, stayOnPage) {
   }
   function getSnapshot(){
     return {
-      matchStarted, firstBattingSide, secondBattingSide, thirdBallRuleEnabled, consecutiveDotBalls,
+      matchStarted, matchEnded, firstBattingSide, secondBattingSide, thirdBallRuleEnabled, consecutiveDotBalls,
       playersA, playersB, battingTeam, bowlingTeam, maxOvers, ballsPerOver, playersPerTeam, bowlerOversLimit,
       currentInnings, currentOverBalls, previousOverBalls, scoreA, scoreB, currentPair, currentBowler,
       undoStack, pairHistory, bowlerHistory, ballCount, oversPerPair, pairBallsCount, pairOversSchedule,
@@ -2410,10 +2421,12 @@ function resetScoreboard(resetHome, stayOnPage) {
     if(!d || typeof d!=='object') return;
     applyingRemote=true;
     try{
-      const keys=['matchStarted','firstBattingSide','secondBattingSide','thirdBallRuleEnabled','consecutiveDotBalls','playersA','playersB','battingTeam','bowlingTeam','maxOvers','ballsPerOver','playersPerTeam','bowlerOversLimit','currentInnings','currentOverBalls','previousOverBalls','scoreA','scoreB','currentPair','currentBowler','undoStack','pairHistory','bowlerHistory','ballCount','oversPerPair','pairBallsCount','pairOversSchedule','currentPairIndex','currentPairStats','currentBowlerStats','bowlerBallsMapA','bowlerBallsMapB','inningsCompletedThisBall','secondInningsStarted','lastBowlerForNextOver'];
+      const wasMatchEnded = matchEnded;
+      const keys=['matchStarted','matchEnded','firstBattingSide','secondBattingSide','thirdBallRuleEnabled','consecutiveDotBalls','playersA','playersB','battingTeam','bowlingTeam','maxOvers','ballsPerOver','playersPerTeam','bowlerOversLimit','currentInnings','currentOverBalls','previousOverBalls','scoreA','scoreB','currentPair','currentBowler','undoStack','pairHistory','bowlerHistory','ballCount','oversPerPair','pairBallsCount','pairOversSchedule','currentPairIndex','currentPairStats','currentBowlerStats','bowlerBallsMapA','bowlerBallsMapB','inningsCompletedThisBall','secondInningsStarted','lastBowlerForNextOver'];
       keys.forEach(k=>{if(Object.prototype.hasOwnProperty.call(d,k)) window[k]=d[k];});
       // top-level let/const bindings are lexical rather than window properties; explicitly restore them.
       if(d.matchStarted!==undefined) matchStarted=d.matchStarted;
+      if(d.matchEnded!==undefined) matchEnded=!!d.matchEnded;
       if(d.firstBattingSide!==undefined) firstBattingSide=d.firstBattingSide;
       if(d.secondBattingSide!==undefined) secondBattingSide=d.secondBattingSide;
       if(d.thirdBallRuleEnabled!==undefined) thirdBallRuleEnabled=d.thirdBallRuleEnabled;
@@ -2447,13 +2460,17 @@ function resetScoreboard(resetHome, stayOnPage) {
       }
       document.body.setAttribute('data-theme',document.body.getAttribute('data-theme')||'dark');
       if(matchStarted){
-        showPage('scoreboard');
-        updateScoreTiles(); updateOverTiles(); updateLiveScoreboard();
+        // Remote snapshots update the display but must not override user navigation.
+        updateScoreTiles();
+        updateOverTiles();
+        updateLiveScoreboard();
         if(isScorer) enableScoringButtons(); else disableScoringButtons();
       } else {
         disableScoringButtons();
       }
       setMatchInningsTab(currentInnings||1);
+      // Preserve the existing end-of-match destination, but only on a real transition.
+      if(matchEnded && !wasMatchEnded) showPage('scoreboard');
     }catch(err){console.error('Unable to apply live scoreboard update',err);}
     finally{applyingRemote=false;}
   }
@@ -2483,7 +2500,7 @@ function resetScoreboard(resetHome, stayOnPage) {
     liveDbRef.on('value',snap=>{
       if(snap.exists()) applySnapshot(snap.val());
       else if(isScorer) publishSnapshot();
-      else setStatus('Waiting for the scorer to start or publish a match…');
+      else setStatus('Waiting for the scorer to start or publish a matchâ€¦');
     },err=>setStatus('Live connection error: '+err.message,true));
   }
   try{
@@ -2498,7 +2515,7 @@ function resetScoreboard(resetHome, stayOnPage) {
         return;
       }
       if(user.email && !isScorer) setStatus('Signed in with an unauthorised account. Viewing only.',true);
-      else if(isScorer) setStatus('Scorer signed in. Loading live match…');
+      else if(isScorer) setStatus('Scorer signed in. Loading live matchâ€¦');
       else setStatus('Connected as viewer. Live score will update automatically.');
       startListener();
     });
@@ -2513,7 +2530,7 @@ function resetScoreboard(resetHome, stayOnPage) {
     signOutBtn.addEventListener('click',async()=>{try{await auth.signOut();}catch(err){setStatus(err.message,true);}});
     // Wrap common score-changing actions so each completed action is synchronised.
     const wrap=(name)=>{const original=window[name];if(typeof original==='function')window[name]=function(...args){const result=original.apply(this,args);queuePublish();return result;};};
-    ['startMatch','resetScoreboard','addRun','addDotBall','addWideNoBall','addWicket','undoLast','addExtraRunOnCurrentBall'].forEach(wrap);
+    ['startMatch','endMatch','resetScoreboard','addRun','addDotBall','addWideNoBall','addWicket','undoLast','addExtraRunOnCurrentBall'].forEach(wrap);
     document.getElementById('combinedSelectorConfirm')?.addEventListener('click',()=>setTimeout(queuePublish,150));
     document.addEventListener('change',e=>{if(e.target.closest('#page-home')||e.target.closest('#page-settings'))queuePublish();});
     document.addEventListener('click',e=>{if(e.target.closest('#page-match')||e.target.closest('#page-home'))queuePublish();});
