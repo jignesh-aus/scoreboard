@@ -767,6 +767,17 @@
     </div>
 
     <button id="startMatchBtn" class="primary-btn">Start Match</button>
+
+<div id="liveAccessPanel" style="position:relative;z-index:1;max-width:480px;margin:14px auto 4px;padding:12px;background:#1e293b;color:#fff;border:1px solid #64748b;border-radius:10px;font:14px Arial,sans-serif;box-sizing:border-box;">
+  <div style="font-weight:700;margin-bottom:6px;">Scorer Login</div>
+  <div id="liveAccessStatus" style="margin-bottom:8px;">Connecting to live scoreboardâ€¦</div>
+  <div id="scorerLoginFields" style="display:none;gap:6px;flex-wrap:wrap;">
+    <input id="scorerEmail" type="email" autocomplete="username" placeholder="Scorer email" value="jignesh_aus@yahoo.com" style="min-width:0;flex:1;padding:8px;border-radius:5px;border:1px solid #94a3b8;">
+    <input id="scorerPassword" type="password" autocomplete="current-password" placeholder="Firebase account password" style="min-width:0;flex:1;padding:8px;border-radius:5px;border:1px solid #94a3b8;">
+    <button id="scorerSignIn" type="button" style="padding:8px 10px;border:0;border-radius:5px;font-weight:700;">Scorer sign in</button>
+    <button id="scorerSignOut" type="button" style="display:none;padding:8px 10px;border:0;border-radius:5px;">Sign out</button>
+  </div>
+</div>
   </div>
 </div>
 
@@ -1090,6 +1101,9 @@
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   renderPlayerFields();
@@ -1128,6 +1142,9 @@ function showPage(pageName) {
     btn.classList.toggle("active", isSelected);
     btn.setAttribute("aria-current", isSelected ? "page" : "false");
   });
+
+  const liveAccessPanel = document.getElementById("liveAccessPanel");
+  if (liveAccessPanel) liveAccessPanel.style.display = pageName === "home" ? "block" : "none";
 }
 
 document.querySelectorAll("#bottom-nav button").forEach(btn => {
@@ -1530,6 +1547,31 @@ function openCombinedSelector(needPair, needBowler, reason) {
   }
 
   overlay.style.display = "flex";
+
+  // Auto-select the first eligible batters and bowler when enabled.
+  // The normal confirmation handler is reused so stats and scoring state are updated identically.
+  const autoSelect = document.getElementById("autoPlayerSelectionToggle")?.checked === true;
+  if (autoSelect) {
+    let canAutoConfirm = true;
+    if (needPair) {
+      const remaining = (battingTeam === "A" ? playersA : playersB)
+        .filter(p => !(battingTeam === "A" ? completedBattersA : completedBattersB).has(p));
+      const needed = Math.min(2, remaining.length);
+      const pairButtons = [...pairGrid.querySelectorAll(".combined-btn")];
+      if (needed === 0 || pairButtons.length < needed) canAutoConfirm = false;
+      else pairButtons.slice(0, needed).forEach(btn => btn.classList.add("selected"));
+    }
+    if (needBowler) {
+      const bowlerButtons = [...bowlerGrid.querySelectorAll(".combined-btn")];
+      if (bowlerButtons.length === 0) canAutoConfirm = false;
+      else bowlerButtons[0].classList.add("selected");
+    }
+    updateCombinedConfirmState();
+    if (canAutoConfirm && !confirmBtn.disabled) {
+      confirmBtn.click();
+      return;
+    }
+  }
 }
 
 function updateCombinedConfirmState() {
@@ -2343,6 +2385,172 @@ function resetScoreboard(resetHome, stayOnPage) {
     showPage("home");
   }
 }
+/* FIREBASE LIVE SHARING â€” database rules must be configured separately. */
+(function setupLiveSharing(){
+  const liveStatus = document.getElementById('liveAccessStatus');
+  const loginFields = document.getElementById('scorerLoginFields');
+  const emailInput = document.getElementById('scorerEmail');
+  const passwordInput = document.getElementById('scorerPassword');
+  const signInBtn = document.getElementById('scorerSignIn');
+  const signOutBtn = document.getElementById('scorerSignOut');
+  const scorerEmailAllowed = 'jignesh_aus@yahoo.com';
+  const matchRefPath = 'liveScoreboard/currentMatch';
+  let liveDbRef = null;
+  let liveUser = null;
+  let isScorer = false;
+  let applyingRemote = false;
+  let publishTimer = null;
+  let remoteListenerStarted = false;
+
+  const firebaseConfig = {
+    apiKey: 'AIzaSyB_DS_bZkfl_FFGyoi0Wy7oeZyRAUkHnPw',
+    authDomain: 'scoreboard-c9e21.firebaseapp.com',
+    databaseURL: 'https://scoreboard-c9e21-default-rtdb.firebaseio.com',
+    projectId: 'scoreboard-c9e21',
+    storageBucket: 'scoreboard-c9e21.firebasestorage.app',
+    messagingSenderId: '982378581848',
+    appId: '1:982378581848:web:b0e7e18e5d5f6dc995df2d'
+  };
+
+  function setStatus(text, error=false){
+    liveStatus.textContent = text;
+    liveStatus.style.color = error ? '#fecaca' : '#fff';
+  }
+  function getSnapshot(){
+    return {
+      matchStarted, firstBattingSide, secondBattingSide, thirdBallRuleEnabled, consecutiveDotBalls,
+      playersA, playersB, battingTeam, bowlingTeam, maxOvers, ballsPerOver, playersPerTeam, bowlerOversLimit,
+      currentInnings, currentOverBalls, previousOverBalls, scoreA, scoreB, currentPair, currentBowler,
+      undoStack, pairHistory, bowlerHistory, ballCount, oversPerPair, pairBallsCount, pairOversSchedule,
+      currentPairIndex, currentPairStats, currentBowlerStats,
+      completedBattersA:[...completedBattersA], completedBattersB:[...completedBattersB],
+      bowlerBallsMapA, bowlerBallsMapB, inningsCompletedThisBall, secondInningsStarted, lastBowlerForNextOver,
+      home:{playersPerTeam:document.getElementById('playersPerTeam').value,maxOvers:document.getElementById('maxOvers').value,
+        firstBattingSide:document.getElementById('firstBattingSide').value,
+        teamAName:document.getElementById('homeTeamAName').value,teamBName:document.getElementById('homeTeamBName').value,
+        teamAPlayers:playersA,teamBPlayers:playersB},
+      updatedAt:Date.now()
+    };
+  }
+  function applySnapshot(d){
+    if(!d || typeof d!=='object') return;
+    applyingRemote=true;
+    try{
+      const keys=['matchStarted','firstBattingSide','secondBattingSide','thirdBallRuleEnabled','consecutiveDotBalls','playersA','playersB','battingTeam','bowlingTeam','maxOvers','ballsPerOver','playersPerTeam','bowlerOversLimit','currentInnings','currentOverBalls','previousOverBalls','scoreA','scoreB','currentPair','currentBowler','undoStack','pairHistory','bowlerHistory','ballCount','oversPerPair','pairBallsCount','pairOversSchedule','currentPairIndex','currentPairStats','currentBowlerStats','bowlerBallsMapA','bowlerBallsMapB','inningsCompletedThisBall','secondInningsStarted','lastBowlerForNextOver'];
+      keys.forEach(k=>{if(Object.prototype.hasOwnProperty.call(d,k)) window[k]=d[k];});
+      // top-level let/const bindings are lexical rather than window properties; explicitly restore them.
+      if(d.matchStarted!==undefined) matchStarted=d.matchStarted;
+      if(d.firstBattingSide!==undefined) firstBattingSide=d.firstBattingSide;
+      if(d.secondBattingSide!==undefined) secondBattingSide=d.secondBattingSide;
+      if(d.thirdBallRuleEnabled!==undefined) thirdBallRuleEnabled=d.thirdBallRuleEnabled;
+      if(d.consecutiveDotBalls!==undefined) consecutiveDotBalls=d.consecutiveDotBalls;
+      if(d.playersA) playersA=d.playersA; if(d.playersB) playersB=d.playersB;
+      if(d.battingTeam!==undefined) battingTeam=d.battingTeam; if(d.bowlingTeam!==undefined) bowlingTeam=d.bowlingTeam;
+      ['maxOvers','ballsPerOver','playersPerTeam','bowlerOversLimit','currentInnings','ballCount','oversPerPair','pairBallsCount','currentPairIndex'].forEach(k=>{if(d[k]!==undefined) eval(k+' = d[k]')});
+      if(d.currentOverBalls) currentOverBalls=d.currentOverBalls; if(d.previousOverBalls) previousOverBalls=d.previousOverBalls;
+      if(d.scoreA) scoreA=d.scoreA; if(d.scoreB) scoreB=d.scoreB; if(d.currentPair) currentPair=d.currentPair;
+      if(d.currentBowler!==undefined) currentBowler=d.currentBowler; if(d.undoStack) undoStack=d.undoStack;
+      if(d.pairHistory) pairHistory=d.pairHistory; if(d.bowlerHistory) bowlerHistory=d.bowlerHistory;
+      if(d.pairOversSchedule) pairOversSchedule=d.pairOversSchedule; if(d.currentPairStats) currentPairStats=d.currentPairStats;
+      if(d.currentBowlerStats) currentBowlerStats=d.currentBowlerStats;
+      if(d.completedBattersA) completedBattersA=new Set(d.completedBattersA); if(d.completedBattersB) completedBattersB=new Set(d.completedBattersB);
+      if(d.bowlerBallsMapA) bowlerBallsMapA=d.bowlerBallsMapA; if(d.bowlerBallsMapB) bowlerBallsMapB=d.bowlerBallsMapB;
+      if(d.inningsCompletedThisBall!==undefined) inningsCompletedThisBall=d.inningsCompletedThisBall;
+      if(d.secondInningsStarted!==undefined) secondInningsStarted=d.secondInningsStarted;
+      if(d.lastBowlerForNextOver!==undefined) lastBowlerForNextOver=d.lastBowlerForNextOver;
+      if(d.home){
+        document.getElementById('playersPerTeam').value=d.home.playersPerTeam||'';
+        document.getElementById('maxOvers').value=d.home.maxOvers||'';
+        document.getElementById('firstBattingSide').value=d.home.firstBattingSide||'';
+        document.getElementById('homeTeamAName').value=d.home.teamAName||'';
+        document.getElementById('homeTeamBName').value=d.home.teamBName||'';
+        renderPlayerFields();
+        (d.home.teamAPlayers||[]).forEach((v,i)=>{const el=document.getElementById('teamAPlayer'+(i+1));if(el)el.value=v;});
+        (d.home.teamBPlayers||[]).forEach((v,i)=>{const el=document.getElementById('teamBPlayer'+(i+1));if(el)el.value=v;});
+        document.getElementById('teamAName').value=d.home.teamAName||'TEAM A';
+        document.getElementById('teamBName').value=d.home.teamBName||'TEAM B';
+        updateBattingSideLabels();
+      }
+      document.body.setAttribute('data-theme',document.body.getAttribute('data-theme')||'dark');
+      if(matchStarted){
+        updateScoreTiles();
+        updateOverTiles();
+        updateLiveScoreboard();
+        if(isScorer) enableScoringButtons(); else disableScoringButtons();
+      } else {
+        disableScoringButtons();
+      }
+      setMatchInningsTab(currentInnings||1);
+    }catch(err){console.error('Unable to apply live scoreboard update',err);}
+    finally{applyingRemote=false;}
+  }
+  async function publishSnapshot(){
+    if(applyingRemote || !isScorer || !liveDbRef) return;
+    try{await liveDbRef.set(getSnapshot());setStatus('Signed in as scorer. Live updates are being shared.');}
+    catch(err){setStatus('Could not publish: '+(err.message||'check Firebase database rules'),true);}
+  }
+  function queuePublish(){
+    if(!isScorer || applyingRemote) return;
+    clearTimeout(publishTimer); publishTimer=setTimeout(publishSnapshot,120);
+  }
+  function applyRole(){
+    loginFields.style.display='flex';
+    signOutBtn.style.display=liveUser && liveUser.email ? 'inline-block':'none';
+    signInBtn.style.display=isScorer?'none':'inline-block';
+    emailInput.disabled=isScorer; passwordInput.style.display=isScorer?'none':'block';
+    document.querySelectorAll('#page-match button, #page-home button, #page-home input, #page-home select, #page-settings input').forEach(el=>{
+      const loginControl = ['scorerEmail','scorerPassword','scorerSignIn','scorerSignOut'].includes(el.id);
+      if (!isScorer && !loginControl) el.disabled = true;
+      else el.disabled = false;
+    });
+    if(isScorer) enableScoringButtons(); else disableScoringButtons();
+  }
+  function startListener(){
+    if(remoteListenerStarted) return;
+    remoteListenerStarted=true;
+    liveDbRef.on('value',snap=>{
+      if(snap.exists()) applySnapshot(snap.val());
+      else if(isScorer) publishSnapshot();
+      else setStatus('Waiting for the scorer to start or publish a matchâ€¦');
+    },err=>setStatus('Live connection error: '+err.message,true));
+  }
+  try{
+    if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const auth=firebase.auth(); liveDbRef=firebase.database().ref(matchRefPath);
+    auth.onAuthStateChanged(async user=>{
+      liveUser=user;
+      isScorer=!!(user && user.email && user.email.toLowerCase()===scorerEmailAllowed);
+      applyRole();
+      if(!user){
+        try{await auth.signInAnonymously();}catch(err){setStatus('Viewer connection failed: '+err.message,true);}
+        return;
+      }
+      if(user.email && !isScorer) setStatus('Signed in with an unauthorised account. Viewing only.',true);
+      else if(isScorer) setStatus('Scorer signed in. Loading live matchâ€¦');
+      else setStatus('Connected as viewer. Live score will update automatically.');
+      startListener();
+    });
+    signInBtn.addEventListener('click',async()=>{
+      const email=(emailInput.value||'').trim().toLowerCase();
+      const password=passwordInput.value;
+      if(email!==scorerEmailAllowed){setStatus('Only the authorised scorer email can sign in here.',true);return;}
+      if(!password){setStatus('Enter the password for your Firebase Authentication account.',true);return;}
+      try{await auth.signInWithEmailAndPassword(email,password);passwordInput.value='';}
+      catch(err){setStatus('Scorer sign-in failed: '+err.message,true);}
+    });
+    signOutBtn.addEventListener('click',async()=>{try{await auth.signOut();}catch(err){setStatus(err.message,true);}});
+    // Wrap common score-changing actions so each completed action is synchronised.
+    const wrap=(name)=>{const original=window[name];if(typeof original==='function')window[name]=function(...args){const result=original.apply(this,args);queuePublish();return result;};};
+    ['startMatch','resetScoreboard','addRun','addDotBall','addWideNoBall','addWicket','undoLast','addExtraRunOnCurrentBall'].forEach(wrap);
+    document.getElementById('combinedSelectorConfirm')?.addEventListener('click',()=>setTimeout(queuePublish,150));
+    document.addEventListener('change',e=>{if(e.target.closest('#page-home')||e.target.closest('#page-settings'))queuePublish();});
+    document.addEventListener('click',e=>{if(e.target.closest('#page-match')||e.target.closest('#page-home'))queuePublish();});
+    // Refresh published state periodically after scorer-side state changes that occur in callbacks.
+    setInterval(()=>{if(isScorer && matchStarted) queuePublish();},2000);
+  }catch(err){setStatus('Firebase setup error: '+err.message,true);console.error(err);}
+})();
+
+
 </script>
 
 </body>
