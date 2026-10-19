@@ -78,13 +78,14 @@
       top:-60px;
       left:0;
       width:100%;
-      background:#ffeb3b;
-      color:#000;
+      background:#fde047;
+      color:#111827;
       text-align:center;
       padding:10px;
       font-size:14px;
       font-weight:700;
-      box-shadow:0 0 10px rgba(0,0,0,0.4);
+      box-shadow:0 3px 14px rgba(0,0,0,0.35);
+      border-bottom:2px solid rgba(255,255,255,.35);
       transition:top .4s ease;
       z-index:9999;
     }
@@ -128,6 +129,18 @@
   flex-direction: column;
   gap: 10px;
 }
+
+    .team-name-guidance{
+      display:block;
+      margin:12px 0 8px;
+      padding:0;
+      color:var(--text-color);
+      text-align:left;
+      font-size:14px;
+      font-weight:600;
+      line-height:1.4;
+    }
+    .guidance-arrow{display:none;}
 
     .home-team-name{
   width:100%;
@@ -206,7 +219,7 @@
   display:block;
   width:60%;          /* smaller width for mobile */
   max-width:160px;    /* perfect size */
-  margin:20px auto 100px auto; /* centered + lifted above bottom nav */
+  margin:8px auto 80px auto; /* raised clear of the bottom navigation */
   padding:6px;
 }
 
@@ -305,14 +318,26 @@
       letter-spacing:.2px;
       text-shadow:0 1px 1px rgba(0,0,0,.12);
     }
+    .net-score-box{
+      background:#facc15;
+      border:2px solid #ffffff;
+      box-shadow:0 0 0 1px #b45309, 0 3px 8px rgba(0,0,0,.32);
+    }
+    .net-score-box .stat-label,
+    .net-score-box [data-net-tile]{
+      color:#111827;
+      opacity:1;
+    }
     [data-net-tile]{
-      font-size:22px;
-      font-weight:800;
-      color:var(--text-color);
+      font-size:30px;
+      font-weight:900;
+      line-height:1.1;
+      color:#111827;
+      letter-spacing:.2px;
     }
     [data-overs]{
-      font-size:19px;
-      font-weight:800;
+      font-size:28px;
+      font-weight:900;
       color:var(--text-color);
     }
     .stat-label{color:var(--text-color);font-weight:600;opacity:.9;}
@@ -341,36 +366,42 @@
       font-size:12px;
       margin-bottom:4px;
       font-weight:600;
+  text-align:center;
     }
     .over-dots{
       display:flex;
       justify-content:center;
-      gap:4px;
+      gap:3px;
       flex-wrap:nowrap;
-      min-height:24px;
+      min-height:25px;
     }
     .dot{
-      width:20px;
-      height:20px;
+      width:23px;
+      height:23px;
+      flex:0 0 23px;
+      box-sizing:border-box;
       border-radius:50%;
       background:#444;
       display:flex;
       justify-content:center;
       align-items:center;
-      font-weight:600;
-      font-size:10px;
+      font-weight:800;
+      font-size:13px;
+      line-height:1;
       color:#fff;
       border:1px solid #888;
     }
+    .over-dots .wide-dot{font-size:9px;}
     .run-dot{
       background:#00c853;
       color:#000;
       box-shadow:0 0 6px #00c853;
     }
     .big-run-dot{
-      background:#ffeb3b;
-      color:#000;
-      box-shadow:0 0 6px #ffeb3b;
+      background:#fde047;
+      color:#111827;
+      border-color:#facc15;
+      box-shadow:0 0 6px rgba(253,224,71,.75);
     }
     .wicket-dot{
       background:#ff5252;
@@ -706,16 +737,21 @@
       </select>
     </div>
 
+    <div class="team-name-guidance">
+      <span class="guidance-arrow" aria-hidden="true">â†“</span>
+      <span>Insert names of both teams and players (optional):</span>
+    </div>
+
     <div class="teams-two-col">
   <div class="team-col">
     
-    <input id="homeTeamAName" class="home-team-name" placeholder="TEAM A NAME">
+    <input id="homeTeamAName" class="home-team-name" placeholder="TEAM A">
     <div id="teamAPlayersContainer" class="home-players-box"></div>
   </div>
 
   <div class="team-col">
     
-    <input id="homeTeamBName" class="home-team-name" placeholder="TEAM B NAME">
+    <input id="homeTeamBName" class="home-team-name" placeholder="TEAM B">
     <div id="teamBPlayersContainer" class="home-players-box"></div>
   </div>
 </div>
@@ -732,16 +768,6 @@
 
     <button id="startMatchBtn" class="primary-btn">Start Match</button>
   </div>
-  <div id="liveAccessPanel" style="position:relative;z-index:10000;max-width:480px;margin:8px auto;padding:12px;background:#1e293b;color:#fff;border:1px solid #64748b;border-radius:10px;font:14px Arial,sans-serif;box-sizing:border-box;">
-  <div style="font-weight:700;margin-bottom:6px;">Scorer Login</div>
-  <div id="liveAccessStatus" style="margin-bottom:8px;">Connecting to live scoreboardâ€¦</div>
-  <div id="scorerLoginFields" style="display:none;gap:6px;flex-wrap:wrap;">
-    <input id="scorerEmail" type="email" autocomplete="username" placeholder="Scorer email" value="jignesh_aus@yahoo.com" style="min-width:0;flex:1;padding:8px;border-radius:5px;border:1px solid #94a3b8;">
-    <input id="scorerPassword" type="password" autocomplete="current-password" placeholder="Firebase account password" style="min-width:0;flex:1;padding:8px;border-radius:5px;border:1px solid #94a3b8;">
-    <button id="scorerSignIn" type="button" style="padding:8px 10px;border:0;border-radius:5px;font-weight:700;">Scorer sign in</button>
-    <button id="scorerSignOut" type="button" style="display:none;padding:8px 10px;border:0;border-radius:5px;">Sign out</button>
-  </div>
-</div>
 </div>
 
 <!-- MATCH PAGE -->
@@ -775,7 +801,7 @@
           <div class="stat-label">Score</div>
           <div class="stat-value" data-score-tile>0/0</div>
         </div>
-        <div class="stat-box">
+        <div class="stat-box net-score-box">
           <div class="stat-label">Net Score</div>
           <div class="stat-value" data-net-tile>0</div>
         </div>
@@ -832,7 +858,7 @@
           <div class="stat-label">Score</div>
           <div class="stat-value" data-score-tile>0/0</div>
         </div>
-        <div class="stat-box">
+        <div class="stat-box net-score-box">
           <div class="stat-label">Net Score</div>
           <div class="stat-value" data-net-tile>0</div>
         </div>
@@ -982,38 +1008,33 @@
 
   <div style="margin-top:20px;font-size:14px;">
     <div style="margin-bottom:16px;">
-      <strong>Theme:</strong>
       <div style="margin-top:8px;">
         <label style="margin-right:12px;">
-          <input type="radio" name="theme" value="dark" checked> Dark
+          <input type="radio" name="theme" value="dark" checked> Dark theme
         </label>
         <label>
-          <input type="radio" name="theme" value="light"> Light
+          <input type="radio" name="theme" value="light"> Light theme
         </label>
       </div>
     </div>
 
     <div style="margin-bottom:16px;">
-      <strong>Player selection:</strong>
       <div style="margin-top:8px;">
         <label>
-          <input type="checkbox" id="autoPlayerSelectionToggle" checked> Automatically select batters and bowler (no prompts)
+          <input type="checkbox" id="autoPlayerSelectionToggle" checked> Auto-select batters &amp; bowler
         </label>
       </div>
-      <div style="margin-top:6px;font-size:12px;opacity:.8;">Enabled by default. The scoreboard automatically chooses the next available batters and an eligible bowler. Turn this off to select them manually.</div>
     </div>
 
     <div style="margin-bottom:16px;">
-      <strong>Sound effects:</strong>
       <div style="margin-top:8px;">
         <label style="margin-right:12px;">
-          <input type="checkbox" id="soundToggle" checked> Enable sounds
+          <input type="checkbox" id="soundToggle"> Enable sounds
         </label>
       </div>
     </div>
 
     <div style="margin-bottom:16px;">
-      <strong>Third ball rule:</strong>
       <div style="margin-top:8px;">
         <label style="margin-right:12px;">
           <input type="checkbox" id="thirdBallRuleToggle"> Enable full third ball rule
@@ -1069,9 +1090,6 @@
   </div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   renderPlayerFields();
@@ -1079,13 +1097,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* NAV + NOTIFY */
 let matchStarted = false;
-let matchEnded = false;
 let firstBattingSide = null;
 let secondBattingSide = null;
 
-let soundEnabled = true;
+let soundEnabled = false;
 
 let confettiActive = false;
+let milestoneConfettiActive = false;
 let fireworksActive = false;
 
 const soundRun = document.getElementById("soundRun");
@@ -1099,26 +1117,24 @@ const pages = {
   settings: document.getElementById("page-settings")
 };
 
-// Initial page is Home, so the scorer login panel is shown only here.
-document.getElementById("liveAccessPanel").style.display = "block";
-
 function showPage(pageName) {
-  if (!Object.prototype.hasOwnProperty.call(pages, pageName)) return;
-  Object.values(pages).forEach(p => p.classList.remove("active"));
+  if (!Object.prototype.hasOwnProperty.call(pages, pageName) || !pages[pageName]) return;
+
+  Object.values(pages).forEach(page => page.classList.remove("active"));
   pages[pageName].classList.add("active");
 
   document.querySelectorAll("#bottom-nav button").forEach(btn => {
-    btn.classList.remove("active");
-    if (btn.dataset.nav === pageName) btn.classList.add("active");
+    const isSelected = btn.dataset.nav === pageName;
+    btn.classList.toggle("active", isSelected);
+    btn.setAttribute("aria-current", isSelected ? "page" : "false");
   });
-
-  // Scorer login controls belong on Home only; never force the selected page.
-  const liveAccessPanel = document.getElementById("liveAccessPanel");
-  if (liveAccessPanel) liveAccessPanel.style.display = pageName === "home" ? "block" : "none";
 }
 
 document.querySelectorAll("#bottom-nav button").forEach(btn => {
-  btn.addEventListener("click", () => {
+  btn.type = "button";
+  btn.addEventListener("click", event => {
+    event.preventDefault();
+    event.stopPropagation();
     showPage(btn.dataset.nav);
   });
 });
@@ -1144,8 +1160,8 @@ function renderPlayerFields() {
   if (!count || count < 4 || count > 8) return;
 
   for (let i = 1; i <= count; i++) {
-    teamA.innerHTML += `<input id="teamAPlayer${i}" class="player-input" placeholder="Player ${i} (optional)">`;
-    teamB.innerHTML += `<input id="teamBPlayer${i}" class="player-input" placeholder="Player ${i} (optional)">`;
+    teamA.innerHTML += `<input id="teamAPlayer${i}" class="player-input" placeholder="Player ${i}">`;
+    teamB.innerHTML += `<input id="teamBPlayer${i}" class="player-input" placeholder="Player ${i}">`;
   }
 }
 document.getElementById("playersPerTeam").addEventListener("change", renderPlayerFields);
@@ -1231,7 +1247,6 @@ let lastBowlerForNextOver = null;
 document.getElementById("startMatchBtn").addEventListener("click", startMatch);
 
 function startMatch() {
-  matchEnded = false;
   // reset scoreboard state before starting
   resetScoreboard(false, true);
 
@@ -1428,45 +1443,6 @@ function openCombinedSelector(needPair, needBowler, reason) {
   const pairBody = document.getElementById("combinedPairBody");
   const bowlerBody = document.getElementById("combinedBowlerBody");
   const confirmBtn = document.getElementById("combinedSelectorConfirm");
-
-  // Default mode avoids selection prompts and chooses eligible players automatically.
-  if (document.getElementById("autoPlayerSelectionToggle").checked) {
-    if (needPair) {
-      const teamPlayers = battingTeam === "A" ? playersA : playersB;
-      const completedSet = battingTeam === "A" ? completedBattersA : completedBattersB;
-      const remaining = teamPlayers.filter(p => !completedSet.has(p));
-      const selectedPair = remaining.slice(0, Math.min(2, remaining.length));
-      currentPair = selectedPair;
-      currentPairStats = {
-        innings: currentInnings,
-        pair: [...selectedPair],
-        runs: 0,
-        wickets: 0,
-        balls: 0
-      };
-    }
-    if (needBowler) {
-      const teamPlayers = bowlingTeam === "A" ? playersA : playersB;
-      const bowlerMap = bowlingTeam === "A" ? bowlerBallsMapA : bowlerBallsMapB;
-      let eligible = teamPlayers.filter(p => (bowlerMap[p] || 0) / ballsPerOver < bowlerOversLimit && p !== lastBowlerForNextOver);
-      if (!eligible.length) eligible = teamPlayers.filter(p => (bowlerMap[p] || 0) / ballsPerOver < bowlerOversLimit);
-      if (!eligible.length) eligible = teamPlayers;
-      const selectedBowler = eligible[0] || null;
-      currentBowler = selectedBowler;
-      currentBowlerStats = {
-        innings: currentInnings,
-        bowler: selectedBowler || "",
-        runs: 0,
-        wickets: 0,
-        balls: 0,
-        extrasWN: 0
-      };
-    }
-    document.getElementById("combinedSelectorOverlay").style.display = "none";
-    enableScoringButtons();
-    playSound("pair");
-    return;
-  }
 
   confirmBtn.disabled = true;
   pairGrid.innerHTML = "";
@@ -1844,7 +1820,7 @@ function updateOverTiles() {
       ball.type === "run" ? ball.value :
       ball.type === "extra" ? "2wd" :
       ball.type === "wicket" ? "W" :
-      "â€¢";
+      ball.type === "dot" ? "0" : "â€¢";
     currentOverDots.appendChild(d);
   });
 
@@ -1859,7 +1835,7 @@ function updateOverTiles() {
       ball.type === "run" ? ball.value :
       ball.type === "extra" ? "E" :
       ball.type === "wicket" ? "W" :
-      "â€¢";
+      ball.type === "dot" ? "0" : "â€¢";
     prevOverDots.appendChild(d);
   });
 
@@ -2044,7 +2020,6 @@ function switchInnings() {
 
 /* END MATCH */
 function endMatch() {
-  matchEnded = true;
   showPage("scoreboard");
   buildFinalScoreboard();
 
@@ -2289,7 +2264,6 @@ document.getElementById("resetAllFields").addEventListener("click", () => {
 
 function resetScoreboard(resetHome, stayOnPage) {
   matchStarted = false;
-  matchEnded = false;
   firstBattingSide = null;
   secondBattingSide = null;
   battingTeam = null;
@@ -2369,176 +2343,6 @@ function resetScoreboard(resetHome, stayOnPage) {
     showPage("home");
   }
 }
-
-/* FIREBASE LIVE SHARING â€” database rules must be configured separately. */
-(function setupLiveSharing(){
-  const liveStatus = document.getElementById('liveAccessStatus');
-  const loginFields = document.getElementById('scorerLoginFields');
-  const emailInput = document.getElementById('scorerEmail');
-  const passwordInput = document.getElementById('scorerPassword');
-  const signInBtn = document.getElementById('scorerSignIn');
-  const signOutBtn = document.getElementById('scorerSignOut');
-  const scorerEmailAllowed = 'jignesh_aus@yahoo.com';
-  const matchRefPath = 'liveScoreboard/currentMatch';
-  let liveDbRef = null;
-  let liveUser = null;
-  let isScorer = false;
-  let applyingRemote = false;
-  let publishTimer = null;
-  let remoteListenerStarted = false;
-
-  const firebaseConfig = {
-    apiKey: 'AIzaSyB_DS_bZkfl_FFGyoi0Wy7oeZyRAUkHnPw',
-    authDomain: 'scoreboard-c9e21.firebaseapp.com',
-    databaseURL: 'https://scoreboard-c9e21-default-rtdb.firebaseio.com',
-    projectId: 'scoreboard-c9e21',
-    storageBucket: 'scoreboard-c9e21.firebasestorage.app',
-    messagingSenderId: '982378581848',
-    appId: '1:982378581848:web:b0e7e18e5d5f6dc995df2d'
-  };
-
-  function setStatus(text, error=false){
-    liveStatus.textContent = text;
-    liveStatus.style.color = error ? '#fecaca' : '#fff';
-  }
-  function getSnapshot(){
-    return {
-      matchStarted, matchEnded, firstBattingSide, secondBattingSide, thirdBallRuleEnabled, consecutiveDotBalls,
-      playersA, playersB, battingTeam, bowlingTeam, maxOvers, ballsPerOver, playersPerTeam, bowlerOversLimit,
-      currentInnings, currentOverBalls, previousOverBalls, scoreA, scoreB, currentPair, currentBowler,
-      undoStack, pairHistory, bowlerHistory, ballCount, oversPerPair, pairBallsCount, pairOversSchedule,
-      currentPairIndex, currentPairStats, currentBowlerStats,
-      completedBattersA:[...completedBattersA], completedBattersB:[...completedBattersB],
-      bowlerBallsMapA, bowlerBallsMapB, inningsCompletedThisBall, secondInningsStarted, lastBowlerForNextOver,
-      home:{playersPerTeam:document.getElementById('playersPerTeam').value,maxOvers:document.getElementById('maxOvers').value,
-        firstBattingSide:document.getElementById('firstBattingSide').value,
-        teamAName:document.getElementById('homeTeamAName').value,teamBName:document.getElementById('homeTeamBName').value,
-        teamAPlayers:playersA,teamBPlayers:playersB},
-      updatedAt:Date.now()
-    };
-  }
-  function applySnapshot(d){
-    if(!d || typeof d!=='object') return;
-    applyingRemote=true;
-    try{
-      const wasMatchEnded = matchEnded;
-      const keys=['matchStarted','matchEnded','firstBattingSide','secondBattingSide','thirdBallRuleEnabled','consecutiveDotBalls','playersA','playersB','battingTeam','bowlingTeam','maxOvers','ballsPerOver','playersPerTeam','bowlerOversLimit','currentInnings','currentOverBalls','previousOverBalls','scoreA','scoreB','currentPair','currentBowler','undoStack','pairHistory','bowlerHistory','ballCount','oversPerPair','pairBallsCount','pairOversSchedule','currentPairIndex','currentPairStats','currentBowlerStats','bowlerBallsMapA','bowlerBallsMapB','inningsCompletedThisBall','secondInningsStarted','lastBowlerForNextOver'];
-      keys.forEach(k=>{if(Object.prototype.hasOwnProperty.call(d,k)) window[k]=d[k];});
-      // top-level let/const bindings are lexical rather than window properties; explicitly restore them.
-      if(d.matchStarted!==undefined) matchStarted=d.matchStarted;
-      if(d.matchEnded!==undefined) matchEnded=!!d.matchEnded;
-      if(d.firstBattingSide!==undefined) firstBattingSide=d.firstBattingSide;
-      if(d.secondBattingSide!==undefined) secondBattingSide=d.secondBattingSide;
-      if(d.thirdBallRuleEnabled!==undefined) thirdBallRuleEnabled=d.thirdBallRuleEnabled;
-      if(d.consecutiveDotBalls!==undefined) consecutiveDotBalls=d.consecutiveDotBalls;
-      if(d.playersA) playersA=d.playersA; if(d.playersB) playersB=d.playersB;
-      if(d.battingTeam!==undefined) battingTeam=d.battingTeam; if(d.bowlingTeam!==undefined) bowlingTeam=d.bowlingTeam;
-      ['maxOvers','ballsPerOver','playersPerTeam','bowlerOversLimit','currentInnings','ballCount','oversPerPair','pairBallsCount','currentPairIndex'].forEach(k=>{if(d[k]!==undefined) eval(k+' = d[k]')});
-      if(d.currentOverBalls) currentOverBalls=d.currentOverBalls; if(d.previousOverBalls) previousOverBalls=d.previousOverBalls;
-      if(d.scoreA) scoreA=d.scoreA; if(d.scoreB) scoreB=d.scoreB; if(d.currentPair) currentPair=d.currentPair;
-      if(d.currentBowler!==undefined) currentBowler=d.currentBowler; if(d.undoStack) undoStack=d.undoStack;
-      if(d.pairHistory) pairHistory=d.pairHistory; if(d.bowlerHistory) bowlerHistory=d.bowlerHistory;
-      if(d.pairOversSchedule) pairOversSchedule=d.pairOversSchedule; if(d.currentPairStats) currentPairStats=d.currentPairStats;
-      if(d.currentBowlerStats) currentBowlerStats=d.currentBowlerStats;
-      if(d.completedBattersA) completedBattersA=new Set(d.completedBattersA); if(d.completedBattersB) completedBattersB=new Set(d.completedBattersB);
-      if(d.bowlerBallsMapA) bowlerBallsMapA=d.bowlerBallsMapA; if(d.bowlerBallsMapB) bowlerBallsMapB=d.bowlerBallsMapB;
-      if(d.inningsCompletedThisBall!==undefined) inningsCompletedThisBall=d.inningsCompletedThisBall;
-      if(d.secondInningsStarted!==undefined) secondInningsStarted=d.secondInningsStarted;
-      if(d.lastBowlerForNextOver!==undefined) lastBowlerForNextOver=d.lastBowlerForNextOver;
-      if(d.home){
-        document.getElementById('playersPerTeam').value=d.home.playersPerTeam||'';
-        document.getElementById('maxOvers').value=d.home.maxOvers||'';
-        document.getElementById('firstBattingSide').value=d.home.firstBattingSide||'';
-        document.getElementById('homeTeamAName').value=d.home.teamAName||'';
-        document.getElementById('homeTeamBName').value=d.home.teamBName||'';
-        renderPlayerFields();
-        (d.home.teamAPlayers||[]).forEach((v,i)=>{const el=document.getElementById('teamAPlayer'+(i+1));if(el)el.value=v;});
-        (d.home.teamBPlayers||[]).forEach((v,i)=>{const el=document.getElementById('teamBPlayer'+(i+1));if(el)el.value=v;});
-        document.getElementById('teamAName').value=d.home.teamAName||'TEAM A';
-        document.getElementById('teamBName').value=d.home.teamBName||'TEAM B';
-        updateBattingSideLabels();
-      }
-      document.body.setAttribute('data-theme',document.body.getAttribute('data-theme')||'dark');
-      if(matchStarted){
-        // Remote snapshots update the display but must not override user navigation.
-        updateScoreTiles();
-        updateOverTiles();
-        updateLiveScoreboard();
-        if(isScorer) enableScoringButtons(); else disableScoringButtons();
-      } else {
-        disableScoringButtons();
-      }
-      setMatchInningsTab(currentInnings||1);
-      // Preserve the existing end-of-match destination, but only on a real transition.
-      if(matchEnded && !wasMatchEnded) showPage('scoreboard');
-    }catch(err){console.error('Unable to apply live scoreboard update',err);}
-    finally{applyingRemote=false;}
-  }
-  async function publishSnapshot(){
-    if(applyingRemote || !isScorer || !liveDbRef) return;
-    try{await liveDbRef.set(getSnapshot());setStatus('Signed in as scorer. Live updates are being shared.');}
-    catch(err){setStatus('Could not publish: '+(err.message||'check Firebase database rules'),true);}
-  }
-  function queuePublish(){
-    if(!isScorer || applyingRemote) return;
-    clearTimeout(publishTimer); publishTimer=setTimeout(publishSnapshot,120);
-  }
-  function applyRole(){
-    loginFields.style.display='flex';
-    signOutBtn.style.display=liveUser && liveUser.email ? 'inline-block':'none';
-    signInBtn.style.display=isScorer?'none':'inline-block';
-    emailInput.disabled=isScorer; passwordInput.style.display=isScorer?'none':'block';
-    document.querySelectorAll('#page-match button, #page-home button, #page-home input, #page-home select, #page-settings input').forEach(el=>{
-      if(!isScorer && el.id!=='scorerEmail' && el.id!=='scorerPassword') el.disabled=true;
-      else if(isScorer) el.disabled=false;
-    });
-    if(isScorer) enableScoringButtons(); else disableScoringButtons();
-  }
-  function startListener(){
-    if(remoteListenerStarted) return;
-    remoteListenerStarted=true;
-    liveDbRef.on('value',snap=>{
-      if(snap.exists()) applySnapshot(snap.val());
-      else if(isScorer) publishSnapshot();
-      else setStatus('Waiting for the scorer to start or publish a matchâ€¦');
-    },err=>setStatus('Live connection error: '+err.message,true));
-  }
-  try{
-    if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const auth=firebase.auth(); liveDbRef=firebase.database().ref(matchRefPath);
-    auth.onAuthStateChanged(async user=>{
-      liveUser=user;
-      isScorer=!!(user && user.email && user.email.toLowerCase()===scorerEmailAllowed);
-      applyRole();
-      if(!user){
-        try{await auth.signInAnonymously();}catch(err){setStatus('Viewer connection failed: '+err.message,true);}
-        return;
-      }
-      if(user.email && !isScorer) setStatus('Signed in with an unauthorised account. Viewing only.',true);
-      else if(isScorer) setStatus('Scorer signed in. Loading live matchâ€¦');
-      else setStatus('Connected as viewer. Live score will update automatically.');
-      startListener();
-    });
-    signInBtn.addEventListener('click',async()=>{
-      const email=(emailInput.value||'').trim().toLowerCase();
-      const password=passwordInput.value;
-      if(email!==scorerEmailAllowed){setStatus('Only the authorised scorer email can sign in here.',true);return;}
-      if(!password){setStatus('Enter the password for your Firebase Authentication account.',true);return;}
-      try{await auth.signInWithEmailAndPassword(email,password);passwordInput.value='';}
-      catch(err){setStatus('Scorer sign-in failed: '+err.message,true);}
-    });
-    signOutBtn.addEventListener('click',async()=>{try{await auth.signOut();}catch(err){setStatus(err.message,true);}});
-    // Wrap common score-changing actions so each completed action is synchronised.
-    const wrap=(name)=>{const original=window[name];if(typeof original==='function')window[name]=function(...args){const result=original.apply(this,args);queuePublish();return result;};};
-    ['startMatch','endMatch','resetScoreboard','addRun','addDotBall','addWideNoBall','addWicket','undoLast','addExtraRunOnCurrentBall'].forEach(wrap);
-    document.getElementById('combinedSelectorConfirm')?.addEventListener('click',()=>setTimeout(queuePublish,150));
-    document.addEventListener('change',e=>{if(e.target.closest('#page-home')||e.target.closest('#page-settings'))queuePublish();});
-    document.addEventListener('click',e=>{if(e.target.closest('#page-match')||e.target.closest('#page-home'))queuePublish();});
-    // Refresh published state periodically after scorer-side state changes that occur in callbacks.
-    setInterval(()=>{if(isScorer && matchStarted) queuePublish();},2000);
-  }catch(err){setStatus('Firebase setup error: '+err.message,true);console.error(err);}
-})();
-
 </script>
 
 </body>
