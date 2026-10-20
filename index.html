@@ -605,6 +605,15 @@
       display:block;
     }
 
+    .scoreboard-panel{display:none;}
+    .scoreboard-panel.active{display:block;}
+    .live-team-card{background:#111827;border:1px solid #475569;border-radius:10px;padding:10px;margin:10px 0;color:#fff;}
+    .live-team-card h3{text-align:center;margin:2px 0 10px;font-size:15px;}
+    .live-chase-tile{background:#facc15;color:#111827;border-radius:8px;padding:6px 10px;text-align:center;font-weight:700;}
+    .live-chase-value{font-size:18px;font-weight:800;}
+    #scoreboardLivePanel .over-layout{gap:5px;}
+    #scoreboardLivePanel .over-dots{min-height:26px;}
+
     /* Match page innings tabs */
     .match-innings-tabs{
       display:flex;
@@ -924,15 +933,46 @@
   <h1>Indoor Cricket Scoreboard</h1>
   <div class="dev-by">Developed by Jignesh</div>
 
-  <div class="innings-tabs">
-    <div class="innings-tab active" data-innings-tab="1">First Innings</div>
-    <div class="innings-tab" data-innings-tab="2">Second Innings</div>
+  <div class="innings-tabs" id="scoreboardTabs">
+    <div class="innings-tab active" data-scoreboard-tab="live">Live</div>
+    <div class="innings-tab" data-scoreboard-tab="1">First Innings</div>
+    <div class="innings-tab" data-scoreboard-tab="2">Second Innings</div>
   </div>
 
   <div id="winner" class="winner"></div>
 
-  <div id="scoreboardSummary">
-    <div id="inningsContent1" class="innings-content active">
+  <div id="scoreboardLivePanel" class="scoreboard-panel active">
+    <h3 style="text-align:center;margin:4px 0 10px;font-size:15px;">Live Match</h3>
+    <div class="live-team-card" id="liveTeamCardA">
+      <h3 id="liveTeamNameA">TEAM A</h3>
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-label">Score</div><div class="stat-value" id="liveScoreA">0/0</div></div>
+        <div class="stat-box net-score-box"><div class="stat-label">Net Score</div><div class="stat-value" id="liveNetA">0</div></div>
+        <div class="stat-box"><div class="stat-label">Overs</div><div class="stat-value" id="liveOversA">0.0/--</div></div>
+      </div>
+      <div class="over-layout">
+        <div class="over-left"><div id="liveTargetA" class="live-chase-tile" style="display:none"><div class="over-title">Target</div><div id="liveTargetValueA" class="live-chase-value">0</div></div></div>
+        <div class="over-center"><div class="over-block"><div class="over-title">Current Over</div><div id="liveCurrentA" class="over-dots"></div></div><div class="over-block"><div class="over-title">Previous Over</div><div id="livePreviousA" class="over-dots"></div></div></div>
+        <div class="over-right"><div id="liveRrA" class="live-chase-tile" style="display:none"><div class="over-title">RR</div><div id="liveRrValueA" class="live-chase-value">0.00</div></div></div>
+      </div>
+    </div>
+    <div class="live-team-card" id="liveTeamCardB">
+      <h3 id="liveTeamNameB">TEAM B</h3>
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-label">Score</div><div class="stat-value" id="liveScoreB">0/0</div></div>
+        <div class="stat-box net-score-box"><div class="stat-label">Net Score</div><div class="stat-value" id="liveNetB">0</div></div>
+        <div class="stat-box"><div class="stat-label">Overs</div><div class="stat-value" id="liveOversB">0.0/--</div></div>
+      </div>
+      <div class="over-layout">
+        <div class="over-left"><div id="liveTargetB" class="live-chase-tile" style="display:none"><div class="over-title">Target</div><div id="liveTargetValueB" class="live-chase-value">0</div></div></div>
+        <div class="over-center"><div class="over-block"><div class="over-title">Current Over</div><div id="liveCurrentB" class="over-dots"></div></div><div class="over-block"><div class="over-title">Previous Over</div><div id="livePreviousB" class="over-dots"></div></div></div>
+        <div class="over-right"><div id="liveRrB" class="live-chase-tile" style="display:none"><div class="over-title">RR</div><div id="liveRrValueB" class="live-chase-value">0.00</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="scoreboardSummary" class="scoreboard-panel">
+    <div id="inningsContent1" class="scoreboard-panel">
       <h3 style="text-align:center;margin-top:4px;font-size:14px;">First Innings Summary</h3>
       <table id="scoreboardTeamsTableLive1">
         <thead>
@@ -971,7 +1011,7 @@
       </table>
     </div>
 
-    <div id="inningsContent2" class="innings-content">
+    <div id="inningsContent2" class="scoreboard-panel">
       <h3 style="text-align:center;margin-top:4px;font-size:14px;">Second Innings Summary</h3>
       <table id="scoreboardTeamsTableLive2">
         <thead>
@@ -1107,10 +1147,12 @@
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   renderPlayerFields();
+  syncScoreboardLiveView();
 });
 
 /* NAV + NOTIFY */
 let matchStarted = false;
+let matchEnded = false;
 let firstBattingSide = null;
 let secondBattingSide = null;
 
@@ -1310,6 +1352,7 @@ function startMatch() {
   document.getElementById("teamBName").value = bName;
 
   matchStarted = true;
+  matchEnded = false;
   showPage("match");
 
   currentInnings = 1;
@@ -1754,6 +1797,7 @@ function undoLast() {
 
 /* PUSH BALL */
 function pushBall(ball) {
+  if (!matchStarted || matchEnded) return;
   const scoreObj = battingTeam === "A" ? scoreA : scoreB;
 
   let runs = 0;
@@ -1817,6 +1861,42 @@ function pushBall(ball) {
   }
 }
 
+/* MIRROR THE MATCH PAGE TILES INTO THE SPECTATOR LIVE TAB */
+function syncScoreboardLiveView() {
+  const nameA = document.getElementById("homeTeamAName")?.value.trim() || "TEAM A";
+  const nameB = document.getElementById("homeTeamBName")?.value.trim() || "TEAM B";
+  ["A", "B"].forEach(team => {
+    const score = team === "A" ? scoreA : scoreB;
+    const name = team === "A" ? nameA : nameB;
+    const box = document.getElementById(team === "A" ? "teamABox" : "teamBBox");
+    const get = selector => box ? box.querySelector(selector) : null;
+    const scoreTile = get("[data-score-tile]");
+    const netTile = get("[data-net-tile]");
+    const oversTile = get("[data-overs]");
+    const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+    setText(`liveTeamName${team}`, name);
+    setText(`liveScore${team}`, scoreTile?.textContent || `${score.runs}/${score.wickets}`);
+    setText(`liveNet${team}`, netTile?.textContent ?? score.net);
+    setText(`liveOvers${team}`, oversTile?.textContent || `${score.overs.toFixed(1)}/${maxOvers || "--"}`);
+    const current = get("[data-current-over]");
+    const previous = get("[data-prev-over]");
+    const liveCurrent = document.getElementById(`liveCurrent${team}`);
+    const livePrevious = document.getElementById(`livePrevious${team}`);
+    if (liveCurrent && current) liveCurrent.innerHTML = current.innerHTML;
+    if (livePrevious && previous) livePrevious.innerHTML = previous.innerHTML;
+    const chasing = currentInnings === 2 && team === secondBattingSide;
+    const targetTile = document.getElementById(`liveTarget${team}`);
+    const rrTile = document.getElementById(`liveRr${team}`);
+    if (targetTile) targetTile.style.display = chasing ? "block" : "none";
+    if (rrTile) rrTile.style.display = chasing ? "block" : "none";
+    if (chasing) {
+      const target = firstBattingSide === "A" ? scoreA.net + 1 : scoreB.net + 1;
+      setText(`liveTargetValue${team}`, document.getElementById("targetValue2")?.textContent || target);
+      setText(`liveRrValue${team}`, document.getElementById("rrValue2")?.textContent || "0.00");
+    }
+  });
+}
+
 /* UPDATE SCORE TILES */
 function updateScoreTiles() {
   const tilesA = document.querySelector('#teamABox [data-score-tile]');
@@ -1830,6 +1910,7 @@ function updateScoreTiles() {
 
   document.querySelector('#teamABox [data-overs]').textContent = `${scoreA.overs.toFixed(1)}/${maxOvers || "--"}`;
   document.querySelector('#teamBBox [data-overs]').textContent = `${scoreB.overs.toFixed(1)}/${maxOvers || "--"}`;
+  syncScoreboardLiveView();
 }
 
 /* UPDATE OVER TILES */
@@ -1907,6 +1988,7 @@ function updateOverTiles() {
     if (targetTile2) targetTile2.style.display = "none";
     if (rrTile2) rrTile2.style.display = "none";
   }
+  syncScoreboardLiveView();
 }
 
 /* CHECK OVER COMPLETION */
@@ -1986,8 +2068,10 @@ function checkPairCompletion() {
 
 /* CHECK INNINGS COMPLETION */
 function checkInningsCompletion() {
+  if (matchEnded || !maxOvers || !ballsPerOver) return;
+  const legalBallsLimit = Number(maxOvers) * Number(ballsPerOver);
   const completedOvers = Math.floor(ballCount / ballsPerOver);
-  if (completedOvers >= maxOvers) {
+  if (ballCount >= legalBallsLimit || completedOvers >= Number(maxOvers)) {
     const pairOvers = currentPairStats.balls / ballsPerOver;
     if (currentPairStats.pair.length) {
       pairHistory.push({
@@ -2062,8 +2146,13 @@ function switchInnings() {
 
 /* END MATCH */
 function endMatch() {
+  if (matchEnded) return;
+  matchEnded = true;
+  disableScoringButtons();
   showPage("scoreboard");
+  activateScoreboardTab("live");
   buildFinalScoreboard();
+  syncScoreboardLiveView();
 
   const winnerBox = document.getElementById("winner");
   const netA = scoreA.net;
@@ -2131,6 +2220,7 @@ function updateLiveScoreboard() {
   });
 
   updateBowlingSummaryTables();
+  syncScoreboardLiveView();
 }
 
 /* BOWLING SUMMARY COMBINED */
@@ -2173,14 +2263,26 @@ function buildFinalScoreboard() {
   updateLiveScoreboard();
 }
 
-/* INNINGS TABS (scoreboard page) */
-document.querySelectorAll(".innings-tab").forEach(tab => {
+/* SCOREBOARD TABS */
+function activateScoreboardTab(tabName) {
+  document.querySelectorAll("#scoreboardTabs .innings-tab").forEach(t => {
+    t.classList.toggle("active", t.dataset.scoreboardTab === String(tabName));
+  });
+  document.querySelectorAll("#page-scoreboard .scoreboard-panel").forEach(panel => panel.classList.remove("active"));
+  const panelId = tabName === "live" ? "scoreboardLivePanel" : (tabName === "summary" ? "scoreboardSummary" : `inningsContent${tabName}`);
+  const panel = document.getElementById(panelId);
+  if (panel) panel.classList.add("active");
+}
+document.querySelectorAll("#scoreboardTabs [data-scoreboard-tab]").forEach(tab => {
   tab.addEventListener("click", () => {
-    const innings = tab.dataset.inningsTab;
-    document.querySelectorAll(".innings-tab").forEach(t => t.classList.remove("active"));
-    tab.classList.add("active");
-    document.querySelectorAll(".innings-content").forEach(c => c.classList.remove("active"));
-    document.getElementById(`inningsContent${innings}`).classList.add("active");
+    const name = tab.dataset.scoreboardTab;
+    if (name === "1" || name === "2") {
+      document.querySelectorAll("#scoreboardTabs .innings-tab").forEach(t => t.classList.toggle("active", t === tab));
+      document.querySelectorAll("#page-scoreboard .scoreboard-panel").forEach(panel => panel.classList.remove("active"));
+      document.getElementById("scoreboardSummary").classList.add("active");
+      document.querySelectorAll("#scoreboardSummary .scoreboard-panel").forEach(panel => panel.classList.remove("active"));
+      document.getElementById(`inningsContent${name}`).classList.add("active");
+    } else activateScoreboardTab(name);
   });
 });
 
@@ -2306,6 +2408,7 @@ document.getElementById("resetAllFields").addEventListener("click", () => {
 
 function resetScoreboard(resetHome, stayOnPage) {
   matchStarted = false;
+  matchEnded = false;
   firstBattingSide = null;
   secondBattingSide = null;
   battingTeam = null;
@@ -2418,7 +2521,7 @@ function resetScoreboard(resetHome, stayOnPage) {
   }
   function getSnapshot(){
     return {
-      matchStarted, firstBattingSide, secondBattingSide, thirdBallRuleEnabled, consecutiveDotBalls,
+      matchStarted, matchEnded, firstBattingSide, secondBattingSide, thirdBallRuleEnabled, consecutiveDotBalls,
       playersA, playersB, battingTeam, bowlingTeam, maxOvers, ballsPerOver, playersPerTeam, bowlerOversLimit,
       currentInnings, currentOverBalls, previousOverBalls, scoreA, scoreB, currentPair, currentBowler,
       undoStack, pairHistory, bowlerHistory, ballCount, oversPerPair, pairBallsCount, pairOversSchedule,
@@ -2436,10 +2539,11 @@ function resetScoreboard(resetHome, stayOnPage) {
     if(!d || typeof d!=='object') return;
     applyingRemote=true;
     try{
-      const keys=['matchStarted','firstBattingSide','secondBattingSide','thirdBallRuleEnabled','consecutiveDotBalls','playersA','playersB','battingTeam','bowlingTeam','maxOvers','ballsPerOver','playersPerTeam','bowlerOversLimit','currentInnings','currentOverBalls','previousOverBalls','scoreA','scoreB','currentPair','currentBowler','undoStack','pairHistory','bowlerHistory','ballCount','oversPerPair','pairBallsCount','pairOversSchedule','currentPairIndex','currentPairStats','currentBowlerStats','bowlerBallsMapA','bowlerBallsMapB','inningsCompletedThisBall','secondInningsStarted','lastBowlerForNextOver'];
+      const keys=['matchStarted','matchEnded','firstBattingSide','secondBattingSide','thirdBallRuleEnabled','consecutiveDotBalls','playersA','playersB','battingTeam','bowlingTeam','maxOvers','ballsPerOver','playersPerTeam','bowlerOversLimit','currentInnings','currentOverBalls','previousOverBalls','scoreA','scoreB','currentPair','currentBowler','undoStack','pairHistory','bowlerHistory','ballCount','oversPerPair','pairBallsCount','pairOversSchedule','currentPairIndex','currentPairStats','currentBowlerStats','bowlerBallsMapA','bowlerBallsMapB','inningsCompletedThisBall','secondInningsStarted','lastBowlerForNextOver'];
       keys.forEach(k=>{if(Object.prototype.hasOwnProperty.call(d,k)) window[k]=d[k];});
       // top-level let/const bindings are lexical rather than window properties; explicitly restore them.
       if(d.matchStarted!==undefined) matchStarted=d.matchStarted;
+      if(d.matchEnded!==undefined) matchEnded=d.matchEnded;
       if(d.firstBattingSide!==undefined) firstBattingSide=d.firstBattingSide;
       if(d.secondBattingSide!==undefined) secondBattingSide=d.secondBattingSide;
       if(d.thirdBallRuleEnabled!==undefined) thirdBallRuleEnabled=d.thirdBallRuleEnabled;
@@ -2481,6 +2585,11 @@ function resetScoreboard(resetHome, stayOnPage) {
         disableScoringButtons();
       }
       setMatchInningsTab(currentInnings||1);
+      if (!isScorer) {
+        showPage("scoreboard");
+        activateScoreboardTab("live");
+      }
+      if (matchEnded) disableScoringButtons();
     }catch(err){console.error('Unable to apply live scoreboard update',err);}
     finally{applyingRemote=false;}
   }
@@ -2527,7 +2636,11 @@ function resetScoreboard(resetHome, stayOnPage) {
       }
       if(user.email && !isScorer) setStatus('Signed in with an unauthorised account. Viewing only.',true);
       else if(isScorer) setStatus('Scorer signed in. Loading live matchâ€¦');
-      else setStatus('Connected as viewer. Live score will update automatically.');
+      else {
+        setStatus('Connected as viewer. Live score will update automatically.');
+        showPage("scoreboard");
+        activateScoreboardTab("live");
+      }
       startListener();
     });
     signInBtn.addEventListener('click',async()=>{
