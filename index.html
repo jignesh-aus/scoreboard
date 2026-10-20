@@ -613,6 +613,9 @@
     .live-chase-value{font-size:18px;font-weight:800;}
     #scoreboardLivePanel .over-layout{gap:5px;}
     #scoreboardLivePanel .over-dots{min-height:26px;}
+    /* Match the black Net Score numerals used on the Match page. */
+    #scoreboardLivePanel .net-score-box .stat-label,
+    #scoreboardLivePanel .net-score-box .stat-value{color:#111827 !important;opacity:1;}
 
     /* Match page innings tabs */
     .match-innings-tabs{
@@ -1301,6 +1304,20 @@ let inningsCompletedThisBall = false;
 let secondInningsStarted = false;
 
 let lastBowlerForNextOver = null;
+// Net-score milestones already celebrated in this match (team + threshold).
+let celebratedNetMilestones = new Set();
+
+function checkNetScoreMilestone(team, netScore) {
+  const score = Number(netScore) || 0;
+  if (score < 50) return;
+  const milestone = Math.floor(score / 50) * 50;
+  const key = `${team}:${milestone}`;
+  if (milestone >= 50 && !celebratedNetMilestones.has(key)) {
+    celebratedNetMilestones.add(key);
+    launchConfetti();
+    notify(`${team === "A" ? (document.getElementById("homeTeamAName").value.trim() || "TEAM A") : (document.getElementById("homeTeamBName").value.trim() || "TEAM B")} reached ${milestone} net score!`);
+  }
+}
 
 /* START MATCH */
 document.getElementById("startMatchBtn").addEventListener("click", startMatch);
@@ -1353,6 +1370,7 @@ function startMatch() {
 
   matchStarted = true;
   matchEnded = false;
+  celebratedNetMilestones = new Set();
   showPage("match");
 
   currentInnings = 1;
@@ -1721,6 +1739,7 @@ function addExtraRunOnCurrentBall() {
 
   scoreObj.runs += 1;
   scoreObj.net += 1;
+  checkNetScoreMilestone(battingTeam, scoreObj.net);
 
   currentPairStats.runs += 1;
   currentBowlerStats.runs += 1;
@@ -1751,6 +1770,10 @@ function undoLast() {
   scoreObj.runs -= last.runs;
   scoreObj.net -= last.net;
   if (last.wicket) scoreObj.wickets--;
+  for (const key of [...celebratedNetMilestones]) {
+    const [team, thresholdText] = key.split(":");
+    if (team === battingTeam && Number(thresholdText) > scoreObj.net) celebratedNetMilestones.delete(key);
+  }
 
   if (!last.extraOnBall) {
     ballCount--;
@@ -1798,6 +1821,12 @@ function undoLast() {
 /* PUSH BALL */
 function pushBall(ball) {
   if (!matchStarted || matchEnded) return;
+  // Defensive hard stop: never allow a ball beyond the configured innings limit.
+  const inningsBallLimit = Number(maxOvers) * Number(ballsPerOver);
+  if (Number(currentInnings) === 2 && inningsBallLimit > 0 && ballCount >= inningsBallLimit) {
+    endMatch();
+    return;
+  }
   const scoreObj = battingTeam === "A" ? scoreA : scoreB;
 
   let runs = 0;
@@ -1824,6 +1853,7 @@ function pushBall(ball) {
   scoreObj.runs += runs;
   scoreObj.net += net;
   if (wicket) scoreObj.wickets++;
+  checkNetScoreMilestone(battingTeam, scoreObj.net);
 
   undoStack.push({ runs, net, wicket, extraOnBall: false });
 
@@ -1853,7 +1883,7 @@ function pushBall(ball) {
 
   inningsCompletedThisBall = false;
   checkInningsCompletion();
-  if (inningsCompletedThisBall) return;
+  if (inningsCompletedThisBall || matchEnded) return;
 
   if (currentInnings <= 2) {
     checkOverCompletion();
@@ -2068,10 +2098,10 @@ function checkPairCompletion() {
 
 /* CHECK INNINGS COMPLETION */
 function checkInningsCompletion() {
-  if (matchEnded || !maxOvers || !ballsPerOver) return;
+  if (!matchStarted || matchEnded || !Number(maxOvers) || !Number(ballsPerOver)) return;
   const legalBallsLimit = Number(maxOvers) * Number(ballsPerOver);
-  const completedOvers = Math.floor(ballCount / ballsPerOver);
-  if (ballCount >= legalBallsLimit || completedOvers >= Number(maxOvers)) {
+  const completedOvers = Math.floor(Number(ballCount) / Number(ballsPerOver));
+  if (legalBallsLimit > 0 && (Number(ballCount) >= legalBallsLimit || completedOvers >= Number(maxOvers))) {
     const pairOvers = currentPairStats.balls / ballsPerOver;
     if (currentPairStats.pair.length) {
       pairHistory.push({
@@ -2100,7 +2130,7 @@ function checkInningsCompletion() {
 
     inningsCompletedThisBall = true;
 
-    if (currentInnings === 1) {
+    if (Number(currentInnings) === 1) {
       notify("Innings Over");
       currentInnings = 2;
       switchInnings();
@@ -2407,6 +2437,7 @@ document.getElementById("resetAllFields").addEventListener("click", () => {
 });
 
 function resetScoreboard(resetHome, stayOnPage) {
+  celebratedNetMilestones = new Set();
   matchStarted = false;
   matchEnded = false;
   firstBattingSide = null;
