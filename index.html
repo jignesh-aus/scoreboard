@@ -607,15 +607,27 @@
 
     .scoreboard-panel{display:none;}
     .scoreboard-panel.active{display:block;}
-    .live-team-card{background:#111827;border:1px solid #475569;border-radius:10px;padding:10px;margin:10px 0;color:#fff;}
-    .live-team-card h3{text-align:center;margin:2px 0 10px;font-size:15px;}
+    .live-team-card{border:1px solid #475569;border-radius:10px;padding:10px;margin:10px 0;color:var(--text-color);box-shadow:0 2px 6px rgba(0,0,0,.25);}
+    #liveTeamCardA{background:var(--card-bg-a);}
+    #liveTeamCardB{background:var(--card-bg-b);}
+    .live-team-card h3{text-align:center;margin:2px 0 10px;font-size:17px;font-weight:800;}
     .live-chase-tile{background:#facc15;color:#111827;border-radius:8px;padding:6px 10px;text-align:center;font-weight:700;}
-    .live-chase-value{font-size:18px;font-weight:800;}
-    #scoreboardLivePanel .over-layout{gap:5px;}
-    #scoreboardLivePanel .over-dots{min-height:26px;}
-    /* Match the black Net Score numerals used on the Match page. */
+    .live-chase-value{font-size:16px;font-weight:700;}
+    /* Keep spectator Live tiles visually consistent with the scorer's Match tiles. */
+    #scoreboardLivePanel .stat-box{background:var(--stat-bg);padding:8px 10px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.25);}
+    #scoreboardLivePanel .stat-label{font-size:12px;font-weight:600;color:var(--text-color);opacity:.9;}
+    #scoreboardLivePanel #liveScoreA,#scoreboardLivePanel #liveScoreB,
+    #scoreboardLivePanel #liveOversA,#scoreboardLivePanel #liveOversB{font-size:28px;font-weight:900;line-height:1.2;color:var(--text-color);letter-spacing:.2px;text-shadow:0 1px 1px rgba(0,0,0,.12);}
+    #scoreboardLivePanel .net-score-box{background:#facc15;border:2px solid #fff;box-shadow:0 0 0 1px #b45309,0 3px 8px rgba(0,0,0,.32);}
     #scoreboardLivePanel .net-score-box .stat-label,
-    #scoreboardLivePanel .net-score-box .stat-value{color:#111827 !important;opacity:1;}
+    #scoreboardLivePanel .net-score-box .stat-value{font-size:30px;font-weight:900;line-height:1.1;color:#111827 !important;opacity:1;}
+    #scoreboardLivePanel .net-score-box .stat-label{font-size:12px;}
+    #scoreboardLivePanel .over-layout{display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:start;}
+    #scoreboardLivePanel .over-left{grid-column:1;grid-row:1;flex:none;width:auto;}
+    #scoreboardLivePanel .over-right{grid-column:2;grid-row:1;flex:none;width:auto;}
+    #scoreboardLivePanel .over-center{grid-column:1 / -1;grid-row:2;min-width:0;width:100%;}
+    #scoreboardLivePanel .over-dots{min-height:26px;flex-wrap:wrap;justify-content:center;gap:3px;}
+    #scoreboardLivePanel .over-block{margin-bottom:8px;}
 
     /* Match page innings tabs */
     .match-innings-tabs{
@@ -1306,6 +1318,8 @@ let secondInningsStarted = false;
 let lastBowlerForNextOver = null;
 // Net-score milestones already celebrated in this match (team + threshold).
 let celebratedNetMilestones = new Set();
+// Spectator clients track score changes from Firebase so milestone confetti appears locally too.
+let remoteLastNetScores = { A: null, B: null };
 
 function checkNetScoreMilestone(team, netScore) {
   const score = Number(netScore) || 0;
@@ -1371,6 +1385,7 @@ function startMatch() {
   matchStarted = true;
   matchEnded = false;
   celebratedNetMilestones = new Set();
+  remoteLastNetScores = { A: null, B: null };
   showPage("match");
 
   currentInnings = 1;
@@ -2361,7 +2376,7 @@ function launchConfetti() {
   window.addEventListener("touchstart", stopConfetti);
   window.addEventListener("click", stopConfetti);
 
-  setTimeout(stopConfetti, 10000);
+  setTimeout(stopConfetti, 5000);
 }
 
 function launchFireworks() {
@@ -2584,6 +2599,19 @@ function resetScoreboard(resetHome, stayOnPage) {
       ['maxOvers','ballsPerOver','playersPerTeam','bowlerOversLimit','currentInnings','ballCount','oversPerPair','pairBallsCount','currentPairIndex'].forEach(k=>{if(d[k]!==undefined) eval(k+' = d[k]')});
       if(d.currentOverBalls) currentOverBalls=d.currentOverBalls; if(d.previousOverBalls) previousOverBalls=d.previousOverBalls;
       if(d.scoreA) scoreA=d.scoreA; if(d.scoreB) scoreB=d.scoreB; if(d.currentPair) currentPair=d.currentPair;
+      if (!isScorer) {
+        ["A", "B"].forEach(team => {
+          const now = Number((team === "A" ? scoreA : scoreB)?.net) || 0;
+          const previous = remoteLastNetScores[team];
+          // Ignore the initial snapshot; only celebrate milestones crossed during this spectator session.
+          if (previous !== null && now > previous) {
+            for (let milestone = (Math.floor(previous / 50) + 1) * 50; milestone <= now; milestone += 50) {
+              checkNetScoreMilestone(team, milestone);
+            }
+          }
+          remoteLastNetScores[team] = now;
+        });
+      }
       if(d.currentBowler!==undefined) currentBowler=d.currentBowler; if(d.undoStack) undoStack=d.undoStack;
       if(d.pairHistory) pairHistory=d.pairHistory; if(d.bowlerHistory) bowlerHistory=d.bowlerHistory;
       if(d.pairOversSchedule) pairOversSchedule=d.pairOversSchedule; if(d.currentPairStats) currentPairStats=d.currentPairStats;
