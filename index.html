@@ -21,17 +21,17 @@
     }
 
     [data-theme="light"] {
-      --bg-color: #ffffff;
-      --text-color: #202733;
+      --bg-color: #edf2f7;
+      --text-color: #172033;
       --card-bg-a: #ffffff;
-      --card-bg-b: #f6f7f9;
-      --players-bg: #f1f3f5;
-      --accent: #0067a8;
-      --border-color: #d8dde3;
-      --stat-bg: #f0f2f4;
-      --button-bg: #edf0f3;
-      --button-bg-hover: #e1e6eb;
-      --winner-bg: #fff2bd;
+      --card-bg-b: #f8fafc;
+      --players-bg: #e2e8f0;
+      --accent: #075985;
+      --border-color: #a8b5c7;
+      --stat-bg: #e2e8f0;
+      --button-bg: #dbe4ef;
+      --button-bg-hover: #c7d5e5;
+      --winner-bg: #fde047;
     }
 
     html,body{
@@ -798,116 +798,81 @@
     @media (min-width:520px) { .page { padding-left:18px; padding-right:18px; } .home-hero { padding:24px; } .setup-section { padding:19px; } }
     @media (max-width:360px) { .page { padding-left:9px; padding-right:9px; } .config-row { align-items:flex-start; } .config-input { min-width:76px; } .teams-two-col { gap:6px; } .team-col { padding:6px; } }
 
+  
 
-    /* Match Day landing and setup redesign */
-    .home-page { max-width:560px; padding:14px 16px 120px; }
-    .app-brand { display:flex; align-items:center; gap:11px; margin:4px 0 28px; }
-    .brand-mark { display:grid; place-items:center; width:44px; height:44px; border-radius:14px; background:linear-gradient(145deg,#0ea5e9,#0e7490); font-size:23px; box-shadow:0 8px 22px #0284c733; }
-    .brand-title { font-size:17px; font-weight:850; letter-spacing:-.35px; color:#f8fafc; }
-    .brand-subtitle { margin-top:2px; color:#7dd3fc; font-size:9px; font-weight:850; letter-spacing:2.4px; }
-    .brand-live { margin-left:auto; display:flex; align-items:center; gap:6px; padding:7px 9px; border:1px solid #28516a; border-radius:30px; background:#0e2639; color:#b7d5e8; font-size:9px; font-weight:800; letter-spacing:.8px; }
-    .brand-live span { width:6px; height:6px; border-radius:50%; background:#2dd4bf; box-shadow:0 0 0 4px #2dd4bf1f; }
-    .home-landing { padding:26px 21px 19px; border:1px solid #24445e; border-radius:25px; background:radial-gradient(ellipse at 100% 0%,#0e749033,transparent 45%),linear-gradient(155deg,#10253b,#0b1728 78%); box-shadow:0 20px 50px #0003; }
-    .hero-eyebrow { color:#38bdf8; font-size:10px; font-weight:850; letter-spacing:2.1px; }
-    .hero-title { margin:13px 0 10px; background:none; color:#f8fafc; text-align:left; padding:0; border-radius:0; font-size:clamp(36px,10vw,49px); line-height:1.02; font-weight:900; letter-spacing:-1.8px; }
-    .hero-title span { color:#38bdf8; }
-    .hero-copy { margin:0 0 25px; max-width:330px; color:#a9bfd2; font-size:13px; line-height:1.65; }
-    .home-action { display:flex; align-items:center; gap:12px; width:100%; min-height:78px; margin:10px 0; padding:14px; text-align:left; border-radius:17px; border:1px solid transparent; cursor:pointer; }
-    .primary-action { background:linear-gradient(110deg,#0284c7,#0891b2); color:white; box-shadow:0 10px 24px #0284c72b; }
-    .secondary-action { background:#14283d; border-color:#2b4c66; color:#f1f7fc; }
-    .action-icon { display:grid; place-items:center; flex:0 0 42px; height:42px; border-radius:13px; background:#ffffff20; font-size:24px; font-weight:500; }
-    .secondary-action .action-icon { background:#1e3c55; color:#7dd3fc; }
-    .action-copy { display:flex; flex:1; min-width:0; flex-direction:column; gap:5px; }
-    .action-copy strong { font-size:15px; font-weight:800; }
-    .action-copy small { color:#d3e5f2; font-size:10px; line-height:1.4; }
-    .secondary-action .action-copy small { color:#9bb2c6; }
-    .action-arrow { font-size:21px; opacity:.9; }
-    .home-feature-row { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; margin:23px 0 19px; padding:15px 0 0; border-top:1px solid #ffffff12; }
-    .home-feature-row div { display:flex; flex-direction:column; gap:5px; min-width:0; }
-    .home-feature-row strong { color:#7dd3fc; font-size:9px; letter-spacing:.7px; }
-    .home-feature-row span { color:#8da6bc; font-size:9px; line-height:1.3; }
-    .login-link { display:flex; align-items:center; gap:9px; width:100%; padding:13px 2px 2px; border:0; border-top:1px solid #ffffff10; background:transparent; color:#b8ccdc; font-size:12px; text-align:left; }
-    .login-link-arrow { margin-left:auto; color:#7dd3fc; font-size:17px; }
-    .home-setup-panel, .scorer-login-panel { margin:0 0 15px; padding:20px 15px; border:1px solid #24445e; border-radius:22px; background:linear-gradient(155deg,#10253b,#0b1728); box-shadow:0 18px 45px #0003; }
-    .home-setup-panel[hidden], .scorer-login-panel[hidden] { display:none !important; }
-    .section-heading-row { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
-    .section-heading-row h2 { margin:5px 0 0; color:#f8fafc; font-size:23px; letter-spacing:-.6px; }
-    .back-button { flex:0 0 40px; height:40px; border:1px solid #31516b; border-radius:12px; background:#173149; color:#d9efff; font-size:22px; }
-    .section-intro { margin:8px 0 18px; color:#9db4c8; font-size:12px; line-height:1.6; }
-    .home-setup-panel .home-config { margin-top:0; }
-    .home-setup-panel .primary-btn { width:100%; }
-    .text-back-button { width:100%; margin-top:12px; padding:12px; border:0; background:transparent; color:#7dd3fc; font-size:12px; }
-    #liveAccessPanel { margin:0 !important; padding:15px !important; background:#10243a !important; border:1px solid #31516b !important; border-radius:15px !important; box-shadow:none !important; color:#f8fafc !important; font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif !important; }
-    #scorerLoginFields { gap:9px !important; }
-    #scorerLoginFields input { min-height:44px; padding:10px 12px !important; border:1px solid #35556e !important; border-radius:10px !important; background:#0b1728 !important; color:#f8fafc !important; font-size:14px; }
-    #scorerLoginFields button { min-height:42px; border-radius:10px !important; background:#0284c7; color:white; }
-    #scorerSignOut { background:#263c50 !important; color:#d8e8f5 !important; }
-    @media(max-width:380px) { .home-page { padding-left:10px; padding-right:10px; } .home-landing { padding:22px 15px 17px; } .brand-live { font-size:8px; } .home-feature-row span { font-size:8px; } }
-
-
-
-    /* Clean, high-contrast light theme: white canvas with subtle grey cards. */
-    [data-theme="light"] html,
-    [data-theme="light"],
-    [data-theme="light"] body { background:#fff !important; color:#202733 !important; }
-    [data-theme="light"] .page { background:#fff; }
-    [data-theme="light"] .team-col,
-    [data-theme="light"] .stat-card,
-    [data-theme="light"] .score-card,
-    [data-theme="light"] .settings-card,
-    [data-theme="light"] .home-setup-panel,
-    [data-theme="light"] .home-landing,
-    [data-theme="light"] .scorer-login-panel,
-    [data-theme="light"] .section-card { background:#fff !important; color:#202733 !important; border-color:#d8dde3 !important; }
-    [data-theme="light"] .home-players-box,
-    [data-theme="light"] .innings-content,
-    [data-theme="light"] .scoreboard-table-wrap,
-    [data-theme="light"] .table-wrap,
-    [data-theme="light"] .stat-tile,
-    [data-theme="light"] .score-tile,
-    [data-theme="light"] .team-score-card { background:#f1f3f5 !important; color:#202733 !important; }
-    [data-theme="light"] input,
-    [data-theme="light"] select,
-    [data-theme="light"] textarea,
-    [data-theme="light"] .config-input,
-    [data-theme="light"] .home-team-name,
-    [data-theme="light"] .player-input,
-    [data-theme="light"] .team-name-input { background:#fff !important; color:#202733 !important; border:1px solid #cbd2da !important; }
-    [data-theme="light"] input::placeholder,
-    [data-theme="light"] textarea::placeholder { color:#687382 !important; opacity:1; }
-    [data-theme="light"] label,
-    [data-theme="light"] p,
-    [data-theme="light"] span,
-    [data-theme="light"] small,
-    [data-theme="light"] h2,
-    [data-theme="light"] h3,
-    [data-theme="light"] .section-intro,
-    [data-theme="light"] .hero-copy,
-    [data-theme="light"] .team-name-guidance { color:inherit; }
-    [data-theme="light"] table { color:#202733 !important; }
-    [data-theme="light"] th { background:#e9edf1 !important; color:#202733 !important; }
-    [data-theme="light"] td { background:#fff !important; color:#202733 !important; border-color:#e0e4e8 !important; }
-    [data-theme="light"] button:not(.primary-btn):not(.danger-btn):not(.reset-all) { color:#202733; }
-    [data-theme="light"] .primary-btn,
-    [data-theme="light"] .home-action.primary-action { background:#0067a8 !important; color:#fff !important; }
-    [data-theme="light"] .secondary-action,
-    [data-theme="light"] .back-button,
-    [data-theme="light"] .text-back-button { background:#f1f3f5 !important; color:#202733 !important; border-color:#d8dde3 !important; }
-    [data-theme="light"] #bottom-nav { background:#fff !important; border-color:#d8dde3 !important; box-shadow:0 -2px 12px rgba(24,39,56,.08); }
-    [data-theme="light"] #bottom-nav button { color:#4b5563 !important; }
-    [data-theme="light"] #bottom-nav button.active { color:#0067a8 !important; }
-    [data-theme="light"] #liveAccessStatus { color:#202733 !important; }
-    [data-theme="light"] .winner-banner,
-    [data-theme="light"] #winner { color:#202733 !important; }
-    @media (max-width:380px) {
-      .home-config { gap:8px !important; margin-top:8px !important; }
-      .config-row { gap:8px; font-size:13px !important; }
-      .teams-two-col { gap:8px !important; }
-      .team-col { padding:7px !important; }
-      .home-players-box { padding:5px !important; gap:5px !important; }
+    /* Clean light theme: white canvas, subtle grey cards, dark readable text, restrained blue accents. */
+    :root {
+      --bg-color:#ffffff; --text-color:#172033; --card-bg-a:#ffffff; --card-bg-b:#f7f9fc;
+      --players-bg:#f1f4f8; --accent:#0067a8; --border-color:#d7dee8; --stat-bg:#f1f4f8;
+      --button-bg:#e8eef5; --button-bg-hover:#dce6f0; --winner-bg:#fff2b3;
     }
+    body:not([data-theme="dark"]), body[data-theme="light"] {
+      background:#fff !important; color:#172033 !important;
+    }
+    body:not([data-theme="dark"]) .page, body[data-theme="light"] .page { color:#172033 !important; }
+    body:not([data-theme="dark"]) h1, body[data-theme="light"] h1 {
+      color:#172033 !important; background:transparent !important;
+    }
+    body:not([data-theme="dark"]) .dev-by, body[data-theme="light"] .dev-by { color:#657184 !important; }
+    body:not([data-theme="dark"]) .home-hero, body[data-theme="light"] .home-hero,
+    body:not([data-theme="dark"]) .setup-section, body[data-theme="light"] .setup-section,
+    body:not([data-theme="dark"]) .team-col, body[data-theme="light"] .team-col,
+    body:not([data-theme="dark"]) .live-team-card, body[data-theme="light"] .live-team-card,
+    body:not([data-theme="dark"]) .stat-box, body[data-theme="light"] .stat-box,
+    body:not([data-theme="dark"]) .score-card, body[data-theme="light"] .score-card,
+    body:not([data-theme="dark"]) .settings-card, body[data-theme="light"] .settings-card {
+      background:#f7f9fc !important; color:#172033 !important; border-color:#d7dee8 !important;
+      box-shadow:0 1px 4px rgba(20,40,70,.07) !important;
+    }
+    body:not([data-theme="dark"]) .home-hero, body[data-theme="light"] .home-hero { background:#f5f8fc !important; }
+    body:not([data-theme="dark"]) .home-hero h2, body[data-theme="light"] .home-hero h2,
+    body:not([data-theme="dark"]) .home-hero p, body[data-theme="light"] .home-hero p,
+    body:not([data-theme="dark"]) .hero-eyebrow, body[data-theme="light"] .hero-eyebrow,
+    body:not([data-theme="dark"]) .hero-pills span, body[data-theme="light"] .hero-pills span,
+    body:not([data-theme="dark"]) .section-heading h2, body[data-theme="light"] .section-heading h2,
+    body:not([data-theme="dark"]) .section-heading p, body[data-theme="light"] .section-heading p,
+    body:not([data-theme="dark"]) .team-name-guidance, body[data-theme="light"] .team-name-guidance,
+    body:not([data-theme="dark"]) label, body[data-theme="light"] label,
+    body:not([data-theme="dark"]) .stat-label, body[data-theme="light"] .stat-label,
+    body:not([data-theme="dark"]) .stat-value, body[data-theme="light"] .stat-value,
+    body:not([data-theme="dark"]) .live-team-card h3, body[data-theme="light"] .live-team-card h3,
+    body:not([data-theme="dark"]) .innings-tab, body[data-theme="light"] .innings-tab,
+    body:not([data-theme="dark"]) .scoreboard-tab, body[data-theme="light"] .scoreboard-tab { color:#172033 !important; text-shadow:none !important; }
+    body:not([data-theme="dark"]) input, body[data-theme="light"] input,
+    body:not([data-theme="dark"]) select, body[data-theme="light"] select,
+    body:not([data-theme="dark"]) textarea, body[data-theme="light"] textarea {
+      background:#fff !important; color:#172033 !important; border-color:#cbd5e1 !important;
+    }
+    body:not([data-theme="dark"]) input::placeholder, body[data-theme="light"] input::placeholder,
+    body:not([data-theme="dark"]) textarea::placeholder, body[data-theme="light"] textarea::placeholder { color:#697586 !important; opacity:1 !important; }
+    body:not([data-theme="dark"]) button, body[data-theme="light"] button {
+      color:#172033; border-color:#cbd5e1;
+    }
+    body:not([data-theme="dark"]) .primary-btn, body[data-theme="light"] .primary-btn,
+    body:not([data-theme="dark"]) .hero-primary, body[data-theme="light"] .hero-primary {
+      background:#0067a8 !important; color:#fff !important; border-color:#0067a8 !important;
+    }
+    body:not([data-theme="dark"]) .hero-secondary, body[data-theme="light"] .hero-secondary {
+      background:#fff !important; color:#005b96 !important; border-color:#b8c7d8 !important;
+    }
+    body:not([data-theme="dark"]) #liveAccessPanel, body[data-theme="light"] #liveAccessPanel {
+      background:#f4f7fb !important; color:#172033 !important; border-color:#d7dee8 !important;
+    }
+    body:not([data-theme="dark"]) #liveAccessPanel input, body[data-theme="light"] #liveAccessPanel input { background:#fff !important; color:#172033 !important; }
+    body:not([data-theme="dark"]) #scoreboardLivePanel .stat-label, body[data-theme="light"] #scoreboardLivePanel .stat-label,
+    body:not([data-theme="dark"]) #scoreboardLivePanel #liveScoreA, body[data-theme="light"] #scoreboardLivePanel #liveScoreA,
+    body:not([data-theme="dark"]) #scoreboardLivePanel #liveScoreB, body[data-theme="light"] #scoreboardLivePanel #liveScoreB,
+    body:not([data-theme="dark"]) #scoreboardLivePanel #liveOversA, body[data-theme="light"] #scoreboardLivePanel #liveOversA,
+    body:not([data-theme="dark"]) #scoreboardLivePanel #liveOversB, body[data-theme="light"] #scoreboardLivePanel #liveOversB { color:#172033 !important; text-shadow:none !important; }
+    body:not([data-theme="dark"]) .net-score-box, body[data-theme="light"] .net-score-box { background:#fff2b3 !important; border-color:#e5c34b !important; }
+    body:not([data-theme="dark"]) .net-score-box *, body[data-theme="light"] .net-score-box * { color:#172033 !important; }
+    body:not([data-theme="dark"]) table, body[data-theme="light"] table { color:#172033 !important; }
+    body:not([data-theme="dark"]) th, body[data-theme="light"] th { background:#eaf0f6 !important; color:#172033 !important; }
+    body:not([data-theme="dark"]) td, body[data-theme="light"] td { background:#fff !important; color:#172033 !important; border-color:#e1e7ef !important; }
+    body:not([data-theme="dark"]) .config-row, body[data-theme="light"] .config-row { background:#f7f9fc !important; border-color:#e0e6ee !important; color:#172033 !important; }
+    body:not([data-theme="dark"]) .config-input, body[data-theme="light"] .config-input { background:#fff !important; color:#172033 !important; border-color:#cbd5e1 !important; }
 
-  </style>
+</style>
 </head>
 <body data-theme="dark">
 <div id="notifyBanner"></div>
@@ -915,30 +880,10 @@
 <canvas id="fireworksCanvas"></canvas>
 
 <!-- HOME PAGE -->
-<div id="page-home" class="page active home-page">
-  <header class="app-brand">
-    <div class="brand-mark" aria-hidden="true">ðŸ</div>
-    <div><div class="brand-title">Indoor Cricket</div><div class="brand-subtitle">SCOREBOARD</div></div>
-    <span class="brand-live"><span></span> MATCH DAY</span>
-  </header>
+<div id="page-home" class="page active">
+  <h1>Indoor Cricket Scoreboard</h1>
+  <div class="dev-by">Developed by Jignesh</div>
 
-  <section id="homeLanding" class="home-landing">
-    <div class="hero-eyebrow">YOUR GAME. YOUR SCORE.</div>
-    <h1 class="hero-title">Every run<br><span>counts.</span></h1>
-    <p class="hero-copy">Keep every ball, wicket and net score in sync â€” live on every screen.</p>
-    <button id="openMatchSetup" class="home-action primary-action" type="button">
-      <span class="action-icon">ï¼‹</span><span class="action-copy"><strong>Score a Match</strong><small>Start a new game and record every ball</small></span><span class="action-arrow">â†’</span>
-    </button>
-    <button id="openLiveScore" class="home-action secondary-action" type="button">
-      <span class="action-icon">â—‰</span><span class="action-copy"><strong>Watch Live Score</strong><small>View the live scoreboard and over history</small></span><span class="action-arrow">â†’</span>
-    </button>
-    <div class="home-feature-row"><div><strong>LIVE</strong><span>Score updates</span></div><div><strong>BALL BY BALL</strong><span>Over history</span></div><div><strong>ALL DEVICES</strong><span>Share with anyone</span></div></div>
-    <button id="openScorerLogin" class="login-link" type="button"><span>â–£</span> Scorer login <span class="login-link-arrow">â†’</span></button>
-  </section>
-
-  <section id="matchSetupPanel" class="home-setup-panel" hidden>
-    <div class="section-heading-row"><button id="backToHome" class="back-button" type="button" aria-label="Back to home">â†</button><div><div class="hero-eyebrow">NEW GAME</div><h2>Set up your match</h2></div></div>
-    <p class="section-intro">Choose your match format, add teams and you're ready to play.</p>
   <div class="home-config">
     <div class="config-row">
       <label>How many players per team?</label>
@@ -981,7 +926,7 @@
 
     <div class="team-name-guidance">
       <span class="guidance-arrow" aria-hidden="true">â†“</span>
-      <span>Team and player names (optional):</span>
+      <span>Insert names of both teams and players (optional):</span>
     </div>
 
     <div class="teams-two-col">
@@ -994,14 +939,8 @@
         <div id="teamBPlayersContainer" class="home-players-box"></div>
       </div>
     </div>
-  </div>
-    <button id="cancelMatchSetup" class="text-back-button" type="button">â† Back to home</button>
-  </section>
 
-  <section id="scorerLoginPanel" class="scorer-login-panel" hidden>
-    <div class="section-heading-row"><button id="backFromLogin" class="back-button" type="button" aria-label="Back to home">â†</button><div><div class="hero-eyebrow">SCORER ACCESS</div><h2>Welcome back</h2></div></div>
-    <p class="section-intro">Sign in to manage the match. Spectators can watch without signing in.</p>
-    <div id="liveAccessPanel">
+<div id="liveAccessPanel" style="position:relative;z-index:1;max-width:480px;margin:14px auto 4px;padding:12px;background:#1e293b;color:#fff;border:1px solid #64748b;border-radius:10px;font:14px Arial,sans-serif;box-sizing:border-box;">
   <div style="font-weight:700;margin-bottom:6px;">Scorer Login</div>
   <div id="liveAccessStatus" style="margin-bottom:8px;">Connecting to live scoreboardâ€¦</div>
   <div id="scorerLoginFields" style="display:none;gap:6px;flex-wrap:wrap;">
@@ -1011,8 +950,7 @@
     <button id="scorerSignOut" type="button" style="display:none;padding:8px 10px;border:0;border-radius:5px;">Sign out</button>
   </div>
 </div>
-    <button id="cancelScorerLogin" class="text-back-button" type="button">â† Back to home</button>
-  </section>
+  </div>
 </div>
 
 <!-- MATCH PAGE -->
@@ -1286,10 +1224,10 @@
     <div style="margin-bottom:16px;">
       <div style="margin-top:8px;">
         <label style="margin-right:12px;">
-          <input type="radio" name="theme" value="dark" checked> Dark theme
+          <input type="radio" name="theme" value="dark"> Dark theme
         </label>
         <label>
-          <input type="radio" name="theme" value="light"> Light theme
+          <input type="radio" name="theme" value="light" checked> Light theme
         </label>
       </div>
     </div>
@@ -1411,8 +1349,7 @@ function showPage(pageName) {
   });
 
   const liveAccessPanel = document.getElementById("liveAccessPanel");
-  if (liveAccessPanel) liveAccessPanel.style.display = pageName === "home" && !document.getElementById("scorerLoginPanel")?.hidden ? "block" : "none";
-  if (pageName === "home" && document.getElementById("homeLanding")) showHomePanel("landing");
+  if (liveAccessPanel) liveAccessPanel.style.display = pageName === "home" ? "block" : "none";
 }
 
 document.querySelectorAll("#bottom-nav button").forEach(btn => {
@@ -1421,7 +1358,6 @@ document.querySelectorAll("#bottom-nav button").forEach(btn => {
     event.preventDefault();
     event.stopPropagation();
     showPage(btn.dataset.nav);
-    if (btn.dataset.nav === "home") showHomePanel("landing");
   });
 });
 
@@ -1433,26 +1369,6 @@ function notify(msg, type = "info") {
   banner.classList.add("show");
   setTimeout(() => banner.classList.remove("show"), 3000);
 }
-
-/* HOME SCREEN ACTIONS */
-function showHomePanel(panel) {
-  const landing = document.getElementById("homeLanding");
-  const setup = document.getElementById("matchSetupPanel");
-  const login = document.getElementById("scorerLoginPanel");
-  if (landing) landing.hidden = panel !== "landing";
-  if (setup) setup.hidden = panel !== "setup";
-  if (login) login.hidden = panel !== "login";
-  const access = document.getElementById("liveAccessPanel");
-  if (access) access.style.display = panel === "login" ? "block" : "none";
-  window.scrollTo({top:0,behavior:"smooth"});
-}
-document.getElementById("openMatchSetup")?.addEventListener("click", () => showHomePanel("setup"));
-document.getElementById("backToHome")?.addEventListener("click", () => showHomePanel("landing"));
-document.getElementById("cancelMatchSetup")?.addEventListener("click", () => showHomePanel("landing"));
-document.getElementById("openScorerLogin")?.addEventListener("click", () => showHomePanel("login"));
-document.getElementById("backFromLogin")?.addEventListener("click", () => showHomePanel("landing"));
-document.getElementById("cancelScorerLogin")?.addEventListener("click", () => showHomePanel("landing"));
-document.getElementById("openLiveScore")?.addEventListener("click", () => showPage("scoreboard"));
 
 /* PLAYER FIELD RENDERING */
 function renderPlayerFields() {
@@ -2192,6 +2108,25 @@ function updateScoreTiles() {
 
 /* UPDATE OVER TILES */
 function updateOverTiles() {
+  // A reset has no batting team. Clear both teams' current/previous ball-history strips
+  // instead of leaving the last match's dots visible on the scorer or spectator page.
+  if (!battingTeam) {
+    ["A", "B"].forEach(team => {
+      const box = document.getElementById(`team${team}Box`);
+      if (!box) return;
+      const overs = box.querySelector("[data-overs]");
+      const current = box.querySelector("[data-current-over]");
+      const previous = box.querySelector("[data-prev-over]");
+      if (overs) overs.textContent = `0.0/${maxOvers || "--"}`;
+      if (current) current.innerHTML = "";
+      if (previous) previous.innerHTML = "";
+    });
+    ["liveOversA", "liveOversB"].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=`0.0/${maxOvers || "--"}`; });
+    const targetTile2=document.getElementById("targetTile2"); if(targetTile2) targetTile2.style.display="none";
+    const rrTile2=document.getElementById("rrTile2"); if(rrTile2) rrTile2.style.display="none";
+    syncScoreboardLiveView();
+    return;
+  }
   const completedOvers = Math.floor(ballCount / ballsPerOver);
   const ballsInCurrentOver = ballCount % ballsPerOver;
 
@@ -2727,6 +2662,12 @@ function resetScoreboard(resetHome, stayOnPage) {
 
   disableScoringButtons();
 
+  // Redraw every view immediately; Firebase publishes this empty state for spectators too.
+  updateScoreTiles();
+  updateOverTiles();
+  updateLiveScoreboard();
+  setMatchInningsTab(1);
+
   document.querySelector('#teamABox [data-score-tile]').textContent = "0/0";
   document.querySelector('#teamBBox [data-score-tile]').textContent = "0/0";
   document.querySelector('#teamABox [data-net-tile]').textContent = "0";
@@ -2869,15 +2810,14 @@ function resetScoreboard(resetHome, stayOnPage) {
         updateBattingSideLabels();
       }
       document.body.setAttribute('data-theme',document.body.getAttribute('data-theme')||'dark');
+      // Always redraw the scorer and spectator UI from the latest Firebase state.
+      // In particular, an empty reset state must clear stale score/ball-history DOM.
+      updateScoreTiles();
+      updateOverTiles();
+      updateLiveScoreboard();
       if(matchStarted){
-        updateScoreTiles();
-        updateOverTiles();
-        updateLiveScoreboard();
         if(isScorer) enableScoringButtons(); else disableScoringButtons();
       } else {
-        // A reset is a full state transition, not merely a disabled-scoring state.
-        // Clear the spectator's rendered score tiles, ball history and summary tables too.
-        resetScoreboard(false, true);
         disableScoringButtons();
       }
       setMatchInningsTab(currentInnings||1);
