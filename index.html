@@ -796,8 +796,8 @@
   <div style="font-weight:700;margin-bottom:6px;">Scorer Login</div>
   <div id="liveAccessStatus" style="margin-bottom:8px;">Connecting to live scoreboardâ€¦</div>
   <div id="scorerLoginFields" style="display:none;gap:6px;flex-wrap:wrap;">
-    <input id="scorerEmail" type="email" autocomplete="username" placeholder="Scorer email" value="jignesh_aus@yahoo.com" style="min-width:0;flex:1;padding:8px;border-radius:5px;border:1px solid #94a3b8;">
-    <input id="scorerPassword" type="password" autocomplete="current-password" placeholder="Firebase account password" style="min-width:0;flex:1;padding:8px;border-radius:5px;border:1px solid #94a3b8;">
+    <input id="scorerEmail" type="text" autocomplete="username" placeholder="Login ID" value="admin" autocapitalize="none" spellcheck="false" style="min-width:0;flex:1;padding:8px;border-radius:5px;border:1px solid #94a3b8;">
+    <input id="scorerPassword" type="password" autocomplete="current-password" placeholder="Password" style="min-width:0;flex:1;padding:8px;border-radius:5px;border:1px solid #94a3b8;">
     <button id="scorerSignIn" type="button" style="padding:8px 10px;border:0;border-radius:5px;font-weight:700;">Scorer sign in</button>
     <button id="scorerSignOut" type="button" style="display:none;padding:8px 10px;border:0;border-radius:5px;">Sign out</button>
   </div>
@@ -2542,6 +2542,8 @@ function resetScoreboard(resetHome, stayOnPage) {
   const passwordInput = document.getElementById('scorerPassword');
   const signInBtn = document.getElementById('scorerSignIn');
   const signOutBtn = document.getElementById('scorerSignOut');
+  // Public login ID is only an alias. Firebase Authentication still verifies the password.
+  const scorerLoginId = 'admin';
   const scorerEmailAllowed = 'jignesh_aus@yahoo.com';
   const matchRefPath = 'liveScoreboard/currentMatch';
   let liveDbRef = null;
@@ -2703,11 +2705,12 @@ function resetScoreboard(resetHome, stayOnPage) {
       startListener();
     });
     signInBtn.addEventListener('click',async()=>{
-      const email=(emailInput.value||'').trim().toLowerCase();
+      const loginId=(emailInput.value||'').trim().toLowerCase();
       const password=passwordInput.value;
-      if(email!==scorerEmailAllowed){setStatus('Only the authorised scorer email can sign in here.',true);return;}
+      if(loginId!==scorerLoginId){setStatus('Enter the authorised scorer Login ID.',true);return;}
       if(!password){setStatus('Enter the password for your Firebase Authentication account.',true);return;}
-      try{await auth.signInWithEmailAndPassword(email,password);passwordInput.value='';}
+      // Convert the friendly login ID to the existing Firebase Auth email; never bypass Firebase password verification.
+      try{await auth.signInWithEmailAndPassword(scorerEmailAllowed,password);passwordInput.value='';}
       catch(err){setStatus('Scorer sign-in failed: '+err.message,true);}
     });
     signOutBtn.addEventListener('click',async()=>{try{await auth.signOut();}catch(err){setStatus(err.message,true);}});
