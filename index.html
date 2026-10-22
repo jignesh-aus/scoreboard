@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Indoor Cricket Scoreboard</title>
+  <title>Indoor Cricket Scoreboard | Match Day</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
 
   <style>
@@ -720,6 +720,84 @@
     button:hover{
       transform:scale(1.03);
     }
+
+    /* MATCH DAY UI REFRESH â€” presentation only; scoring and Firebase logic remain unchanged */
+    :root { --bg-color:#081321; --text-color:#f4f8ff; --card-bg-a:#12243a; --card-bg-b:#0f1e31; --players-bg:#1c3450; --accent:#38bdf8; --border-color:#2c4662; --stat-bg:#142a42; --button-bg:#1d3550; --button-bg-hover:#294866; --winner-bg:#fde047; }
+    body { background:radial-gradient(ellipse at 50% -20%,#173b5b 0%,#081321 56%); background-attachment:fixed; }
+    .page { width:min(100%,560px); box-sizing:border-box; padding:12px 14px 118px; margin:0 auto; }
+    h1 { color:#f8fbff; background:transparent; border-radius:0; padding:7px 0 2px; margin:0; font-size:23px; font-weight:850; letter-spacing:-.55px; }
+    .dev-by { color:#9bb4cf; font-size:11px; letter-spacing:.45px; margin:2px 0 16px; }
+    .home-hero { position:relative; overflow:hidden; padding:21px 18px 17px; margin:4px 0 17px; border:1px solid #2b5375; border-radius:20px; background:linear-gradient(135deg,#12395a 0%,#10253d 60%,#123148 100%); box-shadow:0 12px 28px #0003; }
+    .home-hero:after { content:""; position:absolute; width:155px; height:155px; right:-58px; top:-64px; border:22px solid #38bdf822; border-radius:50%; pointer-events:none; }
+    .hero-eyebrow { color:#7dd3fc; font-size:10px; font-weight:900; letter-spacing:2px; margin-bottom:8px; }
+    .home-hero h2 { margin:0 0 7px; font-size:26px; letter-spacing:-.7px; line-height:1.1; }
+    .home-hero p { color:#c6d8e9; font-size:13px; line-height:1.5; margin:0; max-width:310px; }
+    .hero-actions { display:flex; gap:8px; margin-top:16px; position:relative; z-index:1; }
+    .hero-actions button { min-height:43px; padding:10px 12px; font-size:12px; }
+    .hero-primary { flex:1; display:flex; justify-content:center; align-items:center; gap:9px; border:0; color:#062033; background:#7dd3fc; }
+    .hero-secondary { flex:1; border:1px solid #47718f; color:#effaff; background:#ffffff0a; }
+    .hero-pills { display:flex; flex-wrap:wrap; gap:7px; margin-top:15px; }
+    .hero-pills span { color:#e0f2fe; background:#ffffff10; border:1px solid #ffffff1c; border-radius:999px; padding:6px 9px; font-size:10px; font-weight:700; }
+    .setup-section { padding:16px 13px 14px; border:1px solid var(--border-color); border-radius:18px; background:linear-gradient(180deg,#12243a 0%,#0e1c2d 100%); box-shadow:0 8px 22px #0002; scroll-margin-top:12px; }
+    .section-heading { display:flex; align-items:center; gap:11px; margin:0 0 17px; }
+    .section-step { display:grid; place-items:center; width:38px; height:38px; flex:0 0 38px; border-radius:12px; background:#0b4a70; color:#7dd3fc; font-size:13px; font-weight:900; }
+    .section-heading h2 { margin:0; font-size:17px; letter-spacing:-.2px; }
+    .section-heading p { margin:3px 0 0; color:#91a9c2; font-size:11px; }
+    .home-config { gap:13px; margin-top:0; }
+    .config-row { gap:10px; padding:11px 10px; border-radius:12px; background:#ffffff06; border:1px solid #ffffff0b; font-size:12px; }
+    .config-row label { line-height:1.35; font-weight:650; }
+    .config-input { max-width:48%; min-width:82px; padding:10px 9px; border:1px solid #36516d; border-radius:9px; background:#0b1929; color:#f8fafc; font-size:13px; }
+    .team-name-guidance { margin:18px 0 10px; color:#b7c9dc; font-size:12px; font-weight:700; }
+    .team-name-guidance small { color:#7892ac; font-weight:500; }
+    .teams-two-col { gap:9px; }
+    .team-col { padding:9px; border:1px solid #2a4560; border-radius:13px; background:#102138; gap:9px; }
+    .home-team-name { width:100%; box-sizing:border-box; border:1px solid #3b5a78; border-radius:9px; padding:11px 7px; background:#091727; color:#f8fafc; font-size:12px; font-weight:850; text-align:center; }
+    .home-players-box input { width:100%; box-sizing:border-box; min-width:0; border:1px solid #29445f; border-radius:8px; padding:9px 6px; background:#152b42; color:#f8fafc; font-size:11px; }
+    button { border-radius:11px; font-weight:750; transition:transform .12s ease,filter .12s ease,background .12s ease; }
+    button:active { transform:scale(.98); }
+    .primary-btn { min-height:50px; display:flex; justify-content:center; align-items:center; gap:12px; border:0; border-radius:13px; background:linear-gradient(100deg,#0284c7,#06b6d4); color:#041522; font-size:15px; box-shadow:0 7px 18px #0284c733; }
+    #liveAccessPanel { margin:16px 0 0 !important; padding:15px !important; background:#0e1f32 !important; border:1px solid #2a4560 !important; border-radius:16px !important; box-shadow:0 7px 20px #0002; }
+    #liveAccessPanel > div:first-child { font-size:14px; letter-spacing:.1px; }
+    #liveAccessStatus { color:#9fb5cc; font-size:12px !important; line-height:1.45; }
+    #scorerLoginFields input { box-sizing:border-box; min-height:42px; background:#081727; color:#f8fafc; border:1px solid #34516e !important; }
+    #scorerSignIn,#scorerSignOut { min-height:40px; background:#38bdf8; color:#062033; }
+    #bottom-nav { position:fixed; z-index:5000; left:10px; right:10px; bottom:max(9px,env(safe-area-inset-bottom)); width:auto; max-width:530px; margin:0 auto; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:5px; padding:7px; border:1px solid #29445e; border-radius:18px; background:#091727ed; box-shadow:0 12px 35px #0008; backdrop-filter:blur(18px); }
+    #bottom-nav button { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; min-width:0; min-height:48px; padding:5px 2px; border:1px solid transparent; background:transparent; color:#91a8c0; font-size:10px; }
+    #bottom-nav button .nav-icon { font-size:17px; line-height:1; }
+    #bottom-nav button.active { color:#7dd3fc; background:#123650; border-color:#255777; }
+    #bottom-nav button.active .nav-icon { color:#38bdf8; }
+    .team,.live-team-card { border:1px solid #29445e; border-radius:16px; overflow:hidden; box-shadow:0 8px 22px #0002; }
+    .team-header-row { padding:10px 12px; background:#10263d; }
+    .team-name-input { font-size:17px !important; font-weight:850; }
+    .stats-row { gap:7px; margin:8px 0; }
+    .stat-box { border:1px solid #2a4661; border-radius:12px; padding:10px 5px; background:#12263b; }
+    .stat-label { color:#a9bfd4; font-size:10px; letter-spacing:.45px; text-transform:uppercase; font-weight:800; }
+    .stat-value { font-size:clamp(20px,5vw,26px); font-weight:900; letter-spacing:-.5px; }
+    .net-score-box { background:#e0f2fe !important; border:2px solid #38bdf8 !important; color:#061827 !important; box-shadow:0 4px 14px #38bdf822; }
+    .net-score-box .stat-label { color:#164e63 !important; }
+    .net-score-box .stat-value { color:#020617 !important; font-size:clamp(25px,6vw,32px) !important; }
+    .over-layout { gap:6px; padding:8px; border-radius:12px; background:#091727; border:1px solid #1e354c; }
+    .over-block { border-radius:9px; background:#10243a; padding:8px 4px; }
+    .over-title { color:#9db6ce; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.35px; }
+    .over-dots { font-size:15px !important; font-weight:800; }
+    .run-grid { gap:7px; }
+    .run-grid button { min-height:49px; border:1px solid #34516d; background:#1b3550; color:#f8fbff; font-size:17px; box-shadow:0 2px 0 #07111d; }
+    .ball-type-actions { gap:7px; margin-top:10px; }
+    .ball-type-actions button { min-height:43px; }
+    .innings-tabs,.match-innings-tabs { border-radius:12px; padding:4px; background:#0a1929; border:1px solid #29445e; }
+    .innings-tab,.match-innings-tab { border-radius:9px; padding:10px 5px; font-size:11px; font-weight:800; }
+    .innings-tab.active,.match-innings-tab.active { background:#0e7490; color:#fff; }
+    .live-team-card { background:#10243a; padding:12px; margin-bottom:12px; }
+    .live-team-card h3 { margin:0 0 8px; font-size:16px; }
+    #page-settings > div[style*="margin-top:20px"] { padding:15px; border-radius:16px; border:1px solid #29445e; background:#10243a; }
+    #page-settings label { display:block; padding:10px 8px; border-radius:10px; background:#ffffff06; font-size:13px; }
+    #page-settings input { accent-color:#38bdf8; }
+    table { border-collapse:separate; border-spacing:0; overflow:hidden; border-radius:10px; }
+    th { background:#17334e; color:#cde7fb; }
+    td,th { padding:9px 6px; border-color:#29445e !important; font-size:11px; }
+    @media (min-width:520px) { .page { padding-left:18px; padding-right:18px; } .home-hero { padding:24px; } .setup-section { padding:19px; } }
+    @media (max-width:360px) { .page { padding-left:9px; padding-right:9px; } .config-row { align-items:flex-start; } .config-input { min-width:76px; } .teams-two-col { gap:6px; } .team-col { padding:6px; } }
+
   </style>
 </head>
 <body data-theme="dark">
@@ -2646,10 +2724,8 @@ function resetScoreboard(resetHome, stayOnPage) {
         disableScoringButtons();
       }
       setMatchInningsTab(currentInnings||1);
-      if (!isScorer) {
-        showPage("scoreboard");
-        activateScoreboardTab("live");
-      }
+      // Keep the spectator on the page they selected. Initial viewer routing is handled
+      // once in the Firebase auth-state callback, not on every incoming score snapshot.
       if (matchEnded) disableScoringButtons();
     }catch(err){console.error('Unable to apply live scoreboard update',err);}
     finally{applyingRemote=false;}
@@ -2670,7 +2746,8 @@ function resetScoreboard(resetHome, stayOnPage) {
     emailInput.disabled=isScorer; passwordInput.style.display=isScorer?'none':'block';
     document.querySelectorAll('#page-match button, #page-home button, #page-home input, #page-home select, #page-settings input').forEach(el=>{
       const loginControl = ['scorerEmail','scorerPassword','scorerSignIn','scorerSignOut'].includes(el.id);
-      if (!isScorer && !loginControl) el.disabled = true;
+      const publicNavigation = el.hasAttribute('data-public-nav');
+      if (!isScorer && !loginControl && !publicNavigation) el.disabled = true;
       else el.disabled = false;
     });
     if(isScorer) enableScoringButtons(); else disableScoringButtons();
