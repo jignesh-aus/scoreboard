@@ -800,6 +800,13 @@
 
 
 
+
+    /* Accessible tab contrast: inactive tabs use dark text on white. */
+    .innings-tab, .match-innings-tab { color:#172033 !important; background:#fff !important; border:1px solid #cbd5e1 !important; }
+    .innings-tab.active, .match-innings-tab.active { color:#fff !important; background:#0877c9 !important; border-color:#0877c9 !important; }
+    .match-innings-tab.disabled { color:#172033 !important; opacity:1 !important; }
+    #liveAccessStatus { color:#4b5563 !important; }
+
     /* FINAL ACCESSIBILITY / LIGHT-ONLY THEME OVERRIDES */
     :root {
       color-scheme: light;
@@ -862,7 +869,7 @@
     .home-role-choices { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:7px 0 9px; }
     .role-choice, .scorer-login-toggle { min-height:42px; padding:9px 8px; border:1px solid #b8c7d7; border-radius:9px; background:#f4f7fa; color:#172033; font-size:16px; font-weight:750; }
     .role-choice-primary { background:#0877c9 !important; color:#fff !important; border-color:#0877c9 !important; }
-    .scorer-login-toggle { display:block; width:100%; min-height:38px; margin:0; text-align:left; background:#fff !important; color:#075a98 !important; border:0 !important; padding:5px 0 !important; }
+    .scorer-login-toggle { display:block !important; width:100%; min-height:38px; margin:0; text-align:left; background:#fff !important; color:#075a98 !important; border:0 !important; padding:5px 0 !important; }
     @media(max-width:380px) { .page { padding-left:9px !important; padding-right:9px !important; } .home-config { gap:6px !important; } .config-row label { font-size:15px !important; } .team-col { padding:2px !important; } .role-choice { font-size:14px !important; } }
 
   </style>
@@ -879,9 +886,9 @@
 
   <div id="homeRoleChoices" class="home-role-choices" aria-label="Choose how to use the scoreboard">
   <button id="roleScoreMatch" data-public-nav type="button" class="role-choice role-choice-primary">🏏 Score a Match</button>
-  <button id="roleWatchLive" data-public-nav type="button" class="role-choice">📺 Watch Live Score</button>
+  <button id="roleWatchLive" data-public-nav type="button" class="role-choice">📊 Live Score</button>
 </div>
-<button id="scorerLoginToggle" data-public-nav class="scorer-login-toggle" type="button" aria-expanded="false" style="display:none">Show scorer login ▾</button>
+<button id="scorerLoginToggle" data-public-nav class="scorer-login-toggle" type="button" aria-expanded="false">Show scorer login ▾</button>
 <div id="liveAccessPanel" style="display:none;position:relative;z-index:1;max-width:480px;margin:8px auto 4px;padding:8px;background:transparent;color:inherit;border:0;border-radius:0;font:14px Arial,sans-serif;box-sizing:border-box;">
   <div style="font-weight:700;margin-bottom:6px;">Scorer Login</div>
   <div id="liveAccessStatus" style="margin-bottom:8px;">Connecting to live scoreboard…</div>
@@ -922,6 +929,17 @@
       </select>
     </div>
 
+    <div class="config-row">
+      <label>Which team is batting first?</label>
+      <select id="firstBattingSide" class="config-input">
+        <option value="">--</option>
+        <option value="A">TEAM A</option>
+        <option value="B">TEAM B</option>
+      </select>
+    </div>
+
+    <button id="startMatchBtn" class="primary-btn">Start Match</button>
+
     <div class="team-name-guidance">
       <span class="guidance-arrow" aria-hidden="true">↓</span>
       <span>Insert names of both teams and players (optional):</span>
@@ -940,18 +958,6 @@
     <div id="teamBPlayersContainer" class="home-players-box"></div>
   </div>
 </div>
-
-
-    <div class="config-row">
-      <label>Which team is batting first?</label>
-      <select id="firstBattingSide" class="config-input">
-        <option value="">--</option>
-        <option value="A">TEAM A</option>
-        <option value="B">TEAM B</option>
-      </select>
-    </div>
-
-    <button id="startMatchBtn" class="primary-btn">Start Match</button>
 
 
   </div>
@@ -2677,6 +2683,27 @@ function resetScoreboard(resetHome, stayOnPage) {
   const passwordInput = document.getElementById('scorerPassword');
   const signInBtn = document.getElementById('scorerSignIn');
   const signOutBtn = document.getElementById('scorerSignOut');
+  const loginToggle = document.getElementById('scorerLoginToggle');
+  const scoreMatchBtn = document.getElementById('roleScoreMatch');
+  const liveScoreBtn = document.getElementById('roleWatchLive');
+  let spectatorRequested = false;
+  function setLoginVisible(visible){
+    document.getElementById('liveAccessPanel').style.display = visible ? 'block' : 'none';
+    loginToggle.setAttribute('aria-expanded', visible ? 'true' : 'false');
+    loginToggle.textContent = visible ? 'Hide scorer login ▴' : 'Show scorer login ▾';
+  }
+  loginToggle.addEventListener('click',()=>setLoginVisible(document.getElementById('liveAccessPanel').style.display === 'none'));
+  scoreMatchBtn.addEventListener('click',()=>{
+    spectatorRequested = false;
+    showPage('home');
+    setLoginVisible(true);
+    document.getElementById('scorerEmail').focus();
+  });
+  liveScoreBtn.addEventListener('click',()=>{
+    spectatorRequested = true;
+    showPage('scoreboard');
+    activateScoreboardTab('live');
+  });
   // Public login ID is only an alias. Firebase Authentication still verifies the password.
   const scorerLoginId = 'admin';
   const scorerEmailAllowed = 'jignesh_aus@yahoo.com';
@@ -2700,7 +2727,7 @@ function resetScoreboard(resetHome, stayOnPage) {
 
   function setStatus(text, error=false){
     liveStatus.textContent = text;
-    liveStatus.style.color = error ? '#fecaca' : '#fff';
+    liveStatus.style.color = error ? '#b91c1c' : '#4b5563';
   }
   function getSnapshot(){
     return {
@@ -2799,7 +2826,7 @@ function resetScoreboard(resetHome, stayOnPage) {
   function applyRole(){
     if(isScorer){
       setLoginVisible(false);
-      loginToggle.style.display='none';
+      loginToggle.style.display='block';
     }
     signOutBtn.style.display=liveUser && liveUser.email ? 'inline-block':'none';
     signInBtn.style.display=isScorer?'none':'inline-block';
@@ -2835,7 +2862,7 @@ function resetScoreboard(resetHome, stayOnPage) {
       if(user.email && !isScorer) setStatus('Signed in with an unauthorised account. Viewing only.',true);
       else if(isScorer) setStatus('Scorer signed in. Loading live match…');
       else {
-        setStatus('Connected as viewer. Choose “Watch Live Score” to view the live scoreboard.');
+        setStatus('Connected as viewer. Choose “Live Score” to view the live scoreboard.');
         if (spectatorRequested) { showPage("scoreboard"); activateScoreboardTab("live"); }
       }
       startListener();
