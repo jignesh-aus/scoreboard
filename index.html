@@ -872,7 +872,17 @@
     .scorer-login-toggle { display:block !important; width:100%; min-height:38px; margin:0; text-align:left; background:#fff !important; color:#075a98 !important; border:0 !important; padding:5px 0 !important; }
     @media(max-width:380px) { .page { padding-left:9px !important; padding-right:9px !important; } .home-config { gap:6px !important; } .config-row label { font-size:15px !important; } .team-col { padding:2px !important; } .role-choice { font-size:14px !important; } }
 
-  </style>
+  
+    /* Final touch-ups */
+    #scorerLoginToggle { display:block !important; margin:8px auto 0 !important; text-align:center !important; }
+    #loginInstruction { text-align:center; color:#172033; }
+    #scorerLoginFields input { text-align:center !important; }
+    .home-players-box input, .player-input { text-align:center !important; }
+    .team-name-input, #liveTeamNameA, #liveTeamNameB { text-transform:uppercase !important; }
+    .extra-run-btn { background:#7c3aed !important; color:#fff !important; border:1px solid #5b21b6 !important; font-weight:800 !important; }
+    .run-rate-under-overs { font-size:11px; font-weight:700; line-height:1.25; margin-top:3px; color:#334155; text-align:center; }
+    .run-rate-under-overs span { font-variant-numeric:tabular-nums; }
+</style>
 </head>
 <body data-theme="light">
 <div id="notifyBanner"></div>
@@ -890,7 +900,7 @@
 </div>
 <button id="scorerLoginToggle" data-public-nav class="scorer-login-toggle" type="button" aria-expanded="false">Show scorer login ▾</button>
 <div id="liveAccessPanel" style="display:none;position:relative;z-index:1;max-width:480px;margin:8px auto 4px;padding:8px;background:transparent;color:inherit;border:0;border-radius:0;font:14px Arial,sans-serif;box-sizing:border-box;">
-  <div style="font-weight:700;margin-bottom:6px;">Scorer Login</div>
+  <div id="loginInstruction" style="font-weight:700;margin-bottom:8px;line-height:1.4;">Login to score a match otherwise choose &quot;Live Score&quot; to view the live scoreboard</div>
   <div id="liveAccessStatus" style="margin-bottom:8px;">Connecting to live scoreboard…</div>
   <div id="scorerLoginFields" style="display:none;gap:6px;flex-wrap:wrap;">
     <input id="scorerEmail" type="text" autocomplete="username" placeholder="Login ID" value="admin" autocapitalize="none" spellcheck="false" style="min-width:0;flex:1;padding:8px;border-radius:5px;border:1px solid #94a3b8;">
@@ -1001,6 +1011,7 @@
         <div class="stat-box">
           <div class="stat-label">Overs</div>
           <div class="stat-value" data-overs>0.0/--</div>
+          <div class="run-rate-under-overs">RR - Run Rate: <span data-first-rr>0.00</span></div>
         </div>
       </div>
 
@@ -1058,6 +1069,7 @@
         <div class="stat-box">
           <div class="stat-label">Overs</div>
           <div class="stat-value" data-overs>0.0/--</div>
+          <div class="run-rate-under-overs">RR - Run Rate: <span data-first-rr>0.00</span></div>
         </div>
       </div>
 
@@ -1080,7 +1092,7 @@
         </div>
         <div class="over-right">
           <div id="rrTile2">
-            <div class="over-title">RR</div>
+            <div class="over-title">RRR</div>
             <div id="rrValue2" style="font-size:16px;font-weight:700;">0.00</div>
           </div>
         </div>
@@ -1121,12 +1133,12 @@
       <div class="stats-row">
         <div class="stat-box"><div class="stat-label">Score</div><div class="stat-value" id="liveScoreA">0/0</div></div>
         <div class="stat-box net-score-box"><div class="stat-label">Net Score</div><div class="stat-value" id="liveNetA">0</div></div>
-        <div class="stat-box"><div class="stat-label">Overs</div><div class="stat-value" id="liveOversA">0.0/--</div></div>
+        <div class="stat-box"><div class="stat-label">Overs</div><div class="stat-value" id="liveOversA">0.0/--</div><div class="run-rate-under-overs">RR - Run Rate: <span id="liveFirstRrA">0.00</span></div></div>
       </div>
       <div class="over-layout">
         <div class="over-left"><div id="liveTargetA" class="live-chase-tile" style="display:none"><div class="over-title">Target</div><div id="liveTargetValueA" class="live-chase-value">0</div></div></div>
         <div class="over-center"><div class="over-block"><div class="over-title">Current Over</div><div id="liveCurrentA" class="over-dots"></div></div><div class="over-block"><div class="over-title">Previous Over</div><div id="livePreviousA" class="over-dots"></div></div></div>
-        <div class="over-right"><div id="liveRrA" class="live-chase-tile" style="display:none"><div class="over-title">RR</div><div id="liveRrValueA" class="live-chase-value">0.00</div></div></div>
+        <div class="over-right"><div id="liveRrA" class="live-chase-tile" style="display:none"><div class="over-title">RRR</div><div id="liveRrValueA" class="live-chase-value">0.00</div></div></div>
       </div>
     </div>
     <div class="live-team-card" id="liveTeamCardB">
@@ -1134,12 +1146,12 @@
       <div class="stats-row">
         <div class="stat-box"><div class="stat-label">Score</div><div class="stat-value" id="liveScoreB">0/0</div></div>
         <div class="stat-box net-score-box"><div class="stat-label">Net Score</div><div class="stat-value" id="liveNetB">0</div></div>
-        <div class="stat-box"><div class="stat-label">Overs</div><div class="stat-value" id="liveOversB">0.0/--</div></div>
+        <div class="stat-box"><div class="stat-label">Overs</div><div class="stat-value" id="liveOversB">0.0/--</div><div class="run-rate-under-overs">RR - Run Rate: <span id="liveFirstRrB">0.00</span></div></div>
       </div>
       <div class="over-layout">
         <div class="over-left"><div id="liveTargetB" class="live-chase-tile" style="display:none"><div class="over-title">Target</div><div id="liveTargetValueB" class="live-chase-value">0</div></div></div>
         <div class="over-center"><div class="over-block"><div class="over-title">Current Over</div><div id="liveCurrentB" class="over-dots"></div></div><div class="over-block"><div class="over-title">Previous Over</div><div id="livePreviousB" class="over-dots"></div></div></div>
-        <div class="over-right"><div id="liveRrB" class="live-chase-tile" style="display:none"><div class="over-title">RR</div><div id="liveRrValueB" class="live-chase-value">0.00</div></div></div>
+        <div class="over-right"><div id="liveRrB" class="live-chase-tile" style="display:none"><div class="over-title">RRR</div><div id="liveRrValueB" class="live-chase-value">0.00</div></div></div>
       </div>
     </div>
   </div>
@@ -1517,8 +1529,8 @@ function startMatch() {
   battingTeam = firstBattingSide;
   bowlingTeam = secondBattingSide;
 
-  const aName = document.getElementById("homeTeamAName").value.trim() || "TEAM A";
-  const bName = document.getElementById("homeTeamBName").value.trim() || "TEAM B";
+  const aName = (document.getElementById("homeTeamAName").value.trim() || "TEAM A").toUpperCase();
+  const bName = (document.getElementById("homeTeamBName").value.trim() || "TEAM B").toUpperCase();
 
   document.getElementById("teamAName").value = aName;
   document.getElementById("teamBName").value = bName;
@@ -1590,6 +1602,7 @@ function initRunGrid() {
       const btn = document.createElement("button");
       btn.textContent = label;
       if (label === "+ExRun") {
+        btn.classList.add("extra-run-btn");
         btn.style.fontSize = "16px";
         btn.addEventListener("click", () => {
           addExtraRunOnCurrentBall();
@@ -2060,10 +2073,14 @@ function syncScoreboardLiveView() {
     const netTile = get("[data-net-tile]");
     const oversTile = get("[data-overs]");
     const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
-    setText(`liveTeamName${team}`, name);
+    setText(`liveTeamName${team}`, String(name).toUpperCase());
     setText(`liveScore${team}`, scoreTile?.textContent || `${score.runs}/${score.wickets}`);
     setText(`liveNet${team}`, netTile?.textContent ?? score.net);
     setText(`liveOvers${team}`, oversTile?.textContent || `${score.overs.toFixed(1)}/${maxOvers || "--"}`);
+    const firstScoreForRate = firstBattingSide === "A" ? scoreA : firstBattingSide === "B" ? scoreB : null;
+    const firstOversForRate = firstScoreForRate ? firstScoreForRate.overs : 0;
+    const firstRateForLive = firstScoreForRate && firstOversForRate > 0 ? firstScoreForRate.net / firstOversForRate : 0;
+    setText(`liveFirstRr${team}`, firstRateForLive.toFixed(2));
     const current = get("[data-current-over]");
     const previous = get("[data-prev-over]");
     const liveCurrent = document.getElementById(`liveCurrent${team}`);
@@ -2096,6 +2113,10 @@ function updateScoreTiles() {
 
   document.querySelector('#teamABox [data-overs]').textContent = `${scoreA.overs.toFixed(1)}/${maxOvers || "--"}`;
   document.querySelector('#teamBBox [data-overs]').textContent = `${scoreB.overs.toFixed(1)}/${maxOvers || "--"}`;
+  const firstScore = firstBattingSide === "A" ? scoreA : firstBattingSide === "B" ? scoreB : null;
+  const firstOvers = firstScore ? firstScore.overs : 0;
+  const firstRate = firstScore && firstOvers > 0 ? firstScore.net / firstOvers : 0;
+  document.querySelectorAll('[data-first-rr]').forEach(el => el.textContent = firstRate.toFixed(2));
   syncScoreboardLiveView();
 }
 
@@ -2109,6 +2130,10 @@ function updateOverTiles() {
   } else {
     scoreB.overs = completedOvers + ballsInCurrentOver / ballsPerOver;
   }
+  const firstScoreForRate = firstBattingSide === "A" ? scoreA : firstBattingSide === "B" ? scoreB : null;
+  const firstOversForRate = firstScoreForRate ? firstScoreForRate.overs : 0;
+  const firstRateNow = firstScoreForRate && firstOversForRate > 0 ? firstScoreForRate.net / firstOversForRate : 0;
+  document.querySelectorAll('[data-first-rr]').forEach(el => el.textContent = firstRateNow.toFixed(2));
 
   const overTile = document.querySelector(`#team${battingTeam}Box [data-overs]`);
   overTile.textContent = `${completedOvers}.${ballsInCurrentOver}/${maxOvers}`;
@@ -2344,8 +2369,8 @@ function endMatch() {
   const netA = scoreA.net;
   const netB = scoreB.net;
 
-  const aName = document.getElementById("homeTeamAName").value.trim() || "TEAM A";
-  const bName = document.getElementById("homeTeamBName").value.trim() || "TEAM B";
+  const aName = (document.getElementById("homeTeamAName").value.trim() || "TEAM A").toUpperCase();
+  const bName = (document.getElementById("homeTeamBName").value.trim() || "TEAM B").toUpperCase();
 
   if (netA > netB) {
     winnerBox.textContent = `${aName} wins!`;
@@ -2363,8 +2388,8 @@ function endMatch() {
 
 /* LIVE SCOREBOARD */
 function updateLiveScoreboard() {
-  const aName = document.getElementById("homeTeamAName").value.trim() || "TEAM A";
-  const bName = document.getElementById("homeTeamBName").value.trim() || "TEAM B";
+  const aName = (document.getElementById("homeTeamAName").value.trim() || "TEAM A").toUpperCase();
+  const bName = (document.getElementById("homeTeamBName").value.trim() || "TEAM B").toUpperCase();
 
   const tbody1 = document.querySelector("#scoreboardTeamsTableLive1 tbody");
   const tbody2 = document.querySelector("#scoreboardTeamsTableLive2 tbody");
@@ -2655,6 +2680,24 @@ function resetScoreboard(resetHome, stayOnPage) {
   document.querySelector("#scoreboardPairs2 tbody").innerHTML = "";
   document.querySelector("#scoreboardBowlers1 tbody").innerHTML = "";
   document.querySelector("#scoreboardBowlers2 tbody").innerHTML = "";
+  document.getElementById("liveScoreA").textContent = "0/0";
+  document.getElementById("liveScoreB").textContent = "0/0";
+  document.getElementById("liveNetA").textContent = "0";
+  document.getElementById("liveNetB").textContent = "0";
+  document.getElementById("liveOversA").textContent = "0.0/--";
+  document.getElementById("liveOversB").textContent = "0.0/--";
+  document.getElementById("liveFirstRrA").textContent = "0.00";
+  document.getElementById("liveFirstRrB").textContent = "0.00";
+  document.getElementById("liveCurrentA").innerHTML = "";
+  document.getElementById("liveCurrentB").innerHTML = "";
+  document.getElementById("livePreviousA").innerHTML = "";
+  document.getElementById("livePreviousB").innerHTML = "";
+  document.getElementById("liveRrA").style.display = "none";
+  document.getElementById("liveRrB").style.display = "none";
+  document.getElementById("liveTargetA").style.display = "none";
+  document.getElementById("liveTargetB").style.display = "none";
+  document.getElementById("liveTeamNameA").textContent = (document.getElementById("homeTeamAName").value.trim() || "TEAM A").toUpperCase();
+  document.getElementById("liveTeamNameB").textContent = (document.getElementById("homeTeamBName").value.trim() || "TEAM B").toUpperCase();
 
   setMatchInningsTab(1);
 
@@ -2669,6 +2712,9 @@ function resetScoreboard(resetHome, stayOnPage) {
     document.getElementById("teamAName").value = "";
     document.getElementById("teamBName").value = "";
   }
+  document.getElementById("liveTeamNameA").textContent = (document.getElementById("homeTeamAName").value.trim() || "TEAM A").toUpperCase();
+  document.getElementById("liveTeamNameB").textContent = (document.getElementById("homeTeamBName").value.trim() || "TEAM B").toUpperCase();
+  document.querySelectorAll('[data-first-rr]').forEach(el => el.textContent = "0.00");
 
   if (!stayOnPage) {
     notify(resetHome ? "All fields reset" : "Scoreboard reset, Home page retained");
@@ -2694,6 +2740,8 @@ function resetScoreboard(resetHome, stayOnPage) {
     loginFields.style.display = visible ? 'flex' : 'none';
     loginToggle.setAttribute('aria-expanded', visible ? 'true' : 'false');
     loginToggle.textContent = visible ? 'Hide scorer login ▴' : 'Show scorer login ▾';
+    const instruction = document.getElementById('loginInstruction');
+    if (instruction) instruction.textContent = 'Login to score a match otherwise choose \"Live Score\" to view the live scoreboard';
   }
   loginToggle.addEventListener('click',()=>setLoginVisible(document.getElementById('liveAccessPanel').style.display === 'none'));
   scoreMatchBtn.addEventListener('click',()=>{
