@@ -729,7 +729,7 @@
       transform:scale(1.03);
     }
 
-    /* MATCH DAY UI REFRESH — presentation only; scoring and Firebase logic remain unchanged */
+    /* MATCH DAY UI REFRESH â€” presentation only; scoring and Firebase logic remain unchanged */
     :root { --bg-color:#081321; --text-color:#f4f8ff; --card-bg-a:#12243a; --card-bg-b:#0f1e31; --players-bg:#1c3450; --accent:#38bdf8; --border-color:#2c4662; --stat-bg:#142a42; --button-bg:#1d3550; --button-bg-hover:#294866; --winner-bg:#fde047; }
     body { background:radial-gradient(ellipse at 50% -20%,#173b5b 0%,#081321 56%); background-attachment:fixed; }
     .page { width:min(100%,560px); box-sizing:border-box; padding:12px 14px 118px; margin:0 auto; }
@@ -889,8 +889,10 @@
     .home-players-box input, .player-input { text-align:center !important; }
     .team-name-input, #liveTeamNameA, #liveTeamNameB { text-transform:uppercase !important; }
     .extra-run-btn { background:#7c3aed !important; color:#fff !important; border:1px solid #5b21b6 !important; font-weight:800 !important; }
-    .run-rate-under-overs { font-size:11px; font-weight:700; line-height:1.25; margin-top:3px; color:#334155; text-align:center; }
-    .run-rate-under-overs span { font-variant-numeric:tabular-nums; }
+    .run-rate-under-tile { font-size:11px; font-weight:700; line-height:1.2; margin-top:2px; color:#334155; text-align:center; white-space:nowrap; }
+    .run-rate-under-tile span { font-variant-numeric:tabular-nums; }
+    .second-innings-rr, .live-second-rr { display:none; }
+    #scoreboardLivePanel .run-rate-under-tile { font-size:10px; margin-top:1px; }
 </style>
 </head>
 <body data-theme="light">
@@ -904,12 +906,12 @@
   <div class="dev-by">Developed by Jignesh</div>
 
   <div id="homeRoleChoices" class="home-role-choices" aria-label="Choose how to use the scoreboard">
-  <button id="roleScoreMatch" data-public-nav type="button" class="role-choice role-choice-primary">🏏 Score a Match</button>
-  <button id="roleWatchLive" data-public-nav type="button" class="role-choice">📊 Live Score</button>
+  <button id="roleScoreMatch" data-public-nav type="button" class="role-choice role-choice-primary">ðŸ Score a Match</button>
+  <button id="roleWatchLive" data-public-nav type="button" class="role-choice">ðŸ“Š Live Score</button>
 </div>
-<button id="scorerLoginToggle" data-public-nav class="scorer-login-toggle" type="button" aria-expanded="false">Show scorer login ▾</button>
+<button id="scorerLoginToggle" data-public-nav class="scorer-login-toggle" type="button" aria-expanded="false">Show scorer login â–¾</button>
 <div id="liveAccessPanel" style="display:none;position:relative;z-index:1;max-width:480px;margin:8px auto 4px;padding:8px;background:transparent;color:inherit;border:0;border-radius:0;font:14px Arial,sans-serif;box-sizing:border-box;">
-  <div id="liveAccessStatus" style="margin-bottom:8px;">Connecting to live scoreboard…</div>
+  <div id="liveAccessStatus" style="margin-bottom:8px;">Connecting to live scoreboardâ€¦</div>
   <div id="scorerLoginFields" style="display:none;gap:6px;flex-wrap:wrap;">
     <input id="scorerEmail" type="text" autocomplete="username" placeholder="Login ID" value="admin" autocapitalize="none" spellcheck="false" style="min-width:0;flex:1;padding:8px;border-radius:5px;border:1px solid #94a3b8;">
     <input id="scorerPassword" type="password" autocomplete="current-password" placeholder="Password" style="min-width:0;flex:1;padding:8px;border-radius:5px;border:1px solid #94a3b8;">
@@ -959,7 +961,7 @@
     <button id="startMatchBtn" class="primary-btn">Start Match</button>
 
     <div class="team-name-guidance">
-      <span class="guidance-arrow" aria-hidden="true">↓</span>
+      <span class="guidance-arrow" aria-hidden="true">â†“</span>
       <span>Insert names of both teams and players (optional):</span>
     </div>
 
@@ -1011,6 +1013,7 @@
         <div class="stat-box">
           <div class="stat-label">Score</div>
           <div class="stat-value" data-score-tile>0/0</div>
+          <div class="run-rate-under-tile first-innings-rr">RR: <span data-first-rr>0.00</span></div>
         </div>
         <div class="stat-box net-score-box">
           <div class="stat-label">Net Score</div>
@@ -1019,7 +1022,6 @@
         <div class="stat-box">
           <div class="stat-label">Overs</div>
           <div class="stat-value" data-overs>0.0/--</div>
-          <div class="run-rate-under-overs">RR - Run Rate: <span data-first-rr>0.00</span></div>
         </div>
       </div>
 
@@ -1077,7 +1079,6 @@
         <div class="stat-box">
           <div class="stat-label">Overs</div>
           <div class="stat-value" data-overs>0.0/--</div>
-          <div class="run-rate-under-overs">RR - Run Rate: <span data-first-rr>0.00</span></div>
         </div>
       </div>
 
@@ -1102,6 +1103,7 @@
           <div id="rrTile2">
             <div class="over-title">RRR</div>
             <div id="rrValue2" style="font-size:16px;font-weight:700;">0.00</div>
+            <div class="run-rate-under-tile second-innings-rr">RR: <span data-second-rr>0.00</span></div>
           </div>
         </div>
       </div>
@@ -1139,27 +1141,27 @@
     <div class="live-team-card" id="liveTeamCardA">
       <h3 id="liveTeamNameA">TEAM A</h3>
       <div class="stats-row">
-        <div class="stat-box"><div class="stat-label">Score</div><div class="stat-value" id="liveScoreA">0/0</div></div>
+        <div class="stat-box"><div class="stat-label">Score</div><div class="stat-value" id="liveScoreA">0/0</div><div class="run-rate-under-tile live-first-rr">RR: <span id="liveFirstRrA">0.00</span></div></div>
         <div class="stat-box net-score-box"><div class="stat-label">Net Score</div><div class="stat-value" id="liveNetA">0</div></div>
-        <div class="stat-box"><div class="stat-label">Overs</div><div class="stat-value" id="liveOversA">0.0/--</div><div class="run-rate-under-overs">RR - Run Rate: <span id="liveFirstRrA">0.00</span></div></div>
+        <div class="stat-box"><div class="stat-label">Overs</div><div class="stat-value" id="liveOversA">0.0/--</div></div>
       </div>
       <div class="over-layout">
         <div class="over-left"><div id="liveTargetA" class="live-chase-tile" style="display:none"><div class="over-title">Target</div><div id="liveTargetValueA" class="live-chase-value">0</div></div></div>
         <div class="over-center"><div class="over-block"><div class="over-title">Current Over</div><div id="liveCurrentA" class="over-dots"></div></div><div class="over-block"><div class="over-title">Previous Over</div><div id="livePreviousA" class="over-dots"></div></div></div>
-        <div class="over-right"><div id="liveRrA" class="live-chase-tile" style="display:none"><div class="over-title">RRR</div><div id="liveRrValueA" class="live-chase-value">0.00</div></div></div>
+        <div class="over-right"><div id="liveRrA" class="live-chase-tile" style="display:none"><div class="over-title">RRR</div><div id="liveRrValueA" class="live-chase-value">0.00</div><div class="run-rate-under-tile live-second-rr">RR: <span id="liveSecondRrA">0.00</span></div></div></div>
       </div>
     </div>
     <div class="live-team-card" id="liveTeamCardB">
       <h3 id="liveTeamNameB">TEAM B</h3>
       <div class="stats-row">
-        <div class="stat-box"><div class="stat-label">Score</div><div class="stat-value" id="liveScoreB">0/0</div></div>
+        <div class="stat-box"><div class="stat-label">Score</div><div class="stat-value" id="liveScoreB">0/0</div><div class="run-rate-under-tile live-first-rr">RR: <span id="liveFirstRrB">0.00</span></div></div>
         <div class="stat-box net-score-box"><div class="stat-label">Net Score</div><div class="stat-value" id="liveNetB">0</div></div>
-        <div class="stat-box"><div class="stat-label">Overs</div><div class="stat-value" id="liveOversB">0.0/--</div><div class="run-rate-under-overs">RR - Run Rate: <span id="liveFirstRrB">0.00</span></div></div>
+        <div class="stat-box"><div class="stat-label">Overs</div><div class="stat-value" id="liveOversB">0.0/--</div></div>
       </div>
       <div class="over-layout">
         <div class="over-left"><div id="liveTargetB" class="live-chase-tile" style="display:none"><div class="over-title">Target</div><div id="liveTargetValueB" class="live-chase-value">0</div></div></div>
         <div class="over-center"><div class="over-block"><div class="over-title">Current Over</div><div id="liveCurrentB" class="over-dots"></div></div><div class="over-block"><div class="over-title">Previous Over</div><div id="livePreviousB" class="over-dots"></div></div></div>
-        <div class="over-right"><div id="liveRrB" class="live-chase-tile" style="display:none"><div class="over-title">RRR</div><div id="liveRrValueB" class="live-chase-value">0.00</div></div></div>
+        <div class="over-right"><div id="liveRrB" class="live-chase-tile" style="display:none"><div class="over-title">RRR</div><div id="liveRrValueB" class="live-chase-value">0.00</div><div class="run-rate-under-tile live-second-rr">RR: <span id="liveSecondRrB">0.00</span></div></div></div>
       </div>
     </div>
   </div>
@@ -1568,7 +1570,7 @@ function startMatch() {
   disableScoringButtons();
   setMatchInningsTab(1);
 
-  /* 🔥 FIX: SWAP TEAM BOXES WHEN TEAM B BATS FIRST */
+  /* ðŸ”¥ FIX: SWAP TEAM BOXES WHEN TEAM B BATS FIRST */
   const innings1 = document.getElementById("matchInnings1");
   const innings2 = document.getElementById("matchInnings2");
   const boxA = document.getElementById("teamABox");
@@ -1582,16 +1584,16 @@ function startMatch() {
     innings2.appendChild(boxB);
   }
 
-/* 🔥 FIX: MOVE TARGET + RR TILES TO THE CORRECT SECOND-INNINGS BOX */
+/* ðŸ”¥ FIX: MOVE TARGET + RR TILES TO THE CORRECT SECOND-INNINGS BOX */
 const targetTile2 = document.getElementById("targetTile2");
 const rrTile2 = document.getElementById("rrTile2");
 
 if (secondBattingSide === "A") {
-    // Team A bats second → tiles must be inside teamABox
+    // Team A bats second â†’ tiles must be inside teamABox
     document.getElementById("teamABox").querySelector(".over-left").appendChild(targetTile2);
     document.getElementById("teamABox").querySelector(".over-right").appendChild(rrTile2);
 } else {
-    // Team B bats second → tiles must be inside teamBBox
+    // Team B bats second â†’ tiles must be inside teamBBox
     document.getElementById("teamBBox").querySelector(".over-left").appendChild(targetTile2);
     document.getElementById("teamBBox").querySelector(".over-right").appendChild(rrTile2);
 }
@@ -1714,7 +1716,7 @@ function openCombinedSelector(needPair, needBowler, reason) {
 
   if (needPair) {
     pairSection.style.display = "block";
-    pairTitle.textContent = `Batting Pair – ${battingName}`;
+    pairTitle.textContent = `Batting Pair â€“ ${battingName}`;
     pairBody.textContent = "Select the batters for this phase.";
 
     const teamPlayers = battingTeam === "A" ? playersA : playersB;
@@ -1757,7 +1759,7 @@ function openCombinedSelector(needPair, needBowler, reason) {
 
   if (needBowler) {
     bowlerSection.style.display = "block";
-    bowlerTitle.textContent = `Bowler – ${bowlingName}`;
+    bowlerTitle.textContent = `Bowler â€“ ${bowlingName}`;
     bowlerBody.textContent = "Select the bowler for the next over.";
 
     const teamPlayers = bowlingTeam === "A" ? playersA : playersB;
@@ -2089,6 +2091,13 @@ function syncScoreboardLiveView() {
     const firstOversForRate = firstScoreForRate ? firstScoreForRate.overs : 0;
     const firstRateForLive = firstScoreForRate && firstOversForRate > 0 ? firstScoreForRate.net / firstOversForRate : 0;
     setText(`liveFirstRr${team}`, firstRateForLive.toFixed(2));
+    const teamScoreForRate = team === "A" ? scoreA : scoreB;
+    const teamRate = teamScoreForRate.overs > 0 ? teamScoreForRate.net / teamScoreForRate.overs : 0;
+    setText(`liveSecondRr${team}`, teamRate.toFixed(2));
+    const liveScoreRr = document.querySelector(`#liveTeamCard${team} .live-first-rr`);
+    const liveSecondRr = document.querySelector(`#liveTeamCard${team} .live-second-rr`);
+    if (liveScoreRr) liveScoreRr.style.display = (currentInnings === 2 && team === secondBattingSide) ? "none" : "block";
+    if (liveSecondRr) liveSecondRr.style.display = (currentInnings === 2 && team === secondBattingSide) ? "block" : "none";
     const current = get("[data-current-over]");
     const previous = get("[data-prev-over]");
     const liveCurrent = document.getElementById(`liveCurrent${team}`);
@@ -2125,6 +2134,11 @@ function updateScoreTiles() {
   const firstOvers = firstScore ? firstScore.overs : 0;
   const firstRate = firstScore && firstOvers > 0 ? firstScore.net / firstOvers : 0;
   document.querySelectorAll('[data-first-rr]').forEach(el => el.textContent = firstRate.toFixed(2));
+  const secondScore = secondBattingSide === "A" ? scoreA : secondBattingSide === "B" ? scoreB : null;
+  const secondRate = secondScore && secondScore.overs > 0 ? secondScore.net / secondScore.overs : 0;
+  document.querySelectorAll('[data-second-rr]').forEach(el => el.textContent = secondRate.toFixed(2));
+  document.querySelectorAll('.first-innings-rr').forEach(el => el.style.display = currentInnings === 2 ? 'none' : 'block');
+  document.querySelectorAll('.second-innings-rr').forEach(el => el.style.display = currentInnings === 2 ? 'block' : 'none');
   syncScoreboardLiveView();
 }
 
@@ -2162,7 +2176,7 @@ function updateOverTiles() {
       ball.type === "run" ? ball.value :
       ball.type === "extra" ? "2wd" :
       ball.type === "wicket" ? "W" :
-      ball.type === "dot" ? "0" : "•";
+      ball.type === "dot" ? "0" : "â€¢";
     currentOverDots.appendChild(d);
   });
 
@@ -2177,7 +2191,7 @@ function updateOverTiles() {
       ball.type === "run" ? ball.value :
       ball.type === "extra" ? "E" :
       ball.type === "wicket" ? "W" :
-      ball.type === "dot" ? "0" : "•";
+      ball.type === "dot" ? "0" : "â€¢";
     prevOverDots.appendChild(d);
   });
 
@@ -2729,7 +2743,7 @@ function resetScoreboard(resetHome, stayOnPage) {
     showPage("home");
   }
 }
-/* FIREBASE LIVE SHARING — database rules must be configured separately. */
+/* FIREBASE LIVE SHARING â€” database rules must be configured separately. */
 (function setupLiveSharing(){
   const liveStatus = document.getElementById('liveAccessStatus');
   const loginFields = document.getElementById('scorerLoginFields');
@@ -2747,7 +2761,7 @@ function resetScoreboard(resetHome, stayOnPage) {
     // Explicitly show the login fields with flex layout when the toggle is opened.
     loginFields.style.display = visible ? 'flex' : 'none';
     loginToggle.setAttribute('aria-expanded', visible ? 'true' : 'false');
-    loginToggle.textContent = visible ? 'Hide scorer login ▴' : 'Show scorer login ▾';
+    loginToggle.textContent = visible ? 'Hide scorer login â–´' : 'Show scorer login â–¾';
   }
   loginToggle.addEventListener('click',()=>setLoginVisible(document.getElementById('liveAccessPanel').style.display === 'none'));
   scoreMatchBtn.addEventListener('click',()=>{
@@ -2902,7 +2916,7 @@ function resetScoreboard(resetHome, stayOnPage) {
     liveDbRef.on('value',snap=>{
       if(snap.exists()) applySnapshot(snap.val());
       else if(isScorer) publishSnapshot();
-      else setStatus('Waiting for the scorer to start or publish a match…');
+      else setStatus('Waiting for the scorer to start or publish a matchâ€¦');
     },err=>setStatus('Live connection error: '+err.message,true));
   }
   try{
@@ -2932,9 +2946,9 @@ function resetScoreboard(resetHome, stayOnPage) {
         return;
       }
       if(user.email && !isScorer) setStatus('Signed in with an unauthorised account. Viewing only.',true);
-      else if(isScorer) setStatus('Scorer signed in. Loading live match…');
+      else if(isScorer) setStatus('Scorer signed in. Loading live matchâ€¦');
       else {
-        setStatus('Connected as viewer. Choose “Live Score” to view the live scoreboard.');
+        setStatus('Connected as viewer. Choose â€œLive Scoreâ€ to view the live scoreboard.');
         if (spectatorRequested) { showPage("scoreboard"); activateScoreboardTab("live"); }
       }
       startListener();
