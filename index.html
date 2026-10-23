@@ -890,35 +890,13 @@
     .team-name-input, #liveTeamNameA, #liveTeamNameB { text-transform:uppercase !important; }
     .extra-run-btn { background:#7c3aed !important; color:#fff !important; border:1px solid #5b21b6 !important; font-weight:800 !important; }
 
-    /* Final sizing pass: larger scoring controls and live cards, using the available mobile space. */
-    #page-match { padding-bottom:18px !important; }
-    #page-match .team { padding:10px 7px !important; margin-top:9px !important; }
-    #page-match .team-header-row { padding:4px 0 7px !important; }
-    #page-match .stats-row { gap:7px !important; margin:8px 0 10px !important; }
-    #page-match .stat-box { padding:12px 5px !important; min-height:76px; display:flex; flex-direction:column; justify-content:center; }
-    #page-match .stat-label { font-size:13px !important; }
-    #page-match .stat-value, #page-match [data-overs] { font-size:23px !important; line-height:1.15 !important; font-weight:800 !important; }
-    #page-match .over-layout { gap:5px !important; padding:4px 0 !important; margin:5px 0 8px !important; }
-    #page-match .over-title { font-size:13px !important; }
-    #page-match .over-dots { font-size:18px !important; min-height:24px; }
-    #page-match .run-grid-title { margin:10px 0 7px !important; font-size:16px !important; }
-    #page-match .run-grid { gap:7px !important; }
-    #page-match .run-grid button, #page-match .ball-type-actions button { min-height:46px !important; font-size:17px !important; }
-    #page-match .ball-type-actions { gap:8px !important; margin-top:9px !important; }
-    #page-match #resetAll { min-height:48px !important; margin-top:12px !important; font-size:17px !important; }
-
-    #scoreboardLivePanel { padding-bottom:14px !important; }
-    #scoreboardLivePanel > h3 { font-size:18px !important; margin:8px 0 12px !important; }
-    #scoreboardLivePanel .live-team-card { padding:12px 10px !important; margin:10px 0 14px !important; border-radius:12px !important; }
-    #scoreboardLivePanel .live-team-card h3 { font-size:20px !important; margin:2px 0 10px !important; }
-    #scoreboardLivePanel .stats-row { gap:7px !important; margin:8px 0 10px !important; }
-    #scoreboardLivePanel .stat-box { min-height:74px; padding:11px 5px !important; display:flex; flex-direction:column; justify-content:center; }
-    #scoreboardLivePanel .stat-label { font-size:13px !important; }
-    #scoreboardLivePanel .stat-value { font-size:22px !important; line-height:1.15 !important; font-weight:800 !important; }
-    #scoreboardLivePanel .over-layout { gap:6px !important; padding:5px 0 !important; margin:5px 0 4px !important; }
-    #scoreboardLivePanel .over-title { font-size:13px !important; }
-    #scoreboardLivePanel .over-dots { font-size:18px !important; min-height:26px !important; }
-    #scorerLoginToggle { font-size:16px !important; letter-spacing:0 !important; }
+    /* Keep the final controls and Team B over history clear of the fixed bottom navigation. */
+    #page-match { padding-bottom: 230px !important; }
+    #page-scoreboard { padding-bottom: 250px !important; }
+    #scoreboardLivePanel { padding-bottom: 18px !important; }
+    @media (max-width: 600px) {
+      #page-match, #page-scoreboard { scroll-margin-bottom: 230px; }
+    }
 </style>
 </head>
 <body data-theme="light">
@@ -932,10 +910,10 @@
   <div class="dev-by">Developed by Jignesh</div>
 
   <div id="homeRoleChoices" class="home-role-choices" aria-label="Choose how to use the scoreboard">
-  <button id="roleScoreMatch" data-public-nav type="button" class="role-choice role-choice-primary">Score a Match</button>
-  <button id="roleWatchLive" data-public-nav type="button" class="role-choice">Live Score</button>
+  <button id="roleScoreMatch" data-public-nav type="button" class="role-choice role-choice-primary">ðŸ Score a Match</button>
+  <button id="roleWatchLive" data-public-nav type="button" class="role-choice">ðŸ“Š Watch Live Score</button>
 </div>
-<button id="scorerLoginToggle" data-public-nav class="scorer-login-toggle" type="button" aria-expanded="false">Show Scorer Login</button>
+<button id="scorerLoginToggle" data-public-nav class="scorer-login-toggle" type="button" aria-expanded="false">Show scorer login â–¾</button>
 <div id="liveAccessPanel" style="display:none;position:relative;z-index:1;max-width:480px;margin:8px auto 4px;padding:8px;background:transparent;color:inherit;border:0;border-radius:0;font:14px Arial,sans-serif;box-sizing:border-box;">
   <div id="liveAccessStatus" style="margin-bottom:8px;">Connecting to live scoreboardâ€¦</div>
   <div id="scorerLoginFields" style="display:none;gap:6px;flex-wrap:wrap;">
@@ -2753,7 +2731,7 @@ function resetScoreboard(resetHome, stayOnPage) {
     // Explicitly show the login fields with flex layout when the toggle is opened.
     loginFields.style.display = visible ? 'flex' : 'none';
     loginToggle.setAttribute('aria-expanded', visible ? 'true' : 'false');
-    loginToggle.textContent = visible ? 'Hide Scorer Login' : 'Show Scorer Login';
+    loginToggle.textContent = visible ? 'Hide scorer login â–´' : 'Show scorer login â–¾';
   }
   loginToggle.addEventListener('click',()=>setLoginVisible(document.getElementById('liveAccessPanel').style.display === 'none'));
   scoreMatchBtn.addEventListener('click',()=>{
