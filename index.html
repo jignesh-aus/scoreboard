@@ -798,122 +798,76 @@
     @media (min-width:520px) { .page { padding-left:18px; padding-right:18px; } .home-hero { padding:24px; } .setup-section { padding:19px; } }
     @media (max-width:360px) { .page { padding-left:9px; padding-right:9px; } .config-row { align-items:flex-start; } .config-input { min-width:76px; } .teams-two-col { gap:6px; } .team-col { padding:6px; } }
 
-  
 
-    /* Clean light theme: white canvas, subtle grey cards, dark readable text, restrained blue accents. */
+
+    /* FINAL ACCESSIBILITY / LIGHT-ONLY THEME OVERRIDES */
     :root {
+      color-scheme: light;
       --bg-color:#ffffff; --text-color:#172033; --card-bg-a:#ffffff; --card-bg-b:#f7f9fc;
-      --players-bg:#f1f4f8; --accent:#0067a8; --border-color:#d7dee8; --stat-bg:#f1f4f8;
-      --button-bg:#e8eef5; --button-bg-hover:#dce6f0; --winner-bg:#fff2b3;
+      --players-bg:#ffffff; --accent:#0877c9; --border-color:#d6dee8; --stat-bg:#f1f5f9;
+      --button-bg:#e8eef5; --button-bg-hover:#dce6f0; --winner-bg:#fff1a8;
     }
-    body:not([data-theme="dark"]), body[data-theme="light"] {
-      background:#fff !important; color:#172033 !important;
+    html, body { background:#fff !important; background-image:none !important; color:#172033 !important; font-size:17px; }
+    .page { background:transparent !important; padding-top:8px; }
+    h1 { background:transparent !important; color:#172033 !important; font-size:23px; margin-bottom:2px; }
+    .dev-by { color:#586579 !important; margin-bottom:8px; }
+    .home-config { gap:8px !important; margin-top:8px !important; }
+    .config-row { background:transparent !important; border:0 !important; box-shadow:none !important; padding:2px 0 !important; gap:8px; font-size:16px !important; }
+    .config-row label, .team-name-guidance, .home-config label { color:#172033 !important; font-size:16px !important; }
+    .config-input { background:#fff !important; color:#172033 !important; border:1px solid #aab6c5 !important; font-size:16px !important; min-height:40px; }
+    .team-col, .home-players-box, .setup-section, .section-heading, .live-team-card, .team, .team-header-row,
+    #targetTile, #rrTile, #targetTile2, #rrTile2, .over-layout, .over-block,
+    .innings-tabs, .match-innings-tabs, #page-settings > div[style*="margin-top:20px"] {
+      background:#fff !important; background-image:none !important; box-shadow:none !important;
     }
-    body:not([data-theme="dark"]) .page, body[data-theme="light"] .page { color:#172033 !important; }
-    body:not([data-theme="dark"]) h1, body[data-theme="light"] h1 {
-      color:#172033 !important; background:transparent !important;
+    .team-col { border:0 !important; padding:3px !important; gap:5px !important; }
+    .home-players-box { padding:2px 0 !important; gap:5px !important; }
+    .home-team-name, .home-players-box input, .player-input, .team-name-input, #scorerLoginFields input {
+      background:#fff !important; color:#172033 !important; border:1px solid #aab6c5 !important;
     }
-    body:not([data-theme="dark"]) .dev-by, body[data-theme="light"] .dev-by { color:#657184 !important; }
-    body:not([data-theme="dark"]) .home-hero, body[data-theme="light"] .home-hero,
-    body:not([data-theme="dark"]) .setup-section, body[data-theme="light"] .setup-section,
-    body:not([data-theme="dark"]) .team-col, body[data-theme="light"] .team-col,
-    body:not([data-theme="dark"]) .live-team-card, body[data-theme="light"] .live-team-card,
-    body:not([data-theme="dark"]) .stat-box, body[data-theme="light"] .stat-box,
-    body:not([data-theme="dark"]) .score-card, body[data-theme="light"] .score-card,
-    body:not([data-theme="dark"]) .settings-card, body[data-theme="light"] .settings-card {
-      background:#f7f9fc !important; color:#172033 !important; border-color:#d7dee8 !important;
-      box-shadow:0 1px 4px rgba(20,40,70,.07) !important;
-    }
-    body:not([data-theme="dark"]) .home-hero, body[data-theme="light"] .home-hero { background:#f5f8fc !important; }
-    body:not([data-theme="dark"]) .home-hero h2, body[data-theme="light"] .home-hero h2,
-    body:not([data-theme="dark"]) .home-hero p, body[data-theme="light"] .home-hero p,
-    body:not([data-theme="dark"]) .hero-eyebrow, body[data-theme="light"] .hero-eyebrow,
-    body:not([data-theme="dark"]) .hero-pills span, body[data-theme="light"] .hero-pills span,
-    body:not([data-theme="dark"]) .section-heading h2, body[data-theme="light"] .section-heading h2,
-    body:not([data-theme="dark"]) .section-heading p, body[data-theme="light"] .section-heading p,
-    body:not([data-theme="dark"]) .team-name-guidance, body[data-theme="light"] .team-name-guidance,
-    body:not([data-theme="dark"]) label, body[data-theme="light"] label,
-    body:not([data-theme="dark"]) .stat-label, body[data-theme="light"] .stat-label,
-    body:not([data-theme="dark"]) .stat-value, body[data-theme="light"] .stat-value,
-    body:not([data-theme="dark"]) .live-team-card h3, body[data-theme="light"] .live-team-card h3,
-    body:not([data-theme="dark"]) .innings-tab, body[data-theme="light"] .innings-tab,
-    body:not([data-theme="dark"]) .scoreboard-tab, body[data-theme="light"] .scoreboard-tab { color:#172033 !important; text-shadow:none !important; }
-    body:not([data-theme="dark"]) input, body[data-theme="light"] input,
-    body:not([data-theme="dark"]) select, body[data-theme="light"] select,
-    body:not([data-theme="dark"]) textarea, body[data-theme="light"] textarea {
-      background:#fff !important; color:#172033 !important; border-color:#cbd5e1 !important;
-    }
-    body:not([data-theme="dark"]) input::placeholder, body[data-theme="light"] input::placeholder,
-    body:not([data-theme="dark"]) textarea::placeholder, body[data-theme="light"] textarea::placeholder { color:#697586 !important; opacity:1 !important; }
-    body:not([data-theme="dark"]) button, body[data-theme="light"] button {
-      color:#172033; border-color:#cbd5e1;
-    }
-    body:not([data-theme="dark"]) .primary-btn, body[data-theme="light"] .primary-btn,
-    body:not([data-theme="dark"]) .hero-primary, body[data-theme="light"] .hero-primary {
-      background:#0067a8 !important; color:#fff !important; border-color:#0067a8 !important;
-    }
-    body:not([data-theme="dark"]) .hero-secondary, body[data-theme="light"] .hero-secondary {
-      background:#fff !important; color:#005b96 !important; border-color:#b8c7d8 !important;
-    }
-    body:not([data-theme="dark"]) #liveAccessPanel, body[data-theme="light"] #liveAccessPanel {
-      background:#f4f7fb !important; color:#172033 !important; border-color:#d7dee8 !important;
-    }
-    body:not([data-theme="dark"]) #liveAccessPanel input, body[data-theme="light"] #liveAccessPanel input { background:#fff !important; color:#172033 !important; }
-    body:not([data-theme="dark"]) #scoreboardLivePanel .stat-label, body[data-theme="light"] #scoreboardLivePanel .stat-label,
-    body:not([data-theme="dark"]) #scoreboardLivePanel #liveScoreA, body[data-theme="light"] #scoreboardLivePanel #liveScoreA,
-    body:not([data-theme="dark"]) #scoreboardLivePanel #liveScoreB, body[data-theme="light"] #scoreboardLivePanel #liveScoreB,
-    body:not([data-theme="dark"]) #scoreboardLivePanel #liveOversA, body[data-theme="light"] #scoreboardLivePanel #liveOversA,
-    body:not([data-theme="dark"]) #scoreboardLivePanel #liveOversB, body[data-theme="light"] #scoreboardLivePanel #liveOversB { color:#172033 !important; text-shadow:none !important; }
-    body:not([data-theme="dark"]) .net-score-box, body[data-theme="light"] .net-score-box { background:#fff2b3 !important; border-color:#e5c34b !important; }
-    body:not([data-theme="dark"]) .net-score-box *, body[data-theme="light"] .net-score-box * { color:#172033 !important; }
-    body:not([data-theme="dark"]) table, body[data-theme="light"] table { color:#172033 !important; }
-    body:not([data-theme="dark"]) th, body[data-theme="light"] th { background:#eaf0f6 !important; color:#172033 !important; }
-    body:not([data-theme="dark"]) td, body[data-theme="light"] td { background:#fff !important; color:#172033 !important; border-color:#e1e7ef !important; }
-    body:not([data-theme="dark"]) .config-row, body[data-theme="light"] .config-row { background:#f7f9fc !important; border-color:#e0e6ee !important; color:#172033 !important; }
-    body:not([data-theme="dark"]) .config-input, body[data-theme="light"] .config-input { background:#fff !important; color:#172033 !important; border-color:#cbd5e1 !important; }
+    .home-team-name::placeholder, .home-players-box input::placeholder, .player-input::placeholder, input::placeholder { color:#5d6878 !important; opacity:1; }
+    .team-name-guidance { margin:7px 0 3px !important; }
+    .primary-btn { background:#0877c9 !important; color:#fff !important; box-shadow:none !important; min-height:46px; font-size:17px !important; }
+    #liveAccessPanel { background:transparent !important; border:0 !important; box-shadow:none !important; margin:6px 0 0 !important; padding:4px 0 !important; color:#172033 !important; }
+    #liveAccessStatus { color:#4b5563 !important; font-size:14px !important; }
+    #scorerSignIn, #scorerSignOut { background:#0877c9 !important; color:#fff !important; }
+    #bottom-nav { background:#fff !important; border:1px solid #d6dee8 !important; box-shadow:0 3px 12px #17203314 !important; backdrop-filter:none !important; }
+    #bottom-nav button { color:#465366 !important; font-size:12px !important; }
+    #bottom-nav button.active { background:#eaf4fc !important; border-color:#b9dcf5 !important; color:#075a98 !important; }
+    #bottom-nav button.active .nav-icon { color:#075a98 !important; }
+    .team { border:0 !important; padding:6px 5px !important; margin-top:5px !important; }
+    .team-header-row { padding:2px 0 4px !important; border:0 !important; }
+    .team-name-input { border:0 !important; background:transparent !important; color:#172033 !important; text-align:center !important; font-size:16px !important; padding:2px !important; }
+    .stats-row { gap:5px !important; margin:5px 0 !important; }
+    .stat-box { background:#f4f7fa !important; color:#172033 !important; border:1px solid #e0e6ed !important; box-shadow:none !important; padding:8px 4px !important; }
+    .stat-label { color:#3f4c5d !important; font-size:11px !important; opacity:1 !important; }
+    .stat-value, [data-overs] { color:#172033 !important; }
+    .net-score-box { background:#fff3b0 !important; border:1px solid #d8b52c !important; }
+    .net-score-box .stat-label, .net-score-box .stat-value, .net-score-box [data-net-tile] { color:#172033 !important; }
+    .over-layout { background:#fff !important; border:0 !important; padding:3px 0 !important; margin-bottom:4px !important; gap:4px !important; }
+    .over-block { background:#fff !important; border:0 !important; padding:3px 2px !important; }
+    .over-title { color:#465366 !important; font-size:12px !important; }
+    .over-dots { color:#172033 !important; font-size:16px !important; }
+    .run-grid button { background:#eaf1f8 !important; color:#172033 !important; border:1px solid #c6d2df !important; box-shadow:none !important; }
+    [data-wide-nb] { background:#0877c9 !important; color:#fff !important; border-color:#0877c9 !important; }
+    [data-wicket] { background:#c62828 !important; color:#fff !important; border-color:#c62828 !important; }
+    [data-undo] { background:#6b4db5 !important; color:#fff !important; border-color:#6b4db5 !important; }
+    #page-settings label { background:transparent !important; color:#172033 !important; border:0 !important; padding:5px 0 !important; font-size:16px !important; }
+    #page-settings input { accent-color:#0877c9 !important; }
+    table { background:#fff !important; color:#172033 !important; }
+    th { background:#eaf1f8 !important; color:#172033 !important; }
+    td { background:#fff !important; color:#172033 !important; }
+    td, th { border-color:#d6dee8 !important; font-size:13px !important; }
+    .reset-modal-box { background:#fff !important; color:#172033 !important; border:1px solid #d6dee8 !important; }
+    .home-role-choices { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:7px 0 9px; }
+    .role-choice, .scorer-login-toggle { min-height:42px; padding:9px 8px; border:1px solid #b8c7d7; border-radius:9px; background:#f4f7fa; color:#172033; font-size:16px; font-weight:750; }
+    .role-choice-primary { background:#0877c9 !important; color:#fff !important; border-color:#0877c9 !important; }
+    .scorer-login-toggle { display:block; width:100%; min-height:38px; margin:0; text-align:left; background:#fff !important; color:#075a98 !important; border:0 !important; padding:5px 0 !important; }
+    @media(max-width:380px) { .page { padding-left:9px !important; padding-right:9px !important; } .home-config { gap:6px !important; } .config-row label { font-size:15px !important; } .team-col { padding:2px !important; } .role-choice { font-size:14px !important; } }
 
-
-    /* Accessible contrast overrides for both themes; avoid same-colour text and surfaces. */
-    .home-role-choices { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0 10px; }
-    .home-role-btn { min-height:42px; border-radius:10px; padding:10px 8px; font-weight:750; border:1px solid #cbd5e1; background:#f1f5f9; color:#172033; }
-    .home-role-primary { background:#0067a8; border-color:#0067a8; color:#fff; }
-    #liveAccessPanel { margin:8px auto 12px !important; padding:10px !important; }
-    body[data-theme="light"] { --bg-color:#ffffff; --text-color:#172033; --card-bg-a:#ffffff; --card-bg-b:#f7f9fc; --players-bg:#f1f4f8; --accent:#0067a8; --border-color:#d7dee8; --stat-bg:#f1f4f8; --button-bg:#e8eef5; --button-bg-hover:#dce6f0; }
-    body[data-theme="light"], body[data-theme="light"] .page { background:#fff !important; color:#172033 !important; }
-    body[data-theme="light"] .home-config, body[data-theme="light"] .team-col, body[data-theme="light"] .stat-box, body[data-theme="light"] .settings-card, body[data-theme="light"] .config-row, body[data-theme="light"] #liveAccessPanel { background:#f7f9fc !important; color:#172033 !important; border-color:#d7dee8 !important; }
-    body[data-theme="light"] label, body[data-theme="light"] p, body[data-theme="light"] h1, body[data-theme="light"] h2, body[data-theme="light"] h3, body[data-theme="light"] .stat-label, body[data-theme="light"] .stat-value, body[data-theme="light"] .dev-by, body[data-theme="light"] .team-name-guidance, body[data-theme="light"] #liveAccessStatus { color:#172033 !important; text-shadow:none !important; }
-    body[data-theme="light"] input, body[data-theme="light"] select, body[data-theme="light"] textarea { background:#fff !important; color:#172033 !important; border:1px solid #cbd5e1 !important; }
-    body[data-theme="light"] input::placeholder, body[data-theme="light"] textarea::placeholder { color:#64748b !important; opacity:1 !important; }
-    body[data-theme="light"] table th { background:#eaf0f6 !important; color:#172033 !important; }
-    body[data-theme="light"] table td { background:#fff !important; color:#172033 !important; border-color:#d7dee8 !important; }
-    body[data-theme="light"] #liveAccessPanel { background:#f7f9fc !important; color:#172033 !important; }
-    body[data-theme="light"] #scorerLoginFields input { background:#fff !important; color:#172033 !important; }
-    body[data-theme="light"] #scorerSignIn { background:#0067a8 !important; color:#fff !important; }
-    body[data-theme="dark"], body[data-theme="dark"] .page { background:#101827 !important; color:#f8fafc !important; }
-    body[data-theme="dark"] .home-config, body[data-theme="dark"] .team-col, body[data-theme="dark"] .stat-box, body[data-theme="dark"] .settings-card, body[data-theme="dark"] .config-row, body[data-theme="dark"] #liveAccessPanel { background:#1e293b !important; color:#f8fafc !important; border-color:#52647c !important; }
-    body[data-theme="dark"] label, body[data-theme="dark"] p, body[data-theme="dark"] h1, body[data-theme="dark"] h2, body[data-theme="dark"] h3, body[data-theme="dark"] .stat-label, body[data-theme="dark"] .stat-value, body[data-theme="dark"] .dev-by, body[data-theme="dark"] .team-name-guidance, body[data-theme="dark"] #liveAccessStatus { color:#f1f5f9 !important; text-shadow:none !important; }
-    body[data-theme="dark"] input, body[data-theme="dark"] select, body[data-theme="dark"] textarea, body[data-theme="dark"] .config-input { background:#0b1220 !important; color:#f8fafc !important; border:1px solid #64748b !important; }
-    body[data-theme="dark"] input::placeholder, body[data-theme="dark"] textarea::placeholder { color:#cbd5e1 !important; opacity:1 !important; }
-    body[data-theme="dark"] table th { background:#26364d !important; color:#f8fafc !important; }
-    body[data-theme="dark"] table td { background:#172235 !important; color:#f8fafc !important; border-color:#52647c !important; }
-    body[data-theme="dark"] #liveAccessPanel { background:#1e293b !important; color:#f8fafc !important; }
-    body[data-theme="dark"] #scorerLoginFields input { background:#0b1220 !important; color:#f8fafc !important; }
-    body[data-theme="dark"] #scorerSignIn { background:#38bdf8 !important; color:#062033 !important; }
-    body[data-theme="dark"] .home-role-btn { background:#26364d !important; color:#f8fafc !important; border-color:#64748b !important; }
-    body[data-theme="dark"] .home-role-primary { background:#38bdf8 !important; color:#062033 !important; border-color:#38bdf8 !important; }
-    body[data-theme="dark"] button { background:#26364d !important; color:#f8fafc !important; border-color:#64748b !important; }
-    body[data-theme="dark"] .primary-btn, body[data-theme="dark"] #startMatchBtn, body[data-theme="dark"] #scorerSignIn { background:#38bdf8 !important; color:#062033 !important; border-color:#38bdf8 !important; }
-    body[data-theme="dark"] .net-score-box { background:#fff2b3 !important; border-color:#e5c34b !important; }
-    body[data-theme="dark"] .net-score-box *, body[data-theme="dark"] .winner-box * { color:#172033 !important; text-shadow:none !important; }
-    body[data-theme="light"] button { background:#eef2f7 !important; color:#172033 !important; border-color:#cbd5e1 !important; }
-    body[data-theme="light"] .primary-btn, body[data-theme="light"] #startMatchBtn, body[data-theme="light"] #scorerSignIn, body[data-theme="light"] .home-role-primary { background:#0067a8 !important; color:#fff !important; border-color:#0067a8 !important; }
-    body[data-theme="light"] .net-score-box { background:#fff2b3 !important; border-color:#e5c34b !important; }
-    body[data-theme="light"] .net-score-box *, body[data-theme="light"] .winner-box * { color:#172033 !important; text-shadow:none !important; }
-    @media (max-width:380px) { .home-role-btn { font-size:13px; padding:8px 5px; } #liveAccessPanel { padding:8px !important; } }
-
-</style>
+  </style>
 </head>
-<body data-theme="dark">
+<body data-theme="light">
 <div id="notifyBanner"></div>
 <canvas id="confettiCanvas"></canvas>
 <canvas id="fireworksCanvas"></canvas>
@@ -923,19 +877,19 @@
   <h1>Indoor Cricket Scoreboard</h1>
   <div class="dev-by">Developed by Jignesh</div>
 
-  <div id="homeRoleChoices" class="home-role-choices" aria-label="Choose your role">
-    <button id="homeScorerChoice" type="button" class="home-role-btn home-role-primary">🏏 Score a Match</button>
-    <button id="homeSpectatorChoice" type="button" class="home-role-btn">◉ Watch Live Score</button>
-  </div>
-
-  <div id="liveAccessPanel" style="position:relative;z-index:1;max-width:480px;margin:14px auto 4px;padding:12px;background:#1e293b;color:#fff;border:1px solid #64748b;border-radius:10px;font:14px Arial,sans-serif;box-sizing:border-box;">
+  <div id="homeRoleChoices" class="home-role-choices" aria-label="Choose how to use the scoreboard">
+  <button id="roleScoreMatch" data-public-nav type="button" class="role-choice role-choice-primary">🏏 Score a Match</button>
+  <button id="roleWatchLive" data-public-nav type="button" class="role-choice">📺 Watch Live Score</button>
+</div>
+<button id="scorerLoginToggle" data-public-nav class="scorer-login-toggle" type="button" aria-expanded="false" style="display:none">Show scorer login ▾</button>
+<div id="liveAccessPanel" style="display:none;position:relative;z-index:1;max-width:480px;margin:8px auto 4px;padding:8px;background:transparent;color:inherit;border:0;border-radius:0;font:14px Arial,sans-serif;box-sizing:border-box;">
   <div style="font-weight:700;margin-bottom:6px;">Scorer Login</div>
   <div id="liveAccessStatus" style="margin-bottom:8px;">Connecting to live scoreboard…</div>
   <div id="scorerLoginFields" style="display:none;gap:6px;flex-wrap:wrap;">
     <input id="scorerEmail" type="text" autocomplete="username" placeholder="Login ID" value="admin" autocapitalize="none" spellcheck="false" style="min-width:0;flex:1;padding:8px;border-radius:5px;border:1px solid #94a3b8;">
     <input id="scorerPassword" type="password" autocomplete="current-password" placeholder="Password" style="min-width:0;flex:1;padding:8px;border-radius:5px;border:1px solid #94a3b8;">
     <button id="scorerSignIn" type="button" style="padding:8px 10px;border:0;border-radius:5px;font-weight:700;">Scorer sign in</button>
-    <button id="scorerSignOut" type="button" style="display:none;padding:8px 10px;border:0;border-radius:5px;">Sign out</button>
+    <button id="scorerSignOut" type="button" style="display:none;padding:8px 10px;border-radius:5px;">Sign out</button>
   </div>
 </div>
 
@@ -968,6 +922,26 @@
       </select>
     </div>
 
+    <div class="team-name-guidance">
+      <span class="guidance-arrow" aria-hidden="true">↓</span>
+      <span>Insert names of both teams and players (optional):</span>
+    </div>
+
+    <div class="teams-two-col">
+  <div class="team-col">
+    
+    <input id="homeTeamAName" class="home-team-name" placeholder="TEAM A">
+    <div id="teamAPlayersContainer" class="home-players-box"></div>
+  </div>
+
+  <div class="team-col">
+    
+    <input id="homeTeamBName" class="home-team-name" placeholder="TEAM B">
+    <div id="teamBPlayersContainer" class="home-players-box"></div>
+  </div>
+</div>
+
+
     <div class="config-row">
       <label>Which team is batting first?</label>
       <select id="firstBattingSide" class="config-input">
@@ -978,22 +952,6 @@
     </div>
 
     <button id="startMatchBtn" class="primary-btn">Start Match</button>
-
-    <div class="team-name-guidance">
-      <span class="guidance-arrow" aria-hidden="true">↓</span>
-      <span>Insert names of both teams and players (optional):</span>
-    </div>
-
-    <div class="teams-two-col">
-      <div class="team-col">
-        <input id="homeTeamAName" class="home-team-name" placeholder="TEAM A">
-        <div id="teamAPlayersContainer" class="home-players-box"></div>
-      </div>
-      <div class="team-col">
-        <input id="homeTeamBName" class="home-team-name" placeholder="TEAM B">
-        <div id="teamBPlayersContainer" class="home-players-box"></div>
-      </div>
-    </div>
 
 
   </div>
@@ -1269,17 +1227,6 @@
   <div style="margin-top:20px;font-size:14px;">
     <div style="margin-bottom:16px;">
       <div style="margin-top:8px;">
-        <label style="margin-right:12px;">
-          <input type="radio" name="theme" value="dark"> Dark theme
-        </label>
-        <label>
-          <input type="radio" name="theme" value="light" checked> Light theme
-        </label>
-      </div>
-    </div>
-
-    <div style="margin-bottom:16px;">
-      <div style="margin-top:8px;">
         <label>
           <input type="checkbox" id="autoPlayerSelectionToggle" checked> Auto-select batters &amp; bowler
         </label>
@@ -1394,8 +1341,7 @@ function showPage(pageName) {
     btn.setAttribute("aria-current", isSelected ? "page" : "false");
   });
 
-  const liveAccessPanel = document.getElementById("liveAccessPanel");
-  if (liveAccessPanel) liveAccessPanel.style.display = pageName === "home" ? "block" : "none";
+  // Scorer login visibility is controlled by the explicit show/hide toggle on Home.
 }
 
 document.querySelectorAll("#bottom-nav button").forEach(btn => {
@@ -1406,16 +1352,6 @@ document.querySelectorAll("#bottom-nav button").forEach(btn => {
     showPage(btn.dataset.nav);
   });
 });
-
-
-// Home role shortcuts: keep scorer/spectator choices visible above login and match setup.
-document.getElementById('homeScorerChoice')?.addEventListener('click', () => {
-  const panel=document.getElementById('liveAccessPanel');
-  if(panel) panel.scrollIntoView({behavior:'smooth',block:'start'});
-  const fields=document.getElementById('scorerLoginFields');
-  if(fields) fields.style.display='flex';
-});
-document.getElementById('homeSpectatorChoice')?.addEventListener('click', () => showPage('scoreboard'));
 
 function notify(msg, type = "info") {
   const banner = document.getElementById("notifyBanner");
@@ -1459,11 +1395,6 @@ document.getElementById("homeTeamAName").addEventListener("input", updateBatting
 document.getElementById("homeTeamBName").addEventListener("input", updateBattingSideLabels);
 
 /* SETTINGS TOGGLES */
-document.querySelectorAll('input[name="theme"]').forEach(radio => {
-  radio.addEventListener("change", () => {
-    document.body.setAttribute("data-theme", radio.value);
-  });
-});
 document.getElementById("soundToggle").addEventListener("change", e => soundEnabled = e.target.checked);
 
 /* THIRD BALL RULE */
@@ -2164,25 +2095,6 @@ function updateScoreTiles() {
 
 /* UPDATE OVER TILES */
 function updateOverTiles() {
-  // A reset has no batting team. Clear both teams' current/previous ball-history strips
-  // instead of leaving the last match's dots visible on the scorer or spectator page.
-  if (!battingTeam) {
-    ["A", "B"].forEach(team => {
-      const box = document.getElementById(`team${team}Box`);
-      if (!box) return;
-      const overs = box.querySelector("[data-overs]");
-      const current = box.querySelector("[data-current-over]");
-      const previous = box.querySelector("[data-prev-over]");
-      if (overs) overs.textContent = `0.0/${maxOvers || "--"}`;
-      if (current) current.innerHTML = "";
-      if (previous) previous.innerHTML = "";
-    });
-    ["liveOversA", "liveOversB"].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=`0.0/${maxOvers || "--"}`; });
-    const targetTile2=document.getElementById("targetTile2"); if(targetTile2) targetTile2.style.display="none";
-    const rrTile2=document.getElementById("rrTile2"); if(rrTile2) rrTile2.style.display="none";
-    syncScoreboardLiveView();
-    return;
-  }
   const completedOvers = Math.floor(ballCount / ballsPerOver);
   const ballsInCurrentOver = ballCount % ballsPerOver;
 
@@ -2718,12 +2630,6 @@ function resetScoreboard(resetHome, stayOnPage) {
 
   disableScoringButtons();
 
-  // Redraw every view immediately; Firebase publishes this empty state for spectators too.
-  updateScoreTiles();
-  updateOverTiles();
-  updateLiveScoreboard();
-  setMatchInningsTab(1);
-
   document.querySelector('#teamABox [data-score-tile]').textContent = "0/0";
   document.querySelector('#teamBBox [data-score-tile]').textContent = "0/0";
   document.querySelector('#teamABox [data-net-tile]').textContent = "0";
@@ -2865,13 +2771,11 @@ function resetScoreboard(resetHome, stayOnPage) {
         document.getElementById('teamBName').value=d.home.teamBName||'TEAM B';
         updateBattingSideLabels();
       }
-      document.body.setAttribute('data-theme',document.body.getAttribute('data-theme')||'dark');
-      // Always redraw the scorer and spectator UI from the latest Firebase state.
-      // In particular, an empty reset state must clear stale score/ball-history DOM.
-      updateScoreTiles();
-      updateOverTiles();
-      updateLiveScoreboard();
+      document.body.setAttribute('data-theme','light');
       if(matchStarted){
+        updateScoreTiles();
+        updateOverTiles();
+        updateLiveScoreboard();
         if(isScorer) enableScoringButtons(); else disableScoringButtons();
       } else {
         disableScoringButtons();
@@ -2893,7 +2797,10 @@ function resetScoreboard(resetHome, stayOnPage) {
     clearTimeout(publishTimer); publishTimer=setTimeout(publishSnapshot,120);
   }
   function applyRole(){
-    loginFields.style.display='flex';
+    if(isScorer){
+      setLoginVisible(false);
+      loginToggle.style.display='none';
+    }
     signOutBtn.style.display=liveUser && liveUser.email ? 'inline-block':'none';
     signInBtn.style.display=isScorer?'none':'inline-block';
     emailInput.disabled=isScorer; passwordInput.style.display=isScorer?'none':'block';
@@ -2928,9 +2835,8 @@ function resetScoreboard(resetHome, stayOnPage) {
       if(user.email && !isScorer) setStatus('Signed in with an unauthorised account. Viewing only.',true);
       else if(isScorer) setStatus('Scorer signed in. Loading live match…');
       else {
-        setStatus('Connected as viewer. Live score will update automatically.');
-        showPage("scoreboard");
-        activateScoreboardTab("live");
+        setStatus('Connected as viewer. Choose “Watch Live Score” to view the live scoreboard.');
+        if (spectatorRequested) { showPage("scoreboard"); activateScoreboardTab("live"); }
       }
       startListener();
     });
