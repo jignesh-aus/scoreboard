@@ -2689,6 +2689,9 @@ function resetScoreboard(resetHome, stayOnPage) {
   let spectatorRequested = false;
   function setLoginVisible(visible){
     document.getElementById('liveAccessPanel').style.display = visible ? 'block' : 'none';
+    // The input wrapper was left at display:none even when the panel opened.
+    // Explicitly show the login fields with flex layout when the toggle is opened.
+    loginFields.style.display = visible ? 'flex' : 'none';
     loginToggle.setAttribute('aria-expanded', visible ? 'true' : 'false');
     loginToggle.textContent = visible ? 'Hide scorer login ▴' : 'Show scorer login ▾';
   }
