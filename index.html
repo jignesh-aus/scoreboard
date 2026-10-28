@@ -917,6 +917,35 @@
       #scoreboardLivePanel .over-title { font-size:13px !important; margin-bottom:5px !important; }
       #scoreboardLivePanel .over-dots { min-height:27px !important; gap:3px !important; }
     }
+
+    /* Final mobile-fit refinements requested 29 Oct 2026 */
+    .role-choice, .role-choice-primary { background:#f4f7fa !important; color:#172033 !important; border-color:#b8c7d7 !important; }
+    #page-settings > div[style*="margin-top:20px"] { border:0 !important; outline:0 !important; box-shadow:none !important; border-radius:0 !important; padding:0 !important; background:transparent !important; }
+    #page-settings, #page-match, #page-scoreboard { box-sizing:border-box; }
+    #page-match { padding-bottom:calc(88px + env(safe-area-inset-bottom)) !important; }
+    #page-scoreboard { padding-bottom:calc(84px + env(safe-area-inset-bottom)) !important; }
+    #scoreboardLivePanel .net-score-box .stat-label,
+    #scoreboardLivePanel .net-score-box .stat-value { font-size:28px !important; line-height:1.2 !important; }
+    #scoreboardLivePanel .net-score-box .stat-label { font-size:12px !important; }
+    @media(max-width:600px) {
+      #page-match .team { padding:5px 5px 7px !important; margin-top:4px !important; }
+      #page-match .stats-row { gap:5px !important; margin:4px 0 5px !important; }
+      #page-match .stat-box { padding:7px 3px !important; }
+      #page-match .run-grid { gap:6px !important; margin:5px 0 7px !important; }
+      #page-match .run-grid button { min-height:54px !important; padding:10px 4px !important; font-size:18px !important; }
+      #page-match .over-title { margin-bottom:3px !important; }
+      #page-match .over-dots { min-height:21px !important; }
+      #page-match #resetAll, #page-match button[onclick*="resetScoreboard"] { margin-bottom:6px !important; }
+      #scoreboardLivePanel .live-team-card { padding:6px 6px 7px !important; margin:5px 0 7px !important; }
+      #scoreboardLivePanel .live-team-card h3 { margin:0 0 4px !important; }
+      #scoreboardLivePanel .stats-row { gap:4px !important; margin:4px 0 5px !important; }
+      #scoreboardLivePanel .stat-box { padding:6px 3px !important; }
+      #scoreboardLivePanel .over-layout { gap:3px !important; margin:2px 0 !important; }
+      #scoreboardLivePanel .over-block { margin-bottom:2px !important; padding:1px 1px !important; }
+      #scoreboardLivePanel .over-title { font-size:11px !important; margin-bottom:2px !important; }
+      #scoreboardLivePanel .over-dots { min-height:20px !important; gap:2px !important; }
+      #page-scoreboard { overflow-y:hidden !important; }
+    }
 </style>
 </head>
 <body data-theme="light">
@@ -933,7 +962,7 @@
   <button id="roleScoreMatch" data-public-nav type="button" class="role-choice role-choice-primary">Score a Match</button>
   <button id="roleWatchLive" data-public-nav type="button" class="role-choice">Watch Live Score</button>
 </div>
-<button id="scorerLoginToggle" data-public-nav class="scorer-login-toggle" type="button" aria-expanded="false">Show scorer login</button>
+<button id="scorerLoginToggle" data-public-nav class="scorer-login-toggle" type="button" aria-expanded="false">Scorer login show/hide</button>
 <div id="liveAccessPanel" style="display:none;position:relative;z-index:1;max-width:480px;margin:8px auto 4px;padding:8px;background:transparent;color:inherit;border:0;border-radius:0;font:14px Arial,sans-serif;box-sizing:border-box;">
   <div id="liveAccessStatus" style="margin-bottom:8px;">Connecting to live scoreboardâ€¦</div>
   <div id="scorerLoginFields" style="display:none;gap:6px;flex-wrap:wrap;">
@@ -946,7 +975,7 @@
 
   <div class="home-config">
     <div class="config-row">
-      <label>How many players per team?</label>
+      <label>Players per team:</label>
       <select id="playersPerTeam" class="config-input">
         <option value="">--</option>
         <option value="4">4</option>
@@ -958,7 +987,7 @@
     </div>
 
     <div class="config-row">
-      <label>How many overs per team?</label>
+      <label>Overs per team:</label>
       <select id="maxOvers" class="config-input">
         <option value="">--</option>
         <option value="4">4</option>
@@ -974,7 +1003,7 @@
     </div>
 
     <div class="config-row">
-      <label>Which team is batting first?</label>
+      <label>Team batting first:</label>
       <select id="firstBattingSide" class="config-input">
         <option value="">--</option>
         <option value="A">TEAM A</option>
@@ -986,7 +1015,7 @@
 
     <div class="team-name-guidance">
       <span class="guidance-arrow" aria-hidden="true">â†“</span>
-      <span>Insert names of both teams and players (optional):</span>
+      <span>Name of teams:</span>
     </div>
 
     <div class="teams-two-col">
@@ -1154,7 +1183,7 @@
   <div id="winner" class="winner"></div>
 
   <div id="scoreboardLivePanel" class="scoreboard-panel active">
-    <h3 style="text-align:center;margin:4px 0 10px;font-size:15px;">Live Match</h3>
+    
     <div class="live-team-card" id="liveTeamCardA">
       <h3 id="liveTeamNameA">TEAM A</h3>
       <div class="stats-row">
@@ -2403,6 +2432,15 @@ function endMatch() {
 
 /* LIVE SCOREBOARD */
 function updateLiveScoreboard() {
+  // Keep the team that batted first at the top of the Live tab.
+  const livePanel = document.getElementById("scoreboardLivePanel");
+  const cardA = document.getElementById("liveTeamCardA");
+  const cardB = document.getElementById("liveTeamCardB");
+  if (livePanel && cardA && cardB) {
+    if (firstBattingSide === "B") livePanel.insertBefore(cardB, cardA);
+    else livePanel.insertBefore(cardA, cardB);
+  }
+
   const aName = (document.getElementById("homeTeamAName").value.trim() || "TEAM A").toUpperCase();
   const bName = (document.getElementById("homeTeamBName").value.trim() || "TEAM B").toUpperCase();
 
@@ -2514,7 +2552,9 @@ document.querySelectorAll("#scoreboardTabs [data-scoreboard-tab]").forEach(tab =
 
 /* CONFETTI + FIREWORKS */
 function launchConfetti() {
-  if (confettiActive) return;
+  confettiActive = false;
+  const oldCanvas = document.getElementById("confettiCanvas");
+  if (oldCanvas) oldCanvas.getContext("2d").clearRect(0, 0, oldCanvas.width, oldCanvas.height);
   confettiActive = true;
 
   const canvas = document.getElementById("confettiCanvas");
